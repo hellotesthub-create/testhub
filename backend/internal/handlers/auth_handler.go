@@ -2,16 +2,16 @@ package handlers
 
 /**
  * User Handler
- * 
+ *
  * Purpose: Handle HTTP requests for user operations
  * This layer receives HTTP requests and sends responses
- * 
+ *
  * Endpoints:
  * - POST /api/users/signup: Create new user account
  * - POST /api/auth/login: Login with email/password
  * - GET  /api/auth/me: Get current user info
  * - POST /api/users/set-password: Set password for OAuth users
- * 
+ *
  * Note: Returns JSON responses with proper status codes
  */
 
@@ -65,7 +65,7 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	// ==================================================
 	// PARSE REQUEST
 	// ==================================================
-	
+
 	var req SignupRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
@@ -80,7 +80,7 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	// ==================================================
 	// CREATE USER
 	// ==================================================
-	
+
 	// Create service request (username = name for now)
 	serviceReq := services.SignupRequest{
 		Username: req.Name,
@@ -101,8 +101,8 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	// ==================================================
 	// GENERATE JWT TOKEN
 	// ==================================================
-	
-	token, err := h.jwtService.GenerateToken(user.ID, user.Email, user.Username, user.Role)
+
+	token, err := h.jwtService.GenerateToken(user.ID.Hex(), user.Email, user.Username, user.Role)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(Response{
@@ -115,7 +115,7 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	// ==================================================
 	// SUCCESS RESPONSE
 	// ==================================================
-	
+
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(Response{
 		Success: true,
@@ -123,7 +123,7 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		Data: map[string]interface{}{
 			"token": token,
 			"user": map[string]string{
-				"id":       user.ID,
+				"id":       user.ID.Hex(),
 				"email":    user.Email,
 				"username": user.Username,
 				"role":     user.Role,
@@ -212,7 +212,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Generate JWT token
-	token, err := h.jwtService.GenerateToken(user.ID, user.Email, user.Username, user.Role)
+	token, err := h.jwtService.GenerateToken(user.ID.Hex(), user.Email, user.Username, user.Role)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(Response{
@@ -230,7 +230,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Data: map[string]interface{}{
 			"token": token,
 			"user": map[string]string{
-				"id":       user.ID,
+				"id":       user.ID.Hex(),
 				"email":    user.Email,
 				"username": user.Username,
 				"role":     user.Role,
@@ -262,4 +262,3 @@ func (h *UserHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
 		},
 	})
 }
-

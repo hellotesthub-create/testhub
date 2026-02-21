@@ -66,6 +66,10 @@ services:
       ENVIRONMENT: ${ENVIRONMENT:-development}
     ports:
       - "8080:8080"
+    volumes:
+      - ./runner/testscripts:/app/testscripts
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./docker-compose.yml:/app/docker-compose.yml
     depends_on:
       postgres:
         condition: service_healthy
@@ -73,6 +77,53 @@ services:
         condition: service_healthy
     networks:
       - testops-network
+      - testops-db-network
+    restart: unless-stopped
+
+  # Selenium Grid - Chrome Node
+  selenium-chrome:
+    image: selenium/standalone-chrome:latest
+    container_name: selenium-chrome
+    environment:
+      - SE_SCREEN_WIDTH=1920
+      - SE_SCREEN_HEIGHT=1080
+      - SE_SCREEN_DEPTH=24
+      - SE_SCREEN_DPI=96
+      - SE_START_XVFB=true
+      - SE_NODE_MAX_SESSIONS=5
+      - SE_NODE_SESSION_TIMEOUT=300
+    volumes:
+      - /dev/shm:/dev/shm
+      - ./runner/output/videos:/videos:rw
+    ports:
+      - "4444:4444"
+      - "7900:7900"
+    networks:
+      - testops-network
+    shm_size: '2gb'
+    restart: unless-stopped
+
+  # Selenium Grid - Firefox Node
+  selenium-firefox:
+    image: selenium/standalone-firefox:latest
+    container_name: selenium-firefox
+    environment:
+      - SE_SCREEN_WIDTH=1920
+      - SE_SCREEN_HEIGHT=1080
+      - SE_SCREEN_DEPTH=24
+      - SE_SCREEN_DPI=96
+      - SE_START_XVFB=true
+      - SE_NODE_MAX_SESSIONS=5
+      - SE_NODE_SESSION_TIMEOUT=300
+    volumes:
+      - /dev/shm:/dev/shm
+      - ./runner/output/videos:/videos:rw
+    ports:
+      - "4445:4444"
+      - "7901:7900"
+    networks:
+      - testops-network
+    shm_size: '2gb'
     restart: unless-stopped
 
   # Python Selenium Runner
@@ -82,21 +133,30 @@ services:
       dockerfile: Dockerfile
     container_name: testops-runner
     environment:
-      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
-      BACKEND_URL: http://backend:8080
-      DISPLAY: ${DISPLAY:-:99}
+      PYTHONUNBUFFERED: "1"
+      DISPLAY: ":99"
+      MONGO_HOST: "testops-mongo"
+      MONGO_PORT: "27017"
+      MONGO_DATABASE: "testops"
+      MONGO_USERNAME: "admin"
+      MONGO_PASSWORD: "admin123"
     volumes:
+      - ./runner/src:/app/src
       - ./runner/output:/app/output
       - ./runner/logs:/app/logs
       - ./runner/testscripts:/app/testscripts
-    depends_on:
-      - redis
-      - backend
+      - ./runner/output/videos:/videos:rw
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - testops-network
-    restart: unless-stopped
-    # For running Xvfb (virtual display)
-    privileged: true
+      - testops-db-network
+    depends_on:
+      - selenium-chrome
+      - selenium-firefox
+    # Run once and exit
+    restart: "no"
+    # Enable for Chrome to work properly
+    shm_size: '2gb'
 
   # Frontend (React/Vite)
   frontend:
@@ -112,28 +172,30 @@ services:
       - testops-network
     restart: unless-stopped
 
-  # Nginx Gateway
-  gateway:
-    build:
-      context: ./gateway
-      dockerfile: Dockerfile
-    container_name: testops-gateway
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./runner/output/videos:/app/videos
-      - ./runner/output/screenshots:/app/screenshots
-    depends_on:
-      - backend
-      - frontend
-    networks:
-      - testops-network
-    restart: unless-stopped
+  # Nginx Gateway - REMOVED (using direct backend access on port 8080)
+  # gateway:
+  #   build:
+  #     context: ./gateway
+  #     dockerfile: Dockerfile
+  #   container_name: testops-gateway
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./runner/output/videos:/app/videos
+  #     - ./runner/output/screenshots:/app/screenshots
+  #   depends_on:
+  #     - backend
+  #     - frontend
+  #   networks:
+  #     - testops-network
+  #   restart: unless-stopped
 
 networks:
   testops-network:
     driver: bridge
+  testops-db-network:
+    external: true
 
 volumes:
   postgres_data:

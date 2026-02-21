@@ -1,11 +1,11 @@
 package handlers
 
 import (
+	"backend/internal/services"
 	"context"
 	"encoding/json"
 	"io"
 	"net/http"
-	"backend/internal/services"
 
 	"google.golang.org/api/idtoken"
 )
@@ -67,23 +67,22 @@ func (h *GoogleAuthHandler) GoogleAuth(w http.ResponseWriter, r *http.Request) {
 
 	// Check if user already exists
 	existingUser, _ := h.userService.GetUserByEmail(r.Context(), userInfo.Email)
-	
+
 	var userID, email, username, role string
-	var needsPassword bool
-	var isNewUser bool
-	
+
 	if existingUser != nil {
 		// EXISTING USER
-		userID = existingUser.ID
+		userID = existingUser.ID.Hex()
 		email = existingUser.Email
 		username = existingUser.Username
 		role = existingUser.Role
-		
+
 		// Check if user has a password set (Password field is not empty)
 		// If they signed up with Google and never set a password, they need to set one
 		// If they have a password, they need to verify it
-		needsPassword = true  // Always require password for security
-		isNewUser = false
+		// needsPassword = true  // Always require password for security
+		// needsPassword = true  // Always require password for security
+		// isNewUser = false
 	} else {
 		// NEW USER - Signup flow
 		newUser, err := h.userService.CreateGoogleUser(r.Context(), userInfo.Name, userInfo.Email, userInfo.Picture)
@@ -94,12 +93,12 @@ func (h *GoogleAuthHandler) GoogleAuth(w http.ResponseWriter, r *http.Request) {
 			})
 			return
 		}
-		userID = newUser.ID
+		userID = newUser.ID.Hex()
 		email = newUser.Email
 		username = newUser.Username
 		role = newUser.Role
-		needsPassword = true  // New users need to set password
-		isNewUser = true
+		// needsPassword = true  // New users need to set password
+		// isNewUser = true
 	}
 
 	// Generate JWT token
@@ -173,9 +172,9 @@ func (h *GoogleAuthHandler) GoogleLogin(w http.ResponseWriter, r *http.Request) 
 		Success: true,
 		Message: "Google account found - please enter your password",
 		Data: map[string]interface{}{
-			"requiresPassword": true,  // Flag to show ENTER password screen
+			"requiresPassword": true, // Flag to show ENTER password screen
 			"user": map[string]string{
-				"id":       existingUser.ID,
+				"id":       existingUser.ID.Hex(),
 				"email":    existingUser.Email,
 				"username": existingUser.Username,
 				"role":     existingUser.Role,
@@ -215,7 +214,7 @@ func (h *GoogleAuthHandler) GoogleLoginVerifyPassword(w http.ResponseWriter, r *
 	}
 
 	// Generate JWT token
-	token, err := h.jwtService.GenerateToken(user.ID, user.Email, user.Username, user.Role)
+	token, err := h.jwtService.GenerateToken(user.ID.Hex(), user.Email, user.Username, user.Role)
 	if err != nil {
 		json.NewEncoder(w).Encode(Response{
 			Success: false,
@@ -232,7 +231,7 @@ func (h *GoogleAuthHandler) GoogleLoginVerifyPassword(w http.ResponseWriter, r *
 		Data: map[string]interface{}{
 			"token": token,
 			"user": map[string]string{
-				"id":       user.ID,
+				"id":       user.ID.Hex(),
 				"email":    user.Email,
 				"username": user.Username,
 				"role":     user.Role,
@@ -247,9 +246,9 @@ func (h *GoogleAuthHandler) verifyGoogleToken(credential string) (*GoogleUserInf
 	// Note: In production, you need to provide your Google Client ID here
 	// Get it from: https://console.cloud.google.com/apis/credentials
 	// For now, we'll validate without client ID check (less secure but functional)
-	
+
 	ctx := context.Background()
-	
+
 	// Validate the token
 	payload, err := idtoken.Validate(ctx, credential, "")
 	if err != nil {
@@ -262,7 +261,7 @@ func (h *GoogleAuthHandler) verifyGoogleToken(credential string) (*GoogleUserInf
 		Name:          payload.Claims["name"].(string),
 		EmailVerified: payload.Claims["email_verified"].(bool),
 	}
-	
+
 	// Picture is optional
 	if picture, ok := payload.Claims["picture"].(string); ok {
 		userInfo.Picture = picture

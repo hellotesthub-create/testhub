@@ -2,10 +2,10 @@ package repository
 
 /**
  * User Repository
- * 
+ *
  * Purpose: Handle all database operations for users collection
  * This layer directly interacts with MongoDB
- * 
+ *
  * Operations:
  * - CreateUser: Insert new user into database
  * - CheckEmailExists: Verify if email already registered
@@ -47,7 +47,7 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *models.User) erro
 // CheckEmailExists checks if an email already exists in database
 func (r *UserRepository) CheckEmailExists(ctx context.Context, email string) (bool, error) {
 	filter := bson.M{"email": email}
-	
+
 	count, err := r.collection.CountDocuments(ctx, filter)
 	if err != nil {
 		return false, err
@@ -59,7 +59,7 @@ func (r *UserRepository) CheckEmailExists(ctx context.Context, email string) (bo
 // CheckUsernameExists checks if a username already exists in database
 func (r *UserRepository) CheckUsernameExists(ctx context.Context, username string) (bool, error) {
 	filter := bson.M{"username": username}
-	
+
 	count, err := r.collection.CountDocuments(ctx, filter)
 	if err != nil {
 		return false, err
@@ -71,7 +71,7 @@ func (r *UserRepository) CheckUsernameExists(ctx context.Context, username strin
 // GetUserByEmail retrieves a user by their email address
 func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*models.User, error) {
 	filter := bson.M{"email": email}
-	
+
 	var user models.User
 	err := r.collection.FindOne(ctx, filter).Decode(&user)
 	if err != nil {
@@ -90,9 +90,7 @@ func (r *UserRepository) UpdateUserPassword(ctx context.Context, email, password
 			"updated_at": time.Now(),
 		},
 	}
-	
+
 	_, err := r.collection.UpdateOne(ctx, filter, update)
 	return err
 }
-
-

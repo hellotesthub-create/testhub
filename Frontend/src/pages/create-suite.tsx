@@ -4,23 +4,33 @@ import { NeonButton } from "@/components/ui/neon-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Upload, Play, Chrome, FileCode, X } from "lucide-react";
+import { Upload, Play, Chrome, FileCode, X, CheckCircle2, Loader2, Eye } from "lucide-react";
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { useLocation } from "wouter";
+import { useAuth } from "@/lib/authContext";
+import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { API_ENDPOINTS } from "@/lib/apiConfig";
 
 interface UploadedFile {
   name: string;
   size: string;
   type: string;
+  file: File;
 }
 
 export default function CreateSuite() {
+  const [, setLocation] = useLocation();
+  const { user } = useAuth();
+  const [suiteName, setSuiteName] = useState("");
   const [selectedBrowsers, setSelectedBrowsers] = useState<string[]>([]);
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([
-    { name: "login_test.py", size: "2.4 KB", type: "Python" },
-    { name: "checkout_flow.js", size: "3.1 KB", type: "JavaScript" },
-    { name: "user_registration.java", size: "4.8 KB", type: "Java" },
-  ]);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [isRunning, setIsRunning] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [progressMessage, setProgressMessage] = useState("");
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [completedSuiteId, setCompletedSuiteId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const toggleBrowser = (browser: string) => {
@@ -38,6 +48,7 @@ export default function CreateSuite() {
         name: file.name,
         size: formatFileSize(file.size),
         type: getFileType(file.name),
+        file: file,
       }));
       setUploadedFiles(prev => [...prev, ...newFiles]);
     }
@@ -64,8 +75,152 @@ export default function CreateSuite() {
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  const executeTests = async () => {
+    if (!suiteName.trim()) {
+      alert("Please enter a suite name");
+      return;
+    }
+    if (selectedBrowsers.length === 0) {
+      alert("Please select at least one browser");
+      return;
+    }
+    if (uploadedFiles.length === 0) {
+      alert("Please upload at least one test script");
+      return;
+    }
+
+    setIsRunning(true);
+    setProgress(0);
+    
+    try {
+      // Step 1: Upload files
+      setProgressMessage("Uploading test scripts...");
+      setProgress(10);
+
+      const formData = new FormData();
+      formData.append("suite_name", suiteName);
+      formData.append("browsers", JSON.stringify(selectedBrowsers));
+      formData.append("username", user?.username || "");
+      formData.append("email", user?.email || "");
+      formData.append("user_id", user?.id || "");
+
+      // Add all files to formData
+      uploadedFiles.forEach((fileObj, index) => {
+        formData.append(`test_files`, fileObj.file);
+      });
+
+      // Get auth token
+      const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+      if (!token) {
+        throw new Error("No authentication token found. Please login again.");
+      }
+
+      setProgress(20);
+      setProgressMessage("Submitting tests to runner...");
+
+      // Call backend API to start tests
+      const response = await fetch(`${API_ENDPOINTS.TEST_SUITES}/run`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to start test execution");
+      }
+
+      const result = await response.json();
+      const suiteId = result.suite_id || result.id;
+      
+      if (!suiteId) {
+        throw new Error("No suite ID returned from server");
+      }
+      
+      setCompletedSuiteId(suiteId);
+      setProgress(30);
+      setProgressMessage("Tests started. Waiting for completion...");
+
+      // Poll for test completion
+      let attempts = 0;
+      const maxAttempts = 120; // Max 10 minutes (5s intervals)
+      let completed = false;
+
+      while (attempts < maxAttempts && !completed) {
+        await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds between polls
+        
+        try {
+          const statusResponse = await fetch(API_ENDPOINTS.TEST_SUITE_DETAILS(suiteId), {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (statusResponse.ok) {
+            const statusData = await statusResponse.json();
+            const suiteStatus = statusData.suite?.status || statusData.status;
+            
+            // Update progress based on status
+            if (suiteStatus === "running") {
+              // Calculate progress based on completed tests
+              const totalTests = statusData.suite?.total_tests || uploadedFiles.length;
+              const passed = statusData.suite?.passed || 0;
+              const failed = statusData.suite?.failed || 0;
+              const completedTests = passed + failed;
+              const testProgress = totalTests > 0 ? (completedTests / totalTests) * 60 : 0;
+              setProgress(30 + testProgress);
+              setProgressMessage(`Running tests... (${completedTests}/${totalTests} completed)`);
+            } else if (suiteStatus === "completed" || suiteStatus === "passed" || suiteStatus === "failed") {
+              completed = true;
+              setProgress(100);
+              setProgressMessage("Test execution completed!");
+            }
+          }
+        } catch (pollError) {
+          console.warn("Status poll error:", pollError);
+          // Continue polling even if one request fails
+        }
+        
+        attempts++;
+      }
+
+      if (!completed) {
+        // Timeout - tests took too long, but still navigate to results
+        setProgress(100);
+        setProgressMessage("Tests are still running. You can check the results in History.");
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setShowSuccessDialog(true);
+      setIsRunning(false);
+
+    } catch (error) {
+      console.error("Test execution error:", error);
+      alert("Failed to execute tests. Please try again.");
+      setIsRunning(false);
+      setProgress(0);
+      setProgressMessage("");
+    }
+  };
+
+  const handleViewResults = () => {
+    setShowSuccessDialog(false);
+    setLocation("/history");
+  };
+
+  const handleCreateNew = () => {
+    setShowSuccessDialog(false);
+    setSuiteName("");
+    setSelectedBrowsers([]);
+    setUploadedFiles([]);
+    setProgress(0);
+    setProgressMessage("");
+    setCompletedSuiteId(null);
+  };
+
   return (
-    <Layout role="user">
+    <Layout>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-1">Create Test Suite</h1>
@@ -78,25 +233,18 @@ export default function CreateSuite() {
           {/* Basic Information */}
           <GlassCard>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Suite Configuration</h3>
-            <form className="space-y-6">
+            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
               <div className="space-y-2">
                 <Label htmlFor="suite-name" className="text-slate-900 dark:text-white">Suite Name</Label>
                 <Input 
                   id="suite-name"
-                  placeholder="e.g., Login & Checkout Flow" 
+                  placeholder="e.g., Login & Checkout Flow"
+                  value={suiteName}
+                  onChange={(e) => setSuiteName(e.target.value)}
+                  disabled={isRunning}
                   className="bg-slate-50 dark:bg-slate-950/50 border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-500"
                 />
                 <p className="text-xs text-slate-600 dark:text-slate-500">A unique name for your test suite</p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="website-url" className="text-slate-900 dark:text-white">Website URL (Base URL)</Label>
-                <Input 
-                  id="website-url"
-                  placeholder="e.g., https://www.example.com" 
-                  className="bg-slate-50 dark:bg-slate-950/50 border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-500"
-                />
-                <p className="text-xs text-slate-600 dark:text-slate-500">The target website to test against</p>
               </div>
             </form>
           </GlassCard>
@@ -106,10 +254,11 @@ export default function CreateSuite() {
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Select Browsers</h3>
             <div className="space-y-3">
               <div className="flex items-center gap-3 p-4 rounded-lg border border-slate-300 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
-                onClick={() => toggleBrowser("chrome")}>
+                onClick={() => !isRunning && toggleBrowser("chrome")}>
                 <Checkbox 
                   checked={selectedBrowsers.includes("chrome")}
                   onCheckedChange={() => toggleBrowser("chrome")}
+                  disabled={isRunning}
                   className="cursor-pointer"
                 />
                 <div className="flex items-center gap-2 flex-1">
@@ -122,10 +271,11 @@ export default function CreateSuite() {
               </div>
 
               <div className="flex items-center gap-3 p-4 rounded-lg border border-slate-300 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
-                onClick={() => toggleBrowser("firefox")}>
+                onClick={() => !isRunning && toggleBrowser("firefox")}>
                 <Checkbox 
                   checked={selectedBrowsers.includes("firefox")}
                   onCheckedChange={() => toggleBrowser("firefox")}
+                  disabled={isRunning}
                   className="cursor-pointer"
                 />
                 <div className="flex items-center gap-2 flex-1">
@@ -221,17 +371,83 @@ export default function CreateSuite() {
               <NeonButton 
                 className="w-full" 
                 neonColor="cyan"
-                disabled={selectedBrowsers.length === 0}
+                disabled={selectedBrowsers.length === 0 || uploadedFiles.length === 0 || !suiteName.trim() || isRunning}
+                onClick={executeTests}
               >
-                <Play className="w-4 h-4 mr-2" /> Run Test Suite
+                {isRunning ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Running Tests...
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 mr-2" /> Run Test Suite
+                  </>
+                )}
               </NeonButton>
-              <Button variant="outline" className="w-full border-slate-300 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5">
+              <Button 
+                variant="outline" 
+                className="w-full border-slate-300 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5"
+                disabled={isRunning}
+              >
                 Save as Draft
               </Button>
             </div>
+
+            {/* Progress Bar */}
+            {isRunning && (
+              <div className="mt-6 space-y-3">
+                <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-500/30">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Loader2 className="w-4 h-4 text-blue-600 dark:text-blue-400 animate-spin" />
+                    <p className="text-sm font-medium text-blue-900 dark:text-blue-300">
+                      {progressMessage || "Executing tests..."}
+                    </p>
+                  </div>
+                  <Progress value={progress} className="h-2" />
+                  <p className="text-xs text-blue-700 dark:text-blue-400 mt-2 text-right">
+                    {progress}%
+                  </p>
+                </div>
+              </div>
+            )}
           </GlassCard>
         </div>
       </div>
+
+      {/* Success Dialog */}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent className="sm:max-w-md bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10">
+          <DialogHeader>
+            <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 dark:bg-green-900/30">
+              <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
+            </div>
+            <DialogTitle className="text-center text-slate-900 dark:text-white text-xl">
+              Test Execution Completed!
+            </DialogTitle>
+            <DialogDescription className="text-center text-slate-600 dark:text-slate-400">
+              Your test suite "{suiteName}" has been executed successfully. 
+              All results and artifacts have been saved.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex flex-col gap-3 mt-6">
+            <Button 
+              onClick={handleViewResults}
+              className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white"
+            >
+              <Eye className="w-4 h-4 mr-2" />
+              View Results
+            </Button>
+            <Button 
+              onClick={handleCreateNew}
+              variant="outline"
+              className="w-full border-slate-300 dark:border-white/10"
+            >
+              Create New Test Suite
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }
