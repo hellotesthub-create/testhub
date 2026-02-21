@@ -15,10 +15,18 @@ services:
     environment:
       PORT: 8080
       MONGO_URL: mongodb://admin:admin123@mongo:27017
+      HOST_PROJECT_PATH: /home/imran/Projects/THEX
     
     # Port mapping: host:container
     ports:
       - "8080:8080"
+    
+    # Volume mounts for test execution
+    volumes:
+      - ../runner/testscripts:/app/testscripts
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../docker-compose.yml:/app/docker-compose.yml
+      - ..:/app/project
     
     # Network configuration
     networks:

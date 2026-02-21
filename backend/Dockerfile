@@ -16,7 +16,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/api
 # Runtime stage
 FROM alpine:latest
 
-RUN apk --no-cache add ca-certificates
+RUN apk --no-cache add ca-certificates docker-cli docker-cli-compose
 
 WORKDIR /root/
 

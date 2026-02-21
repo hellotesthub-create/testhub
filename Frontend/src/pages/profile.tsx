@@ -73,10 +73,8 @@ export default function Profile() {
   const avatar = getCurrentAvatar();
   const isCustomAvatarSelected = customAvatar !== null;
 
-  const userRole = (profile.role === "Admin" ? "admin" : "user") as "admin" | "user";
-
   return (
-    <Layout role={userRole}>
+    <Layout>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-1">Profile Settings</h1>

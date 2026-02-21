@@ -2,10 +2,10 @@ package services
 
 /**
  * JWT Service
- * 
+ *
  * Purpose: Handle JWT token generation and verification
  * This service provides authentication tokens for users
- * 
+ *
  * Operations:
  * - GenerateToken: Create JWT token with user claims
  * - VerifyToken: Validate JWT token

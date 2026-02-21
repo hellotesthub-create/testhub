@@ -7,6 +7,7 @@ import { ParticleBackground } from "@/components/particle-background";
 import { useUser } from "@/lib/userContext";
 import { useAuth } from "@/lib/authContext";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+import { API_ENDPOINTS } from "@/lib/apiConfig";
 
 export default function AuthPage() {
   const [, setLocation] = useLocation();
@@ -53,7 +54,7 @@ export default function AuthPage() {
     setIsLoginLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8080/api/auth/login", {
+      const response = await fetch(API_ENDPOINTS.LOGIN, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -125,7 +126,7 @@ export default function AuthPage() {
       // ==================================================
       // CALL BACKEND API
       // ==================================================
-      const response = await fetch("http://localhost:8080/api/users/signup", {
+      const response = await fetch(API_ENDPOINTS.SIGNUP, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -189,7 +190,7 @@ export default function AuthPage() {
       setLoginError("");
 
       // Send credential to unified backend endpoint
-      const response = await fetch("http://localhost:8080/api/auth/google", {
+      const response = await fetch(API_ENDPOINTS.GOOGLE_AUTH, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -279,7 +280,7 @@ export default function AuthPage() {
 
       if (isLogin) {
         // LOGIN MODE: Verify existing password
-        const response = await fetch("http://localhost:8080/api/auth/google/verify-password", {
+        const response = await fetch(API_ENDPOINTS.GOOGLE_VERIFY_PASSWORD, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -315,7 +316,7 @@ export default function AuthPage() {
         }
       } else {
         // SIGNUP MODE: Set new password
-        const response = await fetch("http://localhost:8080/api/users/set-password", {
+        const response = await fetch(API_ENDPOINTS.SET_PASSWORD, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -369,20 +370,20 @@ export default function AuthPage() {
       <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-colors">
         <ParticleBackground />
         
-        <div className="absolute top-6 right-6 z-50">
+        <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-50">
           <ThemeToggle />
         </div>
 
-        <div className="relative z-20 w-full max-w-lg px-4 animate-in zoom-in-95 duration-300">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-8">
-            <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-500/20 mb-4">
-                <Lock className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+        <div className="relative z-20 w-full max-w-lg px-4 sm:px-6 animate-in zoom-in-95 duration-300">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-6 sm:p-8">
+            <div className="text-center mb-5 sm:mb-6">
+              <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-blue-100 dark:bg-blue-500/20 mb-3 sm:mb-4">
+                <Lock className="w-7 h-7 sm:w-8 sm:h-8 text-blue-600 dark:text-blue-400" />
               </div>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-2">
                 {isLogin ? "Enter Your Password" : "Set Your Password"}
               </h2>
-              <p className="text-slate-600 dark:text-slate-400 text-sm">
+              <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm">
                 {isLogin 
                   ? `Welcome back, ${googleUserData.name}! Please enter your password to continue.`
                   : `Welcome, ${googleUserData.name}! Set a password to access your account with email/password login.`
@@ -495,17 +496,17 @@ export default function AuthPage() {
       <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-colors">
         <ParticleBackground />
         
-        <div className="absolute top-6 right-6 z-50">
+        <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-50">
           <ThemeToggle />
         </div>
 
-        <div className="relative z-20 w-full max-w-lg px-4 animate-in zoom-in-95 duration-300">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-8 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-500/20 mb-6">
-              <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
+        <div className="relative z-20 w-full max-w-lg px-4 sm:px-6 animate-in zoom-in-95 duration-300">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-6 sm:p-8 text-center">
+            <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-green-100 dark:bg-green-500/20 mb-5 sm:mb-6">
+              <CheckCircle className="w-7 h-7 sm:w-8 sm:h-8 text-green-600 dark:text-green-400" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">Account Created Successfully!</h2>
-            <p className="text-slate-600 dark:text-slate-400 mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-3">Account Created Successfully!</h2>
+            <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base mb-5 sm:mb-6">
               Your account has been created successfully!<br />
               Please click below to go to the login page and enter your credentials to sign in.
             </p>
@@ -528,28 +529,28 @@ export default function AuthPage() {
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-colors">
       <ParticleBackground />
       
-      <div className="absolute top-6 right-6 z-50">
+      <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-50">
         <ThemeToggle />
       </div>
 
       <Link href="/">
-        <Button variant="ghost" size="icon" className="absolute top-6 left-6 z-50 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 rounded-full">
-          <X className="w-6 h-6" />
+        <Button variant="ghost" size="icon" className="absolute top-4 sm:top-6 left-4 sm:left-6 z-50 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 rounded-full">
+          <X className="w-5 h-5 sm:w-6 sm:h-6" />
         </Button>
       </Link>
 
-      <div className="relative z-20 w-full max-w-lg px-4 animate-in zoom-in-95 duration-300">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 mb-6 shadow-lg">
-            <Shield className="w-7 h-7 text-white" />
+      <div className="relative z-20 w-full max-w-lg px-4 sm:px-6 animate-in zoom-in-95 duration-300">
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 mb-4 sm:mb-6 shadow-lg">
+            <Shield className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-1">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-1">
             TESTHUB
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm">Automated Testing Platform</p>
+          <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm">Automated Testing Platform</p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-8">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-6 sm:p-8">
           
           {isForgotPassword ? (
             <>
@@ -567,10 +568,10 @@ export default function AuthPage() {
                 </button>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-5 sm:space-y-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Reset Password</h2>
-                  <p className="text-slate-600 dark:text-slate-400 text-sm">Enter your email address and we'll send you a reset link</p>
+                  <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-2">Reset Password</h2>
+                  <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm">Enter your email address and we'll send you a reset link</p>
                 </div>
 
                 <form onSubmit={handleResetPassword} className="space-y-4">
@@ -607,10 +608,10 @@ export default function AuthPage() {
             </>
           ) : (
             <>
-              <div className="flex gap-3 mb-8">
+              <div className="flex gap-2 sm:gap-3 mb-6 sm:mb-8">
                 <button 
                   onClick={() => setIsLogin(true)}
-                  className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-colors ${
+                  className={`flex-1 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold rounded-lg transition-colors ${
                     isLogin 
                       ? 'bg-blue-600 text-white' 
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -620,7 +621,7 @@ export default function AuthPage() {
                 </button>
                 <button 
                   onClick={() => setIsLogin(false)}
-                  className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-colors ${
+                  className={`flex-1 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold rounded-lg transition-colors ${
                     !isLogin 
                       ? 'bg-blue-600 text-white' 
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'

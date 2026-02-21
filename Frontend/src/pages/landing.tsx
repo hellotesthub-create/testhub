@@ -1,14 +1,18 @@
 import { useState, useEffect } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { NeonButton } from "@/components/ui/neon-button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Shield, Zap, Globe, Code2, Github, ArrowRight } from "lucide-react";
+import { Shield, Zap, Globe, Code2, Github, ArrowRight, Menu, X } from "lucide-react";
 import TestAutomationNetwork from "@/components/test-automation-network";
 import { ParticleBackground } from "@/components/particle-background";
+import { useAuth } from "@/lib/authContext";
 
 export default function LandingPage() {
+  const { isAuthenticated, user } = useAuth();
+  const [, setLocation] = useLocation();
   const [showContent, setShowContent] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowContent(true), 500);
@@ -19,7 +23,7 @@ export default function LandingPage() {
     <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-sans overflow-x-hidden transition-colors">
       <ParticleBackground />
       {/* Hero Section with Canvas Animation */}
-      <section className="relative min-h-screen">
+      <section className="relative min-h-screen overflow-hidden">
         {/* Full background canvas */}
         <div className="absolute inset-0">
           <TestAutomationNetwork />
@@ -27,67 +31,135 @@ export default function LandingPage() {
 
         {/* Header Overlay */}
         <header className="relative z-50 border-b border-white/10 bg-slate-950/40 backdrop-blur-md">
-          <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
             <Link href="/">
               <div className="flex items-center gap-2 cursor-pointer">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.6)]">
-                  <Shield className="w-6 h-6 text-white" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.6)]">
+                  <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <span className="text-2xl font-bold font-display tracking-wider text-white">
+                <span className="text-lg sm:text-2xl font-bold font-display tracking-wider text-white">
                   TESTHUB
                 </span>
               </div>
             </Link>
 
-            <nav className="hidden md:flex items-center gap-8">
+            <nav className="hidden md:flex items-center gap-6 lg:gap-8">
               <a href="#features" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">Features</a>
               <a href="#how-it-works" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">How It Works</a>
               <a href="#integrations" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">Integrations</a>
               <a href="#docs" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">Docs</a>
             </nav>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4 md:gap-5">
               <ThemeToggle />
-              <Link href="/auth">
-                <button className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
-                  Log In
-                </button>
-              </Link>
-              <Link href="/auth">
-                <NeonButton size="sm" neonColor="blue">
-                  Sign Up Free
-                </NeonButton>
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  <button 
+                    onClick={() => setLocation(user?.role === 'Admin' ? '/admin' : '/dashboard')}
+                    className="hidden md:block text-sm md:text-base font-semibold text-slate-300 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5"
+                  >
+                    Dashboard
+                  </button>
+                  <NeonButton 
+                    className="h-9 sm:h-10 px-4 sm:px-6 text-sm sm:text-base font-semibold"
+                    neonColor="blue" 
+                    onClick={() => setLocation(user?.role === 'Admin' ? '/admin' : '/dashboard')}
+                  >
+                    <span className="hidden sm:inline">Open App</span>
+                    <span className="sm:hidden">App</span>
+                  </NeonButton>
+                </>
+              ) : (
+                <>
+                  <Link href="/auth">
+                    <button className="hidden md:block text-sm md:text-base font-semibold text-slate-300 hover:text-cyan-300 transition-all duration-300 px-4 py-2 rounded-lg hover:bg-white/5 border border-transparent hover:border-cyan-500/30">
+                      Log In
+                    </button>
+                  </Link>
+                  <Link href="/auth">
+                    <NeonButton className="h-9 sm:h-10 px-5 sm:px-7 text-sm sm:text-base font-bold shadow-lg shadow-blue-500/30" neonColor="blue">
+                      <span className="hidden sm:inline">SIGN UP FREE</span>
+                      <span className="sm:hidden">SIGN UP</span>
+                    </NeonButton>
+                  </Link>
+                </>
+              )}
+              
+              {/* Mobile Menu Button */}
+              <button 
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden p-2 text-slate-300 hover:text-white transition-colors"
+                aria-label="Toggle menu"
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
             </div>
           </div>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden absolute top-full left-0 right-0 bg-slate-950/95 backdrop-blur-md border-b border-white/10 z-50">
+              <nav className="flex flex-col py-4 px-4 space-y-3">
+                <a 
+                  href="#features" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-sm font-medium text-slate-300 hover:text-white transition-colors py-2"
+                >
+                  Features
+                </a>
+                <a 
+                  href="#how-it-works" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-sm font-medium text-slate-300 hover:text-white transition-colors py-2"
+                >
+                  How It Works
+                </a>
+                <a 
+                  href="#integrations" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-sm font-medium text-slate-300 hover:text-white transition-colors py-2"
+                >
+                  Integrations
+                </a>
+                <a 
+                  href="#docs" 
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-sm font-medium text-slate-300 hover:text-white transition-colors py-2"
+                >
+                  Docs
+                </a>
+              </nav>
+            </div>
+          )}
         </header>
 
         {/* Hero Content with proper layering */}
-        <div className="relative z-20 h-[calc(100vh-80px)] flex items-center">
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/70 via-slate-950/50 to-transparent" />
+        <div className="relative z-20 h-[calc(100vh-64px)] sm:h-[calc(100vh-80px)] flex items-center">
+          {/* Stronger gradient on left for text visibility, transparent on right for animation */}
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/85 via-40% to-transparent" />
           
           {showContent && (
-            <div className="relative z-30 text-left space-y-8 px-6 md:px-12 max-w-2xl animate-in fade-in duration-1000">
-              <div className="space-y-4">
-                <h1 className="text-5xl md:text-6xl font-display font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-blue-300 to-cyan-300">
+            <div className="relative z-30 text-left space-y-5 sm:space-y-6 md:space-y-8 px-4 sm:px-6 md:px-12 lg:px-16 max-w-xl md:max-w-2xl animate-in fade-in duration-1000">
+              <div className="space-y-3 sm:space-y-4">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-display font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-blue-300 to-cyan-300 leading-tight">
                   Automated Testing.
                   <br />
                   Simplified
                 </h1>
-                <div className="h-1 w-48 bg-gradient-to-r from-cyan-500 to-transparent rounded-full" />
+                <div className="h-1 w-28 sm:w-40 md:w-48 bg-gradient-to-r from-cyan-500 to-transparent rounded-full" />
               </div>
-              <p className="text-lg md:text-xl text-cyan-100/90 max-w-xl font-medium">
+              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-cyan-100/90 max-w-md md:max-w-xl font-medium leading-relaxed">
                 Execute parallel tests across browsers with real-time monitoring and comprehensive artifacts.
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Link href="/auth">
-                  <NeonButton className="h-14 px-8 text-lg" neonColor="blue">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2 sm:pt-4">
+                <Link href="/auth" className="w-full sm:w-auto">
+                  <NeonButton className="w-full sm:w-auto h-11 sm:h-12 md:h-14 px-6 sm:px-7 md:px-9 text-sm sm:text-base md:text-lg font-semibold" neonColor="blue">
                     Get Started Free
                   </NeonButton>
                 </Link>
-                <button className="h-14 px-8 text-lg font-medium border border-cyan-400/50 hover:border-cyan-400/80 hover:bg-cyan-400/10 rounded-lg transition-all flex items-center justify-center gap-2 group text-white">
-                  <Github className="w-5 h-5" />
+                <button className="w-full sm:w-auto h-11 sm:h-12 md:h-14 px-6 sm:px-7 md:px-9 text-sm sm:text-base md:text-lg font-semibold border-2 border-cyan-400/60 hover:border-cyan-400 hover:bg-cyan-400/10 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 group text-white shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40">
+                  <Github className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" />
                   View on GitHub
                 </button>
               </div>
@@ -104,10 +176,10 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="relative z-20 max-w-7xl mx-auto px-6 py-20 bg-white dark:bg-slate-950">
-        <h2 className="text-4xl font-display font-bold mb-16 text-center text-slate-900 dark:text-white">Why Choose TESTHUB?</h2>
+      <section id="features" className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-20 bg-white dark:bg-slate-950">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold mb-8 sm:mb-12 md:mb-16 text-center text-slate-900 dark:text-white">Why Choose TESTHUB?</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           {[
             { icon: Code2, title: "Unified Framework", desc: "Write tests easily with Selenium, Playwright, & Cypress" },
             { icon: Zap, title: "Parallel Execution", desc: "Run multiple tests concurrently across browsers" },
@@ -125,10 +197,10 @@ export default function LandingPage() {
       </section>
 
       {/* See It In Action Section */}
-      <section id="how-it-works" className="relative z-20 max-w-7xl mx-auto px-6 py-20 bg-white dark:bg-slate-950">
-        <h2 className="text-4xl font-display font-bold mb-12 text-center text-slate-900 dark:text-white">See It In Action</h2>
+      <section id="how-it-works" className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-20 bg-white dark:bg-slate-950">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold mb-8 sm:mb-12 text-center text-slate-900 dark:text-white">See It In Action</h2>
         
-        <GlassCard className="bg-slate-100 dark:bg-slate-900/50 border-slate-200 dark:border-white/20 p-8 md:p-12">
+        <GlassCard className="bg-slate-100 dark:bg-slate-900/50 border-slate-200 dark:border-white/20 p-4 sm:p-6 md:p-8 lg:p-12">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4">
               <h3 className="text-2xl font-bold text-blue-600 dark:text-cyan-400">Live Run Monitor</h3>
@@ -155,19 +227,19 @@ export default function LandingPage() {
       </section>
 
       {/* Integrations Section */}
-      <section id="integrations" className="relative z-20 max-w-7xl mx-auto px-6 py-20 bg-white dark:bg-slate-950">
-        <h2 className="text-3xl font-display font-bold mb-8 text-slate-900 dark:text-white">Connect Your Stack</h2>
-        <div className="flex flex-wrap gap-4 mb-16">
+      <section id="integrations" className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-20 bg-white dark:bg-slate-950">
+        <h2 className="text-2xl sm:text-3xl font-display font-bold mb-6 sm:mb-8 text-slate-900 dark:text-white">Connect Your Stack</h2>
+        <div className="flex flex-wrap gap-3 sm:gap-4 mb-12 sm:mb-16">
           {["GlobivateC orp", "DataFlow Inc.", "Jira", "CloudEnv", "CloudEnv", "SkaleiT"].map((partner, i) => (
-            <div key={i} className="px-6 py-3 rounded-lg border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 font-medium">
+            <div key={i} className="px-4 sm:px-6 py-2 sm:py-3 rounded-lg border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-300 font-medium text-sm sm:text-base">
               {partner}
             </div>
           ))}
         </div>
 
-        <div className="flex justify-between items-center">
-          <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Trusted By</h3>
-          <div className="flex gap-4 text-slate-600 dark:text-slate-400 font-medium">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Trusted By</h3>
+          <div className="flex flex-wrap gap-3 sm:gap-4 text-slate-600 dark:text-slate-400 font-medium text-sm sm:text-base">
             {["Enterprise", "Startups", "Teams"].map((tag, i) => (
               <span key={i}>{tag}</span>
             ))}
@@ -176,28 +248,28 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative z-20 max-w-7xl mx-auto px-6 py-20 bg-white dark:bg-slate-950">
-        <div className="rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 p-12 text-center space-y-6">
-          <h2 className="text-4xl font-display font-bold text-white">Ready to Automate Your Tests?</h2>
-          <p className="text-lg text-white/90 max-w-2xl mx-auto">
+      <section className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-20 bg-white dark:bg-slate-950">
+        <div className="rounded-xl sm:rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 p-6 sm:p-8 md:p-12 text-center space-y-4 sm:space-y-6">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-white">Ready to Automate Your Tests?</h2>
+          <p className="text-base sm:text-lg text-white/90 max-w-2xl mx-auto">
             Start for free. No credit card required.
           </p>
           <Link href="/auth">
-            <button className="inline-flex items-center gap-2 px-8 py-4 rounded-lg bg-white text-blue-600 font-bold text-lg hover:bg-slate-100 transition-colors group">
+            <button className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 rounded-lg bg-white text-blue-600 font-bold text-base sm:text-lg hover:bg-slate-100 transition-colors group">
               Get Started Now
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
             </button>
           </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="relative z-20 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950 py-12">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <span className="font-bold font-display text-lg text-slate-900 dark:text-white">TESTHUB</span>
-              <p className="text-slate-600 dark:text-slate-400 text-sm mt-2">Building the next generation of automated testing for engineering teams</p>
+      <footer className="relative z-20 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950 py-8 sm:py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-6 sm:mb-8">
+            <div className="col-span-2 md:col-span-1">
+              <span className="font-bold font-display text-base sm:text-lg text-slate-900 dark:text-white">TESTHUB</span>
+              <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm mt-2">Building the next generation of automated testing for engineering teams</p>
             </div>
             
             {[
@@ -206,8 +278,8 @@ export default function LandingPage() {
               { title: "Legal", links: ["Privacy", "Terms", "Contact"] }
             ].map((col, i) => (
               <div key={i}>
-                <h4 className="font-bold mb-4 text-slate-900 dark:text-white">{col.title}</h4>
-                <ul className="space-y-2 text-slate-600 dark:text-slate-400 text-sm">
+                <h4 className="font-bold mb-3 sm:mb-4 text-sm sm:text-base text-slate-900 dark:text-white">{col.title}</h4>
+                <ul className="space-y-2 text-slate-600 dark:text-slate-400 text-xs sm:text-sm">
                   {col.links.map((link, j) => (
                     <li key={j}><a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">{link}</a></li>
                   ))}
@@ -216,7 +288,7 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <div className="border-t border-slate-200 dark:border-white/10 pt-8 flex justify-between items-center text-slate-600 dark:text-slate-500 text-sm">
+          <div className="border-t border-slate-200 dark:border-white/10 pt-6 sm:pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-slate-600 dark:text-slate-500 text-xs sm:text-sm">
             <p>&copy; 2025 TESTHUB Inc. All rights reserved.</p>
             <div className="flex gap-4">
               <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Twitter</a>

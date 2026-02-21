@@ -2,10 +2,10 @@ package services
 
 /**
  * User Service
- * 
+ *
  * Purpose: Handle business logic for user operations
  * This layer sits between handlers and repository
- * 
+ *
  * Operations:
  * - CreateUser: Validate and create new user
  * - LoginUser: Validate credentials and return user
@@ -45,7 +45,7 @@ func (s *UserService) CreateUser(ctx context.Context, req SignupRequest) (*model
 	// ==================================================
 	// VALIDATION
 	// ==================================================
-	
+
 	// Validate required fields
 	if strings.TrimSpace(req.Username) == "" {
 		return nil, errors.New("username is required")
@@ -78,7 +78,7 @@ func (s *UserService) CreateUser(ctx context.Context, req SignupRequest) (*model
 	// ==================================================
 	// CREATE USER
 	// ==================================================
-	
+
 	user := &models.User{
 		Username: req.Username,
 		Email:    req.Email,
@@ -107,7 +107,7 @@ func (s *UserService) CreateGoogleUser(ctx context.Context, name, email, picture
 	// ==================================================
 	// VALIDATION
 	// ==================================================
-	
+
 	if strings.TrimSpace(email) == "" {
 		return nil, errors.New("email is required")
 	}
@@ -118,7 +118,7 @@ func (s *UserService) CreateGoogleUser(ctx context.Context, name, email, picture
 	// ==================================================
 	// CHECK IF USER EXISTS
 	// ==================================================
-	
+
 	// Check if user with this email already exists
 	emailExists, err := s.userRepo.CheckEmailExists(ctx, email)
 	if err != nil {
@@ -137,13 +137,13 @@ func (s *UserService) CreateGoogleUser(ctx context.Context, name, email, picture
 	// ==================================================
 	// CREATE NEW USER (First time Google signup)
 	// ==================================================
-	
+
 	user := &models.User{
 		Username: name,
 		Email:    email,
-		Password: "", // No password for Google OAuth users
+		Password: "",       // No password for Google OAuth users
 		Role:     "tester", // Automatically set role to tester
-		Picture:  picture, // Store Google profile picture URL
+		Picture:  picture,  // Store Google profile picture URL
 	}
 
 	// Save to database
@@ -160,7 +160,7 @@ func (s *UserService) SetUserPassword(ctx context.Context, email, password strin
 	// ==================================================
 	// VALIDATION
 	// ==================================================
-	
+
 	if strings.TrimSpace(email) == "" {
 		return errors.New("email is required")
 	}
@@ -174,7 +174,7 @@ func (s *UserService) SetUserPassword(ctx context.Context, email, password strin
 	// ==================================================
 	// CHECK IF USER EXISTS
 	// ==================================================
-	
+
 	emailExists, err := s.userRepo.CheckEmailExists(ctx, email)
 	if err != nil {
 		return errors.New("failed to check email existence")
@@ -186,7 +186,7 @@ func (s *UserService) SetUserPassword(ctx context.Context, email, password strin
 	// ==================================================
 	// UPDATE PASSWORD
 	// ==================================================
-	
+
 	err = s.userRepo.UpdateUserPassword(ctx, email, password)
 	if err != nil {
 		return errors.New("failed to update password")
@@ -214,7 +214,7 @@ func (s *UserService) LoginUser(ctx context.Context, email, password string) (*m
 	// ==================================================
 	// VALIDATION
 	// ==================================================
-	
+
 	if strings.TrimSpace(email) == "" {
 		return nil, errors.New("email is required")
 	}
@@ -225,7 +225,7 @@ func (s *UserService) LoginUser(ctx context.Context, email, password string) (*m
 	// ==================================================
 	// GET USER BY EMAIL
 	// ==================================================
-	
+
 	user, err := s.userRepo.GetUserByEmail(ctx, email)
 	if err != nil {
 		return nil, errors.New("invalid email or password")
@@ -234,7 +234,7 @@ func (s *UserService) LoginUser(ctx context.Context, email, password string) (*m
 	// ==================================================
 	// VERIFY PASSWORD
 	// ==================================================
-	
+
 	// Plain text comparison (no hashing as requested)
 	if user.Password != password {
 		return nil, errors.New("invalid email or password")
@@ -242,4 +242,3 @@ func (s *UserService) LoginUser(ctx context.Context, email, password string) (*m
 
 	return user, nil
 }
-

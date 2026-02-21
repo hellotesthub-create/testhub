@@ -1,4 +1,20 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+interface Node {
+  label: string;
+  type: string;
+  color: string;
+  icon: string;
+  x: number;
+  y: number;
+  baseX: number;
+  baseY: number;
+  speed: number;
+  phase: number;
+  pulse: number;
+  pulseSpeed: number;
+  size: number;
+}
 
 const TestAutomationNetwork = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -28,21 +44,41 @@ const TestAutomationNetwork = () => {
     canvas.height = dimensions.height;
 
     // Feature nodes for the testing platform
-    const nodes = [
+    const nodes: Node[] = [
       { label: 'Test Hub', type: 'hub', color: '#a855f7', icon: '⚡' },
       { label: 'Parallel Testing', type: 'feature', color: '#3b82f6', icon: '⚙️' },
       { label: 'Cross Browser', type: 'feature', color: '#10b981', icon: '🌐' },
       { label: 'Chrome', type: 'browser', color: '#ef4444', icon: '🔴' },
       { label: 'Firefox', type: 'browser', color: '#f59e0b', icon: '🟠' },
       { label: 'Reports', type: 'feature', color: '#06b6d4', icon: '📊' }
-    ];
+    ] as Node[];
 
-    const centerX = dimensions.width / 2 + dimensions.width * 0.15;
+    // Adjust center position based on screen size - ALWAYS keep network on the RIGHT
+    const isMobile = dimensions.width < 768;
+    const isTablet = dimensions.width >= 768 && dimensions.width < 1024;
+    
+    // Position network on the right side for all screen sizes
+    let centerX;
+    let networkRadius;
+    
+    if (isMobile) {
+      // Mobile: Network on right half
+      centerX = dimensions.width * 0.65; // 65% from left = right side
+      networkRadius = Math.min(dimensions.width, dimensions.height) * 0.18;
+    } else if (isTablet) {
+      // Tablet: Network more to the right
+      centerX = dimensions.width * 0.68; // 68% from left
+      networkRadius = Math.min(dimensions.width, dimensions.height) * 0.22;
+    } else {
+      // Desktop: Network clearly on right side
+      centerX = dimensions.width * 0.70; // 70% from left = right side
+      networkRadius = Math.min(dimensions.width, dimensions.height) * 0.25;
+    }
+    
     const centerY = dimensions.height / 2;
-    const networkRadius = Math.min(dimensions.width, dimensions.height) * 0.28;
 
     // Position nodes in circular pattern
-    nodes.forEach((node: any, i: number) => {
+    nodes.forEach((node, i) => {
       if (i === 0) {
         // Center hub
         node.x = centerX;
@@ -60,12 +96,12 @@ const TestAutomationNetwork = () => {
       node.phase = Math.random() * Math.PI * 2;
       node.pulse = Math.random() * Math.PI * 2;
       node.pulseSpeed = 0.015 + Math.random() * 0.02;
-      node.size = i === 0 ? 40 : 32;
+      node.size = i === 0 ? (isMobile ? 32 : 40) : (isMobile ? 26 : 32);
     });
 
-    // Background particles
+    // Background particles - reduce on mobile
     const particles: any[] = [];
-    const numParticles = 120;
+    const numParticles = isMobile ? 60 : 120;
     for (let i = 0; i < numParticles; i++) {
       particles.push({
         x: Math.random() * dimensions.width,
@@ -85,7 +121,7 @@ const TestAutomationNetwork = () => {
 
     // Orbiting particles around nodes
     const orbitParticles: any[] = [];
-    nodes.forEach((node: any, i: number) => {
+    nodes.forEach((_node, i) => {
       if (i === 0) return;
       for (let j = 0; j < 3; j++) {
         orbitParticles.push({
@@ -127,7 +163,7 @@ const TestAutomationNetwork = () => {
       });
 
       // Update node positions
-      nodes.forEach((node: any, i: number) => {
+      nodes.forEach((node, i) => {
         if (i === 0) return; // Hub stays centered
         node.phase += node.speed * 0.008;
         const offsetX = Math.cos(node.phase) * 15;
@@ -137,13 +173,10 @@ const TestAutomationNetwork = () => {
       });
 
       // Draw connections with animated gradient
-      nodes.forEach((node: any, i: number) => {
+      nodes.forEach((node, i) => {
         if (i === 0) return;
         
         const hub = nodes[0];
-        const dx = hub.x - node.x;
-        const dy = hub.y - node.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
 
         // Animated gradient
         const gradient = ctx.createLinearGradient(node.x, node.y, hub.x, hub.y);
@@ -255,19 +288,19 @@ const TestAutomationNetwork = () => {
         ctx.lineWidth = 3;
         ctx.stroke();
 
-        // Icon
+        // Icon - adjust size for mobile
         ctx.fillStyle = '#ffffff';
-        ctx.font = `bold ${i === 0 ? 24 : 20}px Arial`;
+        ctx.font = `bold ${i === 0 ? (isMobile ? 20 : 24) : (isMobile ? 16 : 20)}px Arial`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(node.icon, node.x, node.y);
 
-        // Label with shadow
+        // Label with shadow - adjust font size for mobile
         ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
         ctx.shadowBlur = 10;
         ctx.fillStyle = '#ffffff';
-        ctx.font = `bold ${i === 0 ? 16 : 14}px Arial`;
-        ctx.fillText(node.label, node.x, node.y + node.size + 25);
+        ctx.font = `bold ${i === 0 ? (isMobile ? 13 : 16) : (isMobile ? 11 : 14)}px Arial`;
+        ctx.fillText(node.label, node.x, node.y + node.size + (isMobile ? 20 : 25));
         ctx.shadowBlur = 0;
       });
 

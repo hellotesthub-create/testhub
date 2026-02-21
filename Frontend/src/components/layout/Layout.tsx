@@ -3,20 +3,17 @@ import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, 
   Shield, 
-  Users, 
   LogOut,
   Menu,
   Zap,
   History,
-  User,
-  Briefcase
+  User
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ParticleBackground } from "@/components/particle-background";
-import { useUser } from "@/lib/userContext";
 import { useAuth } from "@/lib/authContext";
 
 const SidebarItem = ({ href, icon: Icon, label, isActive }: { href: string; icon: any; label: string; isActive: boolean }) => (
@@ -40,32 +37,21 @@ type NavItem = {
   label: string;
 };
 
-export default function Layout({ children, role = "user" }: { children: React.ReactNode; role?: "user" | "admin" }) {
+export default function Layout({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useLocation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { profile, logout: userLogout } = useUser();
-  const { logout: authLogout } = useAuth();
+  const { logout: authLogout, user } = useAuth();
 
   const handleSignOut = () => {
-    // Logout from both contexts
-    authLogout();  // Clears JWT token
-    userLogout();  // Clears user profile
+    authLogout();
     setLocation("/");
   };
 
-  const navItems: NavItem[] = [];
-
-  if (role === "admin") {
-    navItems.push({ href: "/admin", icon: LayoutDashboard, label: "Admin Dashboard" });
-    navItems.push({ href: "/users", icon: Users, label: "User Management" });
-    navItems.push({ href: "/admin/create", icon: Zap, label: "Create Test Suite" });
-    navItems.push({ href: "/admin/history", icon: History, label: "History" });
-    navItems.push({ href: "/admin/user-work", icon: Briefcase, label: "User Work" });
-  } else {
-    navItems.push({ href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" });
-    navItems.push({ href: "/create", icon: Zap, label: "Create Test Suite" });
-    navItems.push({ href: "/history", icon: History, label: "History" });
-  }
+  const navItems: NavItem[] = [
+    { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { href: "/test-lab", icon: Zap, label: "Test Lab" },
+    { href: "/history", icon: History, label: "History" },
+  ];
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
@@ -93,23 +79,23 @@ export default function Layout({ children, role = "user" }: { children: React.Re
       <div className="mt-auto p-6 border-t border-slate-200 dark:border-white/5">
         <Link href="/profile">
           <div className="flex items-center gap-3 mb-4 px-2 py-2 rounded-lg cursor-pointer hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
-            {profile.avatarType === "image" && profile.avatar ? (
+            {user?.picture ? (
               <img 
-                src={profile.avatar} 
+                src={user.picture} 
                 alt="Profile" 
                 className="w-8 h-8 rounded-full object-cover"
               />
             ) : (
               <div 
                 className="w-8 h-8 rounded-full flex items-center justify-center"
-                style={{ background: profile.avatar || "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}
+                style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}
               >
                 <User className="w-4 h-4 text-white/80" />
               </div>
             )}
             <div>
-              <p className="text-sm font-medium text-slate-900 dark:text-white">{profile.username}</p>
-              <p className="text-xs text-slate-600 dark:text-slate-400 capitalize">{profile.role || role}</p>
+              <p className="text-sm font-medium text-slate-900 dark:text-white">{user?.username || 'Tester'}</p>
+              <p className="text-xs text-slate-600 dark:text-slate-400 capitalize">Tester</p>
             </div>
           </div>
         </Link>
@@ -152,11 +138,11 @@ export default function Layout({ children, role = "user" }: { children: React.Re
         </div>
       </div>
 
-      <main className="flex-1 md:ml-64 relative z-20 overflow-y-auto h-screen">
+      <main className="flex-1 md:ml-64 relative z-20 overflow-y-auto h-screen overflow-x-hidden">
         <div className="absolute top-4 right-4 z-40 hidden md:flex">
           <ThemeToggle />
         </div>
-        <div className="p-6 md:p-8 pt-20 md:pt-8 max-w-7xl mx-auto space-y-8 min-h-[calc(100vh-2rem)]">
+        <div className="p-4 sm:p-6 md:p-8 pt-20 md:pt-8 max-w-7xl mx-auto space-y-6 sm:space-y-8 min-h-[calc(100vh-2rem)]">
           {children}
         </div>
       </main>

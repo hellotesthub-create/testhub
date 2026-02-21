@@ -5,7 +5,6 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { UserProvider } from "@/lib/userContext";
-import { UserManagementProvider } from "@/lib/userManagementContext";
 import { AuthProvider } from "@/lib/authContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { PublicRoute } from "@/components/PublicRoute";
@@ -14,15 +13,11 @@ import NotFound from "@/pages/not-found";
 import LandingPage from "@/pages/landing";
 import AuthPage from "@/pages/auth";
 import TesterDashboard from "@/pages/tester-dashboard";
-import AdminDashboard from "@/pages/admin-dashboard";
-import CreateSuite from "@/pages/create-suite";
-import AdminCreateSuite from "@/pages/admin-create-suite";
+import TestLab from "@/pages/test-lab";
 import ExecutionMonitor from "@/pages/execution-monitor";
 import Reports from "@/pages/reports";
-import AdminHistory from "@/pages/admin-history";
-import AdminUserWork from "@/pages/admin-user-work";
-import UserManagement from "@/pages/user-management";
 import Profile from "@/pages/profile";
+import TesterTestResults from "@/pages/tester-test-results";
 
 function Router() {
   return (
@@ -38,29 +33,14 @@ function Router() {
           <TesterDashboard />
         </ProtectedRoute>
       </Route>
-      <Route path="/admin">
+      <Route path="/tester/test-results/:id">
         <ProtectedRoute>
-          <AdminDashboard />
+          <TesterTestResults />
         </ProtectedRoute>
       </Route>
-      <Route path="/admin/create">
+      <Route path="/test-lab">
         <ProtectedRoute>
-          <AdminCreateSuite />
-        </ProtectedRoute>
-      </Route>
-      <Route path="/admin/history">
-        <ProtectedRoute>
-          <AdminHistory />
-        </ProtectedRoute>
-      </Route>
-      <Route path="/admin/user-work">
-        <ProtectedRoute>
-          <AdminUserWork />
-        </ProtectedRoute>
-      </Route>
-      <Route path="/create">
-        <ProtectedRoute>
-          <CreateSuite />
+          <TestLab />
         </ProtectedRoute>
       </Route>
       <Route path="/monitor">
@@ -71,11 +51,6 @@ function Router() {
       <Route path="/history">
         <ProtectedRoute>
           <Reports />
-        </ProtectedRoute>
-      </Route>
-      <Route path="/users">
-        <ProtectedRoute>
-          <UserManagement />
         </ProtectedRoute>
       </Route>
       <Route path="/profile">
@@ -101,14 +76,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <UserManagementProvider>
-          <UserProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Router />
-            </TooltipProvider>
-          </UserProvider>
-        </UserManagementProvider>
+        <UserProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </UserProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
