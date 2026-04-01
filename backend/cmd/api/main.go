@@ -19,6 +19,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -31,6 +32,30 @@ import (
 	"backend/internal/repository"
 	"backend/internal/services"
 )
+
+func getEnvBool(key string, defaultVal bool) bool {
+	v := os.Getenv(key)
+	if v == "" {
+		return defaultVal
+	}
+	b, err := strconv.ParseBool(v)
+	if err != nil {
+		return defaultVal
+	}
+	return b
+}
+
+func getEnvInt(key string, defaultVal int) int {
+	v := os.Getenv(key)
+	if v == "" {
+		return defaultVal
+	}
+	n, err := strconv.Atoi(v)
+	if err != nil {
+		return defaultVal
+	}
+	return n
+}
 
 func main() {
 	// ==================================================
@@ -68,7 +93,7 @@ func main() {
 		log.Fatal("Failed to ping MongoDB:", err)
 	}
 
-	log.Println("✓ Successfully connected to MongoDB")
+	log.Println("Successfully connected to MongoDB")
 
 	database := client.Database("testops")
 
@@ -96,6 +121,7 @@ func main() {
 	// Handler Layer
 	userHandler := handlers.NewUserHandler(userService, jwtService)
 	googleAuthHandler := handlers.NewGoogleAuthHandler(userService, jwtService)
+	githubHandler := handlers.NewGitHubHandler()
 	artifactsHandler := handlers.NewArtifactsHandler(screenshotRepo, logRepo, videoRepo)
 	testSuiteHandler := handlers.NewTestSuiteHandler(testSuiteRepo, testCaseRepo)
 	testCaseHandler := handlers.NewTestCaseHandler(testSuiteRepo, testCaseRepo)
@@ -109,6 +135,29 @@ func main() {
 		logRepo,
 		services.NewRunnerService(),
 	)
+
+	// ==================================================
+	// OPTIONAL: BACKGROUND EMAIL REPORT WORKER (DISABLED BY DEFAULT)
+	// ==================================================
+	if getEnvBool("EMAIL_AUTOSEND_ENABLED", false) {
+		workerCfg := services.EmailReportWorkerConfigFromEnv()
+		emailSvc, emailErr := services.NewEmailServiceFromEnv()
+		if emailErr != nil {
+			log.Printf("Email autosend enabled but email config invalid: %v", emailErr)
+		} else {
+			worker := services.NewEmailReportWorker(
+				workerCfg,
+				emailSvc,
+				testRunRepo,
+				testResultRepo,
+				screenshotRepo,
+				videoRepo,
+				logRepo,
+			)
+			worker.Start(context.Background())
+			log.Printf("Email autosend worker started (interval=%s)", workerCfg.Interval)
+		}
+	}
 
 	// ==================================================
 	// ROUTER SETUP
@@ -134,9 +183,15 @@ func main() {
 	api.HandleFunc("/users/set-password", userHandler.SetPassword).Methods("POST", "OPTIONS")
 	api.HandleFunc("/auth/login", userHandler.Login).Methods("POST", "OPTIONS")
 	api.HandleFunc("/auth/google", googleAuthHandler.GoogleAuth).Methods("POST", "OPTIONS")
+	api.HandleFunc("/auth/google/verify-password", googleAuthHandler.GoogleLoginVerifyPassword).Methods("POST", "OPTIONS")
 
 	// Protected routes (authentication required)
 	api.HandleFunc("/auth/me", authMiddleware.Authenticate(userHandler.GetCurrentUser)).Methods("GET", "OPTIONS")
+
+	// ===========================================
+	// GITHUB INTEGRATION
+	// ===========================================
+	api.HandleFunc("/github/fetch", authMiddleware.Authenticate(githubHandler.FetchRepoFiles)).Methods("POST", "OPTIONS")
 
 	// ===========================================
 	// TEST SUITES - Suite definition CRUD
@@ -164,6 +219,7 @@ func main() {
 	api.HandleFunc("/suites/{suite_id}/runs", authMiddleware.Authenticate(testRunHandler.GetSuiteRuns)).Methods("GET", "OPTIONS")
 	api.HandleFunc("/suites/{suite_id}/run", authMiddleware.Authenticate(testRunHandler.TriggerRun)).Methods("POST", "OPTIONS")
 	api.HandleFunc("/runs/{run_id}", authMiddleware.Authenticate(testRunHandler.GetRunDetails)).Methods("GET", "OPTIONS")
+	api.HandleFunc("/runs/{run_id}/cancel", authMiddleware.Authenticate(testRunHandler.CancelRun)).Methods("POST", "OPTIONS")
 	api.HandleFunc("/results/{result_id}", authMiddleware.Authenticate(testRunHandler.GetResultDetails)).Methods("GET", "OPTIONS")
 
 	// ===========================================
@@ -197,45 +253,45 @@ func main() {
 	// ==================================================
 	// START SERVER
 	// ==================================================
-	log.Printf("✓ Server starting on port %s", port)
-	log.Println("✓ Endpoints available:")
-	log.Println("  GET  /health")
-	log.Println("  POST /api/users/signup")
-	log.Println("  POST /api/auth/login")
-	log.Println("  POST /api/auth/google")
-	log.Println("  GET  /api/auth/me")
+	log.Printf("Server starting on port %s", port)
+	log.Println("Endpoints available:")
+	log.Println("GET /health")
+	log.Println("POST /api/users/signup")
+	log.Println("POST /api/auth/login")
+	log.Println("POST /api/auth/google")
+	log.Println("GET /api/auth/me")
 	log.Println("")
-	log.Println("  === Test Suites ===")
-	log.Println("  GET    /api/suites")
-	log.Println("  POST   /api/suites")
-	log.Println("  GET    /api/suites/:suite_id")
-	log.Println("  PUT    /api/suites/:suite_id")
-	log.Println("  DELETE /api/suites/:suite_id")
-	log.Println("  POST   /api/suites/run              (create and run)")
+	log.Println(" === Test Suites ===")
+	log.Println("GET /api/suites")
+	log.Println("POST /api/suites")
+	log.Println("GET /api/suites/:suite_id")
+	log.Println("PUT /api/suites/:suite_id")
+	log.Println("DELETE /api/suites/:suite_id")
+	log.Println("POST /api/suites/run (create and run)")
 	log.Println("")
-	log.Println("  === Test Cases ===")
-	log.Println("  GET    /api/suites/:suite_id/test-cases")
-	log.Println("  POST   /api/suites/:suite_id/test-cases")
-	log.Println("  GET    /api/test-cases/:test_case_id")
-	log.Println("  PUT    /api/test-cases/:test_case_id")
-	log.Println("  DELETE /api/test-cases/:test_case_id")
+	log.Println(" === Test Cases ===")
+	log.Println("GET /api/suites/:suite_id/test-cases")
+	log.Println("POST /api/suites/:suite_id/test-cases")
+	log.Println("GET /api/test-cases/:test_case_id")
+	log.Println("PUT /api/test-cases/:test_case_id")
+	log.Println("DELETE /api/test-cases/:test_case_id")
 	log.Println("")
-	log.Println("  === Test Runs ===")
-	log.Println("  GET    /api/runs")
-	log.Println("  GET    /api/suites/:suite_id/runs")
-	log.Println("  POST   /api/suites/:suite_id/run")
-	log.Println("  GET    /api/runs/:run_id")
-	log.Println("  GET    /api/results/:result_id")
+	log.Println(" === Test Runs ===")
+	log.Println("GET /api/runs")
+	log.Println("GET /api/suites/:suite_id/runs")
+	log.Println("POST /api/suites/:suite_id/run")
+	log.Println("GET /api/runs/:run_id")
+	log.Println("GET /api/results/:result_id")
 	log.Println("")
-	log.Println("  === Artifacts ===")
-	log.Println("  GET    /api/runs/:run_id/screenshots")
-	log.Println("  GET    /api/runs/:run_id/logs")
-	log.Println("  GET    /api/runs/:run_id/videos")
-	log.Println("  POST   /api/artifacts/screenshots")
-	log.Println("  POST   /api/artifacts/logs")
-	log.Println("  POST   /api/artifacts/videos")
-	log.Println("  GET    /api/screenshots/:id")
-	log.Println("  GET    /api/videos/:id")
+	log.Println(" === Artifacts ===")
+	log.Println("GET /api/runs/:run_id/screenshots")
+	log.Println("GET /api/runs/:run_id/logs")
+	log.Println("GET /api/runs/:run_id/videos")
+	log.Println("POST /api/artifacts/screenshots")
+	log.Println("POST /api/artifacts/logs")
+	log.Println("POST /api/artifacts/videos")
+	log.Println("GET /api/screenshots/:id")
+	log.Println("GET /api/videos/:id")
 
 	if err := http.ListenAndServe(":"+port, handler); err != nil {
 		log.Fatal("Server failed to start:", err)

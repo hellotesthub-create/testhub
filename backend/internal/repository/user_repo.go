@@ -81,13 +81,33 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*mod
 	return &user, nil
 }
 
-// UpdateUserPassword updates the password for a user identified by email
-func (r *UserRepository) UpdateUserPassword(ctx context.Context, email, password string) error {
+// UpdateUserPassword updates the password hash for a user identified by email
+func (r *UserRepository) UpdateUserPassword(ctx context.Context, email, passwordHash string) error {
 	filter := bson.M{"email": email}
 	update := bson.M{
 		"$set": bson.M{
-			"password":   password,
-			"updated_at": time.Now(),
+			"password_hash": passwordHash,
+			"updated_at":    time.Now(),
+		},
+		"$unset": bson.M{
+			"password": "", // Remove legacy plain text password
+		},
+	}
+
+	_, err := r.collection.UpdateOne(ctx, filter, update)
+	return err
+}
+
+// MigratePasswordToHash migrates a legacy plain text password to bcrypt hash
+func (r *UserRepository) MigratePasswordToHash(ctx context.Context, email, passwordHash string) error {
+	filter := bson.M{"email": email}
+	update := bson.M{
+		"$set": bson.M{
+			"password_hash": passwordHash,
+			"updated_at":    time.Now(),
+		},
+		"$unset": bson.M{
+			"password": "", // Remove legacy plain text field
 		},
 	}
 

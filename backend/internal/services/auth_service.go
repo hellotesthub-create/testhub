@@ -20,6 +20,8 @@ import (
 
 	"backend/internal/models"
 	"backend/internal/repository"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct {
@@ -79,11 +81,17 @@ func (s *UserService) CreateUser(ctx context.Context, req SignupRequest) (*model
 	// CREATE USER
 	// ==================================================
 
+	// Hash password with bcrypt
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, errors.New("failed to hash password")
+	}
+
 	user := &models.User{
-		Username: req.Username,
-		Email:    req.Email,
-		Password: req.Password, // Plain text for now (no hashing)
-		Role:     "tester",     // Automatically set role to tester
+		Username:     req.Username,
+		Email:        req.Email,
+		PasswordHash: string(hashedPassword), // Bcrypt hashed password
+		Role:         "tester",               // Automatically set role to tester
 	}
 
 	// Save to database
@@ -187,7 +195,13 @@ func (s *UserService) SetUserPassword(ctx context.Context, email, password strin
 	// UPDATE PASSWORD
 	// ==================================================
 
-	err = s.userRepo.UpdateUserPassword(ctx, email, password)
+	// Hash password with bcrypt
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return errors.New("failed to hash password")
+	}
+
+	err = s.userRepo.UpdateUserPassword(ctx, email, string(hashedPassword))
 	if err != nil {
 		return errors.New("failed to update password")
 	}
@@ -235,8 +249,23 @@ func (s *UserService) LoginUser(ctx context.Context, email, password string) (*m
 	// VERIFY PASSWORD
 	// ==================================================
 
-	// Plain text comparison (no hashing as requested)
-	if user.Password != password {
+	// Try bcrypt comparison first (new hashed passwords)
+	if user.PasswordHash != "" {
+		if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
+			return nil, errors.New("invalid email or password")
+		}
+	} else if user.Password != "" {
+		// Legacy plain text fallback - compare and auto-migrate to bcrypt
+		if user.Password != password {
+			return nil, errors.New("invalid email or password")
+		}
+		// Auto-migrate: hash the plain text password and save as password_hash
+		hashedPassword, hashErr := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if hashErr == nil {
+			_ = s.userRepo.MigratePasswordToHash(ctx, user.Email, string(hashedPassword))
+		}
+	} else {
+		// No password set (Google OAuth user without password)
 		return nil, errors.New("invalid email or password")
 	}
 

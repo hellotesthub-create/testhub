@@ -17,11 +17,11 @@ echo "======================================"
 echo ""
 
 if [ -z "$SERVICE_NAME" ]; then
-    echo "📝 Showing logs for all services (press Ctrl+C to exit)..."
+    echo "Showing logs for all services (press Ctrl+C to exit)..."
     echo ""
     docker-compose logs -f
 else
-    echo "📝 Showing logs for: $SERVICE_NAME (press Ctrl+C to exit)..."
+    echo "Showing logs for: $SERVICE_NAME (press Ctrl+C to exit)..."
     echo ""
     docker-compose logs -f "$SERVICE_NAME"
 fi

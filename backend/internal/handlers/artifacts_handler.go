@@ -65,7 +65,7 @@ func (h *ArtifactsHandler) GetRunScreenshots(w http.ResponseWriter, r *http.Requ
 			ID:        s.ID.Hex(),
 			Name:      s.Name,
 			Timestamp: s.CreatedAt.Format("3:04:05 PM"),
-			URL:       fmt.Sprintf("/api/screenshots/%s", s.ID.Hex()),
+			URL: fmt.Sprintf("/api/screenshots/%s", s.ID.Hex()),
 			Step:      s.Step,
 			TestName:  s.TestName,
 		})
@@ -158,7 +158,7 @@ func (h *ArtifactsHandler) GetRunVideos(w http.ResponseWriter, r *http.Request) 
 			DurationSeconds: v.DurationSeconds,
 			Size:            size,
 			SizeBytes:       v.SizeBytes,
-			URL:             fmt.Sprintf("/api/videos/%s", v.ID.Hex()),
+			URL: fmt.Sprintf("/api/videos/%s", v.ID.Hex()),
 		})
 	}
 

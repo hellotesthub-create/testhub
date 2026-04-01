@@ -475,7 +475,7 @@ export default function AuthPage() {
               >
                 {(isSignupLoading || isLoginLoading) ? (
                   <>
-                    <span className="animate-spin">⏳</span> 
+                    <span className="animate-spin"></span> 
                     {isLogin ? "VERIFYING..." : "SETTING PASSWORD..."}
                   </>
                 ) : (
@@ -702,7 +702,7 @@ export default function AuthPage() {
                   >
                     {isLoginLoading ? (
                       <>
-                        <span className="animate-spin">⏳</span> LOGGING IN...
+                        <span className="animate-spin"></span> LOGGING IN...
                       </>
                     ) : (
                       <>
@@ -815,7 +815,7 @@ export default function AuthPage() {
                   >
                     {isSignupLoading ? (
                       <>
-                        <span className="animate-spin">⏳</span> CREATING ACCOUNT...
+                        <span className="animate-spin"></span> CREATING ACCOUNT...
                       </>
                     ) : (
                       <>

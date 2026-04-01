@@ -228,3 +228,94 @@ func (r *TestRunRepository) Update(ctx context.Context, id primitive.ObjectID, u
 	_, err := r.collection.UpdateOne(ctx, filter, update)
 	return err
 }
+
+// GetRunsNeedingEmail finds completed/failed runs that have not been emailed yet.
+// This is used by the background email worker.
+func (r *TestRunRepository) GetRunsNeedingEmail(ctx context.Context, limit int64) ([]models.TestRun, error) {
+	if limit <= 0 {
+		limit = 10
+	}
+
+	filter := bson.M{
+		"status": bson.M{"$in": []string{"completed", "failed"}},
+		"triggered_by": bson.M{"$ne": ""},
+		"$or": []bson.M{
+			{"email_status": bson.M{"$exists": false}},
+			{"email_status": bson.M{"$nin": []string{"sent", "sending"}}},
+		},
+	}
+
+	opts := options.Find().SetSort(bson.D{{Key: "updated_at", Value: 1}}).SetLimit(limit)
+	cursor, err := r.collection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	runs := make([]models.TestRun, 0)
+	if err := cursor.All(ctx, &runs); err != nil {
+		return nil, err
+	}
+
+	return runs, nil
+}
+
+// TryMarkEmailSending atomically marks a run as "sending" (idempotency guard).
+// Returns true if this call acquired the send responsibility.
+func (r *TestRunRepository) TryMarkEmailSending(ctx context.Context, id primitive.ObjectID) (bool, error) {
+	filter := bson.M{
+		"_id": id,
+		"status": bson.M{"$in": []string{"completed", "failed"}},
+		"$or": []bson.M{
+			{"email_status": bson.M{"$exists": false}},
+			{"email_status": bson.M{"$nin": []string{"sent", "sending"}}},
+		},
+	}
+
+	update := bson.M{
+		"$set": bson.M{
+			"email_status": "sending",
+			"updated_at":   time.Now(),
+		},
+		"$unset": bson.M{
+			"email_error": "",
+		},
+	}
+
+	res, err := r.collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return false, err
+	}
+	return res.ModifiedCount > 0, nil
+}
+
+func (r *TestRunRepository) MarkEmailSent(ctx context.Context, id primitive.ObjectID) error {
+	now := time.Now()
+	filter := bson.M{"_id": id}
+	update := bson.M{
+		"$set": bson.M{
+			"email_status":  "sent",
+			"email_sent_at": now,
+			"updated_at":    now,
+		},
+		"$unset": bson.M{
+			"email_error": "",
+		},
+	}
+	_, err := r.collection.UpdateOne(ctx, filter, update)
+	return err
+}
+
+func (r *TestRunRepository) MarkEmailFailed(ctx context.Context, id primitive.ObjectID, errMsg string) error {
+	now := time.Now()
+	filter := bson.M{"_id": id}
+	update := bson.M{
+		"$set": bson.M{
+			"email_status": "failed",
+			"email_error":  errMsg,
+			"updated_at":   now,
+		},
+	}
+	_, err := r.collection.UpdateOne(ctx, filter, update)
+	return err
+}

@@ -4,7 +4,7 @@
 # This script tests the parallel test execution feature directly via API
 
 echo "======================================"
-echo "🧪 Testing Parallel Test Execution"
+echo "Testing Parallel Test Execution"
 echo "======================================"
 echo ""
 
@@ -34,7 +34,7 @@ def test_login():
     try:
         driver.get("https://example.com")
         time.sleep(2)
-        print("✓ Login test passed")
+        print("Login test passed")
         assert True
     finally:
         driver.quit()
@@ -52,7 +52,7 @@ def test_search():
     try:
         driver.get("https://google.com")
         time.sleep(2)
-        print("✓ Search test passed")
+        print("Search test passed")
         assert True
     finally:
         driver.quit()
@@ -70,16 +70,16 @@ def test_checkout():
     try:
         driver.get("https://example.com/checkout")
         time.sleep(2)
-        print("✓ Checkout test passed")
+        print("Checkout test passed")
         assert True
     finally:
         driver.quit()
 EOF
 
-echo "✓ Created 3 test files:"
-echo "  - /tmp/test_login.py"
-echo "  - /tmp/test_search.py"
-echo "  - /tmp/test_checkout.py"
+echo "Created 3 test files:"
+echo " - /tmp/test_login.py"
+echo " - /tmp/test_search.py"
+echo " - /tmp/test_checkout.py"
 echo ""
 
 echo -e "${BLUE}Step 2: Authenticating with backend${NC}"
@@ -111,7 +111,7 @@ if [ -z "$TOKEN" ]; then
 fi
 
 if [ -z "$TOKEN" ]; then
-    echo "❌ Failed to authenticate"
+    echo "Failed to authenticate"
     echo "Signup Response: $SIGNUP_RESPONSE"
     echo "Login Response: $LOGIN_RESPONSE"
     echo ""
@@ -119,7 +119,7 @@ if [ -z "$TOKEN" ]; then
     exit 1
 fi
 
-echo "✓ Authenticated successfully"
+echo "Authenticated successfully"
 echo "Token: ${TOKEN:0:20}..."
 echo ""
 
@@ -142,16 +142,16 @@ echo ""
 SUITE_ID=$(echo "$RUN_RESPONSE" | grep -o '"suite_id":"[^"]*"' | sed 's/"suite_id":"//;s/"//')
 
 if [ -z "$SUITE_ID" ]; then
-    echo "❌ Failed to get suite_id from response"
+    echo "Failed to get suite_id from response"
     exit 1
 fi
 
-echo -e "${GREEN}✓ Test execution started!${NC}"
+echo -e "${GREEN} Test execution started!${NC}"
 echo "Suite ID: $SUITE_ID"
 echo ""
 
 echo -e "${YELLOW}======================================"
-echo "📊 Watching Backend Logs..."
+echo "Watching Backend Logs..."
 echo "======================================${NC}"
 echo ""
 echo "Press Ctrl+C to stop watching logs"

@@ -14,6 +14,21 @@ export const ParticleBackground = () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
+    // Theme detection
+    let isDark = document.documentElement.classList.contains('dark');
+    const observer = new MutationObserver(() => {
+      isDark = document.documentElement.classList.contains('dark');
+      // Re-assign particle colors on theme change
+      particles.forEach(p => {
+        const colors = isDark ? darkColors : lightColors;
+        p.color = colors[Math.floor(Math.random() * colors.length)];
+      });
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+    const darkColors = ['#3b82f6', '#2563eb', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe', '#ffffff', '#94a3b8'];
+    const lightColors = ['#2563eb', '#1d4ed8', '#3b82f6', '#1e40af', '#60a5fa', '#93c5fd', '#475569', '#334155'];
+
     // Particle array
     const particles: Array<{
       x: number;
@@ -25,7 +40,7 @@ export const ParticleBackground = () => {
       opacity: number;
     }> = [];
 
-    const colors = ['#0ea5e9', '#06b6d4', '#3b82f6', '#8b5cf6', '#a855f7', '#ec4899', '#f59e0b', '#10b981'];
+    const initialColors = isDark ? darkColors : lightColors;
 
     // Create particles
     const particleCount = 80;
@@ -36,7 +51,7 @@ export const ParticleBackground = () => {
         vx: (Math.random() - 0.5) * 0.8,
         vy: (Math.random() - 0.5) * 0.8,
         size: Math.random() * 2 + 1,
-        color: colors[Math.floor(Math.random() * colors.length)],
+        color: initialColors[Math.floor(Math.random() * initialColors.length)],
         opacity: Math.random() * 0.6 + 0.4
       });
     }
@@ -87,7 +102,10 @@ export const ParticleBackground = () => {
     };
 
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      observer.disconnect();
+    };
   }, []);
 
   return (

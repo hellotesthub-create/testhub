@@ -3,7 +3,7 @@
 # Quick Test - Parallel Execution (Hardcoded Credentials)
 # Edit EMAIL and PASSWORD below, then run this script
 
-# ⚠️ EDIT THESE WITH YOUR CREDENTIALS
+#  EDIT THESE WITH YOUR CREDENTIALS
 EMAIL="your-email@example.com"
 PASSWORD="your-password"
 
@@ -12,23 +12,23 @@ TEST_FILE_1="/home/imran/Projects/THEX/runner/testscripts/test_github.py"
 TEST_FILE_2="/home/imran/Projects/THEX/runner/testscripts/test_python.py"
 
 echo "=============================================="
-echo "🧪 Parallel Test: GitHub + Python"
+echo "Parallel Test: GitHub + Python"
 echo "=============================================="
 echo ""
-echo "📁 Files:"
-echo "  [0] test_github.py"
-echo "  [1] test_python.py"
+echo "Files:"
+echo " [0] test_github.py"
+echo " [1] test_python.py"
 echo ""
 
 if [ "$EMAIL" = "your-email@example.com" ]; then
-    echo "⚠️  Please edit this script first:"
-    echo "   nano /home/imran/Projects/THEX/backend/quick-test.sh"
-    echo "   Update EMAIL and PASSWORD at the top"
+    echo "Please edit this script first:"
+    echo "nano /home/imran/Projects/THEX/backend/quick-test.sh"
+    echo "Update EMAIL and PASSWORD at the top"
     echo ""
     exit 1
 fi
 
-echo "🔑 Authenticating as: $EMAIL"
+echo "Authenticating as: $EMAIL"
 
 LOGIN_RESPONSE=$(curl -s -X POST "$API_URL/api/auth/login" \
   -H "Content-Type: application/json" \
@@ -37,13 +37,13 @@ LOGIN_RESPONSE=$(curl -s -X POST "$API_URL/api/auth/login" \
 TOKEN=$(echo "$LOGIN_RESPONSE" | python3 -c "import sys, json; data=json.load(sys.stdin); print(data.get('token', ''))" 2>/dev/null)
 
 if [ -z "$TOKEN" ]; then
-    echo "❌ Login failed: $LOGIN_RESPONSE"
+    echo "Login failed: $LOGIN_RESPONSE"
     exit 1
 fi
 
-echo "✅ Authenticated"
+echo "Authenticated"
 echo ""
-echo "📤 Starting parallel execution..."
+echo "Starting parallel execution..."
 
 RUN_RESPONSE=$(curl -s -X POST "$API_URL/api/test-suites/run" \
   -H "Authorization: Bearer $TOKEN" \
@@ -55,15 +55,15 @@ RUN_RESPONSE=$(curl -s -X POST "$API_URL/api/test-suites/run" \
 SUITE_ID=$(echo "$RUN_RESPONSE" | python3 -c "import sys, json; data=json.load(sys.stdin); print(data.get('suite_id', ''))" 2>/dev/null)
 
 if [ -z "$SUITE_ID" ]; then
-    echo "❌ Failed: $RUN_RESPONSE"
+    echo "Failed: $RUN_RESPONSE"
     exit 1
 fi
 
-echo "✅ Execution started!"
+echo "Execution started!"
 echo "Suite ID: $SUITE_ID"
 echo ""
 echo "=============================================="
-echo "📊 Backend Logs (Live)"
+echo "Backend Logs (Live)"
 echo "=============================================="
 echo ""
 
