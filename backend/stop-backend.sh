@@ -14,11 +14,11 @@ echo "Stopping Backend API"
 echo "======================================"
 echo ""
 
-echo "🛑 Stopping backend container..."
+echo "Stopping backend container..."
 docker-compose down
 
 echo ""
 echo "======================================"
-echo "✅ Backend API Stopped!"
+echo "Backend API Stopped!"
 echo "======================================"
 echo ""

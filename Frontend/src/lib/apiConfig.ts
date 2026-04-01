@@ -26,11 +26,15 @@ export const API_ENDPOINTS = {
   RUNS: `${API_BASE_URL}/api/runs`,
   RUN_DETAILS: (runId: string) => `${API_BASE_URL}/api/runs/${runId}`,
   RUN_RESULTS: (runId: string) => `${API_BASE_URL}/api/runs/${runId}/results`,
+  CANCEL_RUN: (runId: string) => `${API_BASE_URL}/api/runs/${runId}/cancel`,
+  
+  // GitHub Integration
+  GITHUB_FETCH: `${API_BASE_URL}/api/github/fetch`,
   
   // Run Artifacts
-  RUN_SCREENSHOTS: (runId: string) => `${API_BASE_URL}/api/artifacts/runs/${runId}/screenshots`,
-  RUN_LOGS: (runId: string) => `${API_BASE_URL}/api/artifacts/runs/${runId}/logs`,
-  RUN_VIDEOS: (runId: string) => `${API_BASE_URL}/api/artifacts/runs/${runId}/videos`,
+  RUN_SCREENSHOTS: (runId: string) => `${API_BASE_URL}/api/runs/${runId}/screenshots`,
+  RUN_LOGS: (runId: string) => `${API_BASE_URL}/api/runs/${runId}/logs`,
+  RUN_VIDEOS: (runId: string) => `${API_BASE_URL}/api/runs/${runId}/videos`,
   
   // Result Artifacts (for specific test result)
   RESULT_SCREENSHOTS: (resultId: string) => `${API_BASE_URL}/api/artifacts/results/${resultId}/screenshots`,

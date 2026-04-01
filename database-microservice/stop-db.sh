@@ -16,20 +16,20 @@ echo ""
 
 # Check if docker-compose is installed
 if ! command -v docker-compose &> /dev/null; then
-    echo "❌ Error: docker-compose is not installed"
+    echo "Error: docker-compose is not installed"
     exit 1
 fi
 
-echo "🛑 Stopping containers..."
+echo "Stopping containers..."
 docker-compose down
 
 echo ""
 echo "======================================"
-echo "✅ Database Microservice Stopped!"
+echo "Database Microservice Stopped!"
 echo "======================================"
 echo ""
-echo "💡 Note: Data is preserved in Docker volumes"
+echo "Note: Data is preserved in Docker volumes"
 echo ""
 echo "To remove data volumes as well, run:"
-echo "  docker-compose down -v"
+echo "docker-compose down -v"
 echo ""

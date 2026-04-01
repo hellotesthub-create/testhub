@@ -4,20 +4,20 @@
 # Update EMAIL and PASSWORD with your actual credentials from the frontend
 
 echo "======================================"
-echo "🧪 Parallel Execution Test"
+echo "Parallel Execution Test"
 echo "======================================"
 echo ""
 
-# ⚠️ UPDATE THESE WITH YOUR ACTUAL CREDENTIALS
+#  UPDATE THESE WITH YOUR ACTUAL CREDENTIALS
 EMAIL="your-email@example.com"
 PASSWORD="your-password"
 
 # You can change this if needed
 API_URL="http://localhost:8080"
 
-echo "📝 Using credentials:"
-echo "  Email: $EMAIL"
-echo "  Password: ******"
+echo "Using credentials:"
+echo "Email: $EMAIL"
+echo "Password: ******"
 echo ""
 
 # Ask user to confirm or provide credentials
@@ -76,7 +76,7 @@ def test_example_3():
         driver.quit()
 EOF
 
-echo "✓ Created 3 test files in /tmp/"
+echo "Created 3 test files in /tmp/"
 echo ""
 
 echo "Step 2: Authenticating..."
@@ -89,7 +89,7 @@ LOGIN_RESPONSE=$(curl -s -X POST "$API_URL/api/auth/login" \
 TOKEN=$(echo "$LOGIN_RESPONSE" | python3 -c "import sys, json; print(json.load(sys.stdin).get('token', ''))" 2>/dev/null)
 
 if [ -z "$TOKEN" ]; then
-    echo "❌ Authentication failed"
+    echo "Authentication failed"
     echo "Response: $LOGIN_RESPONSE"
     echo ""
     echo "Please update EMAIL and PASSWORD in this script with your actual credentials."
@@ -97,7 +97,7 @@ if [ -z "$TOKEN" ]; then
     exit 1
 fi
 
-echo "✓ Authenticated"
+echo "Authenticated"
 echo ""
 
 echo "Step 3: Uploading and executing tests..."
@@ -117,12 +117,12 @@ echo ""
 SUITE_ID=$(echo "$RUN_RESPONSE" | python3 -c "import sys, json; print(json.load(sys.stdin).get('suite_id', ''))" 2>/dev/null)
 
 if [ -z "$SUITE_ID" ]; then
-    echo "❌ Failed to start test execution"
+    echo "Failed to start test execution"
     exit 1
 fi
 
 echo "======================================"
-echo "✅ Test Execution Started!"
+echo "Test Execution Started!"
 echo "======================================"
 echo "Suite ID: $SUITE_ID"
 echo ""

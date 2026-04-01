@@ -6,13 +6,13 @@ import (
 )
 
 type Logger struct {
-	infoLogger  *log.Logger
+	infoLogger *log.Logger
 	errorLogger *log.Logger
 }
 
 func NewLogger() *Logger {
 	return &Logger{
-		infoLogger:  log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile),
+		infoLogger: log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile),
 		errorLogger: log.New(os.Stderr, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile),
 	}
 }

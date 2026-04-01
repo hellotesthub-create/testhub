@@ -34,7 +34,7 @@ class DatabaseService:
             user_id: User's MongoDB ObjectID (optional)
         """
         if not username or not email:
-            logger.error("❌ Username and email are required for DatabaseService!")
+            logger.error("Username and email are required for DatabaseService!")
             raise ValueError("username and email are required parameters")
         
         self.username = username
@@ -79,19 +79,19 @@ class DatabaseService:
             self.db = self.client[self.database_name]
             self.fs = gridfs.GridFS(self.db)  # Initialize GridFS for video storage
             self.connected = True
-            logger.info(f"✅ Connected to MongoDB: {self.database_name}")
+            logger.info(f"Connected to MongoDB: {self.database_name}")
             
         except ConnectionFailure as e:
-            logger.error(f"❌ Failed to connect to MongoDB: {e}")
+            logger.error(f"Failed to connect to MongoDB: {e}")
             self.connected = False
         except Exception as e:
-            logger.error(f"❌ Database connection error: {e}")
+            logger.error(f"Database connection error: {e}")
             self.connected = False
     
     def set_current_browser(self, browser: str):
         """Set the browser being used for testing"""
         self.current_browser = browser
-        logger.info(f"🌐 Current browser set to: {browser}")
+        logger.info(f"Current browser set to: {browser}")
     
     def create_test_run(self, run_data: dict) -> Optional[ObjectId]:
         """
@@ -109,7 +109,7 @@ class DatabaseService:
             ObjectId of created run, or None on failure
         """
         if not self.connected:
-            logger.warning("⚠️ Database not connected, skipping test run creation")
+            logger.warning("Database not connected, skipping test run creation")
             return None
         
         try:
@@ -157,7 +157,7 @@ class DatabaseService:
                 )
                 self.current_run_id = existing_run["_id"]
                 self.current_run_id_string = run_doc["run_id"]
-                logger.info(f"✅ Found existing test run: {run_doc['run_id']} (ID: {existing_run['_id']}), updated to running")
+                logger.info(f"Found existing test run: {run_doc['run_id']} (ID: {existing_run['_id']}), updated to running")
                 return existing_run["_id"]
             
             # Insert new run into database
@@ -167,11 +167,11 @@ class DatabaseService:
             self.current_run_id = result.inserted_id
             self.current_run_id_string = run_doc["run_id"]
             
-            logger.info(f"✅ Test run created: {run_doc['run_id']} (ID: {result.inserted_id})")
+            logger.info(f"Test run created: {run_doc['run_id']} (ID: {result.inserted_id})")
             return result.inserted_id
             
         except Exception as e:
-            logger.error(f"❌ Failed to create test run: {e}")
+            logger.error(f"Failed to create test run: {e}")
             return None
     
     def save_test_result(self, result_data: dict) -> Optional[ObjectId]:
@@ -189,7 +189,7 @@ class DatabaseService:
             ObjectId of created result, or None on failure
         """
         if not self.connected:
-            logger.warning("⚠️ Database not connected, skipping test result save")
+            logger.warning("Database not connected, skipping test result save")
             return None
         
         try:
@@ -234,7 +234,7 @@ class DatabaseService:
                     }}
                 )
                 self.current_result_id = existing_result["_id"]
-                logger.info(f"✅ Test result updated: {result_data['test_name']} ({result_data.get('status')})")
+                logger.info(f"Test result updated: {result_data['test_name']} ({result_data.get('status')})")
                 return existing_result["_id"]
             
             # Insert new result into database
@@ -243,11 +243,11 @@ class DatabaseService:
             # Store for linking artifacts
             self.current_result_id = result.inserted_id
             
-            logger.info(f"✅ Test result saved: {result_data['test_name']} ({result_data.get('status')})")
+            logger.info(f"Test result saved: {result_data['test_name']} ({result_data.get('status')})")
             return result.inserted_id
             
         except Exception as e:
-            logger.error(f"❌ Failed to save test result: {e}")
+            logger.error(f"Failed to save test result: {e}")
             return None
     
     def save_video(self, video_data: dict) -> bool:
@@ -261,7 +261,7 @@ class DatabaseService:
             True if successful, False otherwise
         """
         if not self.connected:
-            logger.warning("⚠️ Database not connected, skipping video save")
+            logger.warning("Database not connected, skipping video save")
             return False
         
         try:
@@ -280,7 +280,7 @@ class DatabaseService:
                         run_id_string=self.current_run_id_string,
                         test_name=video_data.get('test_name')
                     )
-                logger.info(f"📹 Video uploaded to GridFS: {gridfs_id}")
+                logger.info(f"Video uploaded to GridFS: {gridfs_id}")
             
             now = datetime.now()
             
@@ -307,11 +307,11 @@ class DatabaseService:
             # Insert metadata into database
             self.db.videos.insert_one(video_doc)
             
-            logger.info(f"✅ Video saved: {video_doc.get('name')} ({size_bytes / (1024*1024):.2f} MB)")
+            logger.info(f"Video saved: {video_doc.get('name')} ({size_bytes / (1024*1024):.2f} MB)")
             return True
             
         except Exception as e:
-            logger.error(f"❌ Failed to save video: {e}")
+            logger.error(f"Failed to save video: {e}")
             return False
     
     def save_screenshot(self, screenshot_data: dict) -> bool:
@@ -325,7 +325,7 @@ class DatabaseService:
             True if successful, False otherwise
         """
         if not self.connected:
-            logger.warning("⚠️ Database not connected, skipping screenshot save")
+            logger.warning("Database not connected, skipping screenshot save")
             return False
         
         try:
@@ -366,11 +366,11 @@ class DatabaseService:
             # Insert into database
             self.db.screenshots.insert_one(screenshot_doc)
             
-            logger.info(f"✅ Screenshot saved: {screenshot_doc.get('name')}")
+            logger.info(f"Screenshot saved: {screenshot_doc.get('name')}")
             return True
             
         except Exception as e:
-            logger.error(f"❌ Failed to save screenshot: {e}")
+            logger.error(f"Failed to save screenshot: {e}")
             return False
     
     def save_log(self, log_data: dict) -> bool:
@@ -384,7 +384,7 @@ class DatabaseService:
             True if successful, False otherwise
         """
         if not self.connected:
-            logger.warning("⚠️ Database not connected, skipping log save")
+            logger.warning("Database not connected, skipping log save")
             return False
         
         try:
@@ -412,7 +412,7 @@ class DatabaseService:
             return True
             
         except Exception as e:
-            logger.error(f"❌ Failed to save log: {e}")
+            logger.error(f"Failed to save log: {e}")
             return False
     
     def update_test_run(self, run_id: ObjectId = None, update_data: dict = None) -> bool:
@@ -427,13 +427,13 @@ class DatabaseService:
             True if successful, False otherwise
         """
         if not self.connected:
-            logger.warning("⚠️ Database not connected, skipping test run update")
+            logger.warning("Database not connected, skipping test run update")
             return False
         
         try:
             target_id = run_id or self.current_run_id
             if not target_id:
-                logger.warning("⚠️ No run ID specified for update")
+                logger.warning("No run ID specified for update")
                 return False
             
             update_data = update_data or {}
@@ -445,14 +445,14 @@ class DatabaseService:
             )
             
             if result.modified_count > 0:
-                logger.info(f"✅ Test run updated: {target_id}")
+                logger.info(f"Test run updated: {target_id}")
                 return True
             else:
-                logger.warning(f"⚠️ No test run found with ID: {target_id}")
+                logger.warning(f"No test run found with ID: {target_id}")
                 return False
                 
         except Exception as e:
-            logger.error(f"❌ Failed to update test run: {e}")
+            logger.error(f"Failed to update test run: {e}")
             return False
     
     def finalize_run(self, total_tests: int, passed: int, failed: int, 
@@ -473,13 +473,13 @@ class DatabaseService:
             True if successful, False otherwise
         """
         if not self.connected:
-            logger.warning("⚠️ Database not connected, skipping test run finalize")
+            logger.warning("Database not connected, skipping test run finalize")
             return False
         
         try:
             target_id = self.current_run_id
             if not target_id:
-                logger.warning("⚠️ No run ID specified for finalize")
+                logger.warning("No run ID specified for finalize")
                 return False
             
             now = datetime.now()
@@ -522,25 +522,25 @@ class DatabaseService:
                     if completed_count >= expected_total:
                         final_status = "completed" if f == 0 else "failed"
                         update_fields["status"] = final_status
-                        logger.info(f"🏁 All {expected_total} tests done ({p} passed, {f} failed) → status={final_status}")
+                        logger.info(f"All {expected_total} tests done ({p} passed, {f} failed) status={final_status}")
                     else:
                         # Still waiting for other runners — keep status as "running"
                         update_fields["status"] = "running"
-                        logger.info(f"⏳ {completed_count}/{expected_total} tests done so far ({p} passed, {f} failed)")
+                        logger.info(f" {completed_count}/{expected_total} tests done so far ({p} passed, {f} failed)")
                     
                     self.db.test_runs.update_one(
                         {"_id": target_id},
                         {"$set": update_fields}
                     )
                 
-                logger.info(f"✅ Test run updated: {target_id}")
+                logger.info(f"Test run updated: {target_id}")
                 return True
             else:
-                logger.warning(f"⚠️ No test run found with ID: {target_id}")
+                logger.warning(f"No test run found with ID: {target_id}")
                 return False
                 
         except Exception as e:
-            logger.error(f"❌ Failed to finalize test run: {e}")
+            logger.error(f"Failed to finalize test run: {e}")
             return False
     
     # Legacy compatibility methods
@@ -574,7 +574,7 @@ class DatabaseService:
             return result.modified_count > 0
             
         except Exception as e:
-            logger.error(f"❌ Failed to update test run: {e}")
+            logger.error(f"Failed to update test run: {e}")
             return False
     
     def get_user_test_runs(self, email: str = None, limit: int = 10):
@@ -589,7 +589,7 @@ class DatabaseService:
             List of test run documents
         """
         if not self.connected:
-            logger.warning("⚠️ Database not connected")
+            logger.warning("Database not connected")
             return []
         
         try:
@@ -605,11 +605,11 @@ class DatabaseService:
             return runs
             
         except Exception as e:
-            logger.error(f"❌ Failed to fetch test runs: {e}")
+            logger.error(f"Failed to fetch test runs: {e}")
             return []
     
     def close(self):
         """Close database connection"""
         if self.client:
             self.client.close()
-            logger.info("🔒 Database connection closed")
+            logger.info("Database connection closed")

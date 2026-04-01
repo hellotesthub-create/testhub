@@ -1,26 +1,6 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:15-alpine
-    container_name: testops-postgres
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-testops}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-testops123}
-      POSTGRES_DB: ${POSTGRES_DB:-testops}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./database/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - "5432:5432"
-    networks:
-      - testops-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-testops}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   # MongoDB (Alternative to PostgreSQL)
   # mongo:
@@ -38,89 +18,134 @@ services:
   #   networks:
   #     - testops-network
 
-  # Redis Queue
-  redis:
-    image: redis:7-alpine
-    container_name: testops-redis
-    ports:
-      - "6379:6379"
-    networks:
-      - testops-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   # Backend API Service
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: testops-backend
+    container_name: testops-backend-api
     environment:
       PORT: ${PORT:-8080}
-      DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       JWT_SECRET: ${JWT_SECRET}
       ENVIRONMENT: ${ENVIRONMENT:-development}
+      MONGO_URL: ${MONGO_URL:-mongodb://admin:admin123@testops-mongo:27017/?authSource=admin}
+      TESTSCRIPTS_DIR: /app/testscripts
+      RUNNER_DIR: /app
+      HOST_PROJECT_PATH: ${HOST_PROJECT_PATH:-}
+      BACKEND_INTERNAL_URL: http://testops-backend-api:8080/api
+      RUNNER_IMAGE: ${RUNNER_IMAGE:-thex_runner:latest}
+      DOCKER_NETWORK: ${DOCKER_NETWORK:-testops-db-network}
+      SELENIUM_HUB_URL: http://selenium-hub:4444
+      MONGO_HOST: ${MONGO_HOST:-testops-mongo}
+      MONGO_PORT: ${MONGO_PORT:-27017}
+      MONGO_USERNAME: ${MONGO_USERNAME:-admin}
+      MONGO_PASSWORD: ${MONGO_PASSWORD:-admin123}
+      MONGO_DATABASE: ${MONGO_DATABASE:-testops}
+
+      EMAIL_AUTOSEND_ENABLED: ${EMAIL_AUTOSEND_ENABLED:-false}
+      EMAIL_POLL_INTERVAL_SECONDS: ${EMAIL_POLL_INTERVAL_SECONDS:-20}
+      EMAIL_BATCH_LIMIT: ${EMAIL_BATCH_LIMIT:-5}
+      EMAIL_MAX_LOG_BYTES: ${EMAIL_MAX_LOG_BYTES:-500000}
+      EMAIL_RETRY_FAILED: ${EMAIL_RETRY_FAILED:-false}
+      FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      SMTP_USE_STARTTLS: ${SMTP_USE_STARTTLS:-}
+      SMTP_USE_TLS: ${SMTP_USE_TLS:-}
+      SMTP_INSECURE_SKIP_VERIFY: ${SMTP_INSECURE_SKIP_VERIFY:-}
     ports:
-      - "8080:8080"
+      - "8090:8080"
     volumes:
       - ./runner/testscripts:/app/testscripts
       - /var/run/docker.sock:/var/run/docker.sock
       - ./docker-compose.yml:/app/docker-compose.yml
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - ./:/app/project
+    # No depends_on: postgres or redis
     networks:
       - testops-network
       - testops-db-network
     restart: unless-stopped
 
-  # Selenium Grid - Chrome Node
-  selenium-chrome:
-    image: selenium/standalone-chrome:latest
-    container_name: selenium-chrome
+  # ============================
+  # Selenium Grid (Hub + Nodes)
+  # ============================
+
+  # Selenium Hub - Central entry point for all WebDriver requests
+  selenium-hub:
+    image: selenium/hub:4.21.0
+    container_name: selenium-hub
     environment:
+      - GRID_MAX_SESSION=20
+      - SE_SESSION_REQUEST_TIMEOUT=300
+      - SE_NODE_SESSION_TIMEOUT=300
+    ports:
+      - "4442:4442"   # Event bus publish
+      - "4443:4443"   # Event bus subscribe
+      - "4444:4444"   # Hub web & WebDriver endpoint
+    networks:
+      - testops-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # Chrome Node - Scalable via: docker-compose up --scale chrome-node=5
+  chrome-node:
+    image: selenium/node-chrome:4.21.0
+    # NO container_name — allows multiple replicas
+    # Scale with: docker-compose up -d --scale chrome-node=3
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_RELAY_ONLY=false
+      - SE_NODE_DETECT_DRIVERS=true
+      - SE_NODE_MAX_SESSIONS=1
+      - SE_NODE_SESSION_TIMEOUT=300
       - SE_SCREEN_WIDTH=1920
       - SE_SCREEN_HEIGHT=1080
       - SE_SCREEN_DEPTH=24
       - SE_SCREEN_DPI=96
       - SE_START_XVFB=true
-      - SE_NODE_MAX_SESSIONS=5
-      - SE_NODE_SESSION_TIMEOUT=300
     volumes:
-      - /dev/shm:/dev/shm
       - ./runner/output/videos:/videos:rw
-    ports:
-      - "4444:4444"
-      - "7900:7900"
+    depends_on:
+      selenium-hub:
+        condition: service_healthy
     networks:
       - testops-network
     shm_size: '2gb'
     restart: unless-stopped
 
-  # Selenium Grid - Firefox Node
-  selenium-firefox:
-    image: selenium/standalone-firefox:latest
-    container_name: selenium-firefox
+  # Firefox Node - Scalable via: docker-compose up --scale firefox-node=5
+  firefox-node:
+    image: selenium/node-firefox:4.21.0
+    # NO container_name — allows multiple replicas
+    # Scale with: docker-compose up -d --scale firefox-node=3
     environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_RELAY_ONLY=false
+      - SE_NODE_DETECT_DRIVERS=true
+      - SE_NODE_MAX_SESSIONS=1
+      - SE_NODE_SESSION_TIMEOUT=300
       - SE_SCREEN_WIDTH=1920
       - SE_SCREEN_HEIGHT=1080
       - SE_SCREEN_DEPTH=24
       - SE_SCREEN_DPI=96
       - SE_START_XVFB=true
-      - SE_NODE_MAX_SESSIONS=5
-      - SE_NODE_SESSION_TIMEOUT=300
     volumes:
-      - /dev/shm:/dev/shm
       - ./runner/output/videos:/videos:rw
-    ports:
-      - "4445:4444"
-      - "7901:7900"
+    depends_on:
+      selenium-hub:
+        condition: service_healthy
     networks:
       - testops-network
     shm_size: '2gb'
@@ -131,6 +156,7 @@ services:
     build:
       context: ./runner
       dockerfile: Dockerfile
+    image: thex_runner:latest
     container_name: testops-runner
     environment:
       PYTHONUNBUFFERED: "1"
@@ -151,8 +177,8 @@ services:
       - testops-network
       - testops-db-network
     depends_on:
-      - selenium-chrome
-      - selenium-firefox
+      selenium-hub:
+        condition: service_healthy
     # Run once and exit
     restart: "no"
     # Enable for Chrome to work properly
@@ -165,9 +191,9 @@ services:
       dockerfile: Dockerfile
     container_name: testops-frontend
     environment:
-      VITE_API_URL: ${VITE_API_URL:-http://localhost/api}
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8090}
     ports:
-      - "5173:5173"
+      - "3456:3456"
     networks:
       - testops-network
     restart: unless-stopped
@@ -198,5 +224,4 @@ networks:
     external: true
 
 volumes:
-  postgres_data:
-  # mongo_data:
+  mongo_data:

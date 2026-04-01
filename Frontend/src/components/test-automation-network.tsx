@@ -5,6 +5,8 @@ interface Node {
   type: string;
   color: string;
   icon: string;
+  iconSrc?: string;
+  iconImg?: HTMLImageElement;
   x: number;
   y: number;
   baseX: number;
@@ -19,6 +21,7 @@ interface Node {
 const TestAutomationNetwork = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const isDarkRef = useRef(true);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -30,7 +33,17 @@ const TestAutomationNetwork = () => {
 
     updateDimensions();
     window.addEventListener('resize', updateDimensions);
-    return () => window.removeEventListener('resize', updateDimensions);
+
+    // Observe theme changes via ref (no re-render)
+    const checkTheme = () => { isDarkRef.current = document.documentElement.classList.contains('dark'); };
+    checkTheme();
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+    return () => {
+      window.removeEventListener('resize', updateDimensions);
+      observer.disconnect();
+    };
   }, []);
 
   useEffect(() => {
@@ -43,15 +56,32 @@ const TestAutomationNetwork = () => {
     canvas.width = dimensions.width;
     canvas.height = dimensions.height;
 
-    // Feature nodes for the testing platform
+    // Feature nodes for the testing platform - same colors in both modes
     const nodes: Node[] = [
-      { label: 'Test Hub', type: 'hub', color: '#a855f7', icon: '⚡' },
-      { label: 'Parallel Testing', type: 'feature', color: '#3b82f6', icon: '⚙️' },
-      { label: 'Cross Browser', type: 'feature', color: '#10b981', icon: '🌐' },
-      { label: 'Chrome', type: 'browser', color: '#ef4444', icon: '🔴' },
-      { label: 'Firefox', type: 'browser', color: '#f59e0b', icon: '🟠' },
-      { label: 'Reports', type: 'feature', color: '#06b6d4', icon: '📊' }
+      { label: 'Test Hub', type: 'hub', color: '#a78bfa', icon: '', iconSrc: '/logo.png' },
+      { label: 'Parallel Testing', type: 'feature', color: '#3b82f6', icon: '', iconSrc: '/parallel.png' },
+      { label: 'Cross Browser', type: 'feature', color: '#7dd3fc', icon: '' },
+      { label: 'Chrome', type: 'browser', color: '#3b82f6', icon: '', iconSrc: '/chrome.png' },
+      { label: 'Firefox', type: 'browser', color: '#f59e0b', icon: '', iconSrc: '/firefox.png' },
+      { label: 'Reports', type: 'feature', color: '#f0b27a', icon: '', iconSrc: '/report.png' }
     ] as Node[];
+
+    // Preload icon images
+    let imagesLoaded = 0;
+    const totalImages = nodes.filter(n => n.iconSrc).length;
+    nodes.forEach(node => {
+      if (node.iconSrc) {
+        const img = new Image();
+        img.src = node.iconSrc;
+        img.onload = () => {
+          node.iconImg = img;
+          imagesLoaded++;
+        };
+        img.onerror = () => {
+          imagesLoaded++;
+        };
+      }
+    });
 
     // Adjust center position based on screen size - ALWAYS keep network on the RIGHT
     const isMobile = dimensions.width < 768;
@@ -112,7 +142,7 @@ const TestAutomationNetwork = () => {
         opacity: 0.3 + Math.random() * 0.4,
         pulsePhase: Math.random() * Math.PI * 2,
         pulseSpeed: 0.015 + Math.random() * 0.025,
-        color: ['#3b82f6', '#a855f7', '#10b981', '#06b6d4'][Math.floor(Math.random() * 4)]
+        color: ['#3b82f6', '#a78bfa', '#7dd3fc', '#60a5fa'][Math.floor(Math.random() * 4)]
       });
     }
 
@@ -137,8 +167,11 @@ const TestAutomationNetwork = () => {
     let animationId: number;
 
     const animate = () => {
-      // Create trail effect
-      ctx.fillStyle = 'rgba(10, 10, 20, 0.12)';
+      // Read current theme from ref each frame
+      const dark = isDarkRef.current;
+
+      // Create trail effect - theme aware
+      ctx.fillStyle = dark ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.18)';
       ctx.fillRect(0, 0, dimensions.width, dimensions.height);
 
       // Draw background particles
@@ -180,16 +213,16 @@ const TestAutomationNetwork = () => {
 
         // Animated gradient
         const gradient = ctx.createLinearGradient(node.x, node.y, hub.x, hub.y);
-        const alpha = 0.3 + Math.sin(Date.now() * 0.001 + i) * 0.2;
+        const alpha = 0.4 + Math.sin(Date.now() * 0.001 + i) * 0.25;
         gradient.addColorStop(0, node.color + Math.floor(alpha * 255).toString(16).padStart(2, '0'));
-        gradient.addColorStop(0.5, '#ffffff40');
+        gradient.addColorStop(0.5, dark ? '#ffffff40' : '#64748b50');
         gradient.addColorStop(1, hub.color + Math.floor(alpha * 255).toString(16).padStart(2, '0'));
         
         ctx.beginPath();
         ctx.moveTo(node.x, node.y);
         ctx.lineTo(hub.x, hub.y);
         ctx.strokeStyle = gradient;
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2.5;
         ctx.stroke();
 
         // Create data packets
@@ -236,7 +269,7 @@ const TestAutomationNetwork = () => {
         // Core
         ctx.beginPath();
         ctx.arc(x, y, 4, 0, Math.PI * 2);
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = dark ? '#ffffff' : '#1e293b';
         ctx.fill();
       }
 
@@ -262,8 +295,8 @@ const TestAutomationNetwork = () => {
         ctx.beginPath();
         ctx.arc(node.x, node.y, node.size * 1.8 * pulseSize, 0, Math.PI * 2);
         const outerGlow = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, node.size * 1.8 * pulseSize);
-        outerGlow.addColorStop(0, node.color + '60');
-        outerGlow.addColorStop(0.5, node.color + '20');
+        outerGlow.addColorStop(0, node.color + '55');
+        outerGlow.addColorStop(0.5, node.color + '22');
         outerGlow.addColorStop(1, node.color + '00');
         ctx.fillStyle = outerGlow;
         ctx.fill();
@@ -274,7 +307,7 @@ const TestAutomationNetwork = () => {
           node.x, node.y, node.size
         );
         nodeGradient.addColorStop(0, node.color + 'ff');
-        nodeGradient.addColorStop(1, node.color + 'cc');
+        nodeGradient.addColorStop(1, node.color + 'dd');
         
         ctx.beginPath();
         ctx.arc(node.x, node.y, node.size, 0, Math.PI * 2);
@@ -285,20 +318,36 @@ const TestAutomationNetwork = () => {
         ctx.beginPath();
         ctx.arc(node.x, node.y, node.size, 0, Math.PI * 2);
         ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2.5;
         ctx.stroke();
 
-        // Icon - adjust size for mobile
-        ctx.fillStyle = '#ffffff';
-        ctx.font = `bold ${i === 0 ? (isMobile ? 20 : 24) : (isMobile ? 16 : 20)}px Arial`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(node.icon, node.x, node.y);
+        // Draw icon image or fallback emoji
+        if (node.iconImg) {
+          const imgSize = (i === 0 ? node.size * 1.2 : node.size * 1.0);
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, node.size * 0.75, 0, Math.PI * 2);
+          ctx.clip();
+          ctx.drawImage(
+            node.iconImg,
+            node.x - imgSize / 2,
+            node.y - imgSize / 2,
+            imgSize,
+            imgSize
+          );
+          ctx.restore();
+        } else if (node.icon) {
+          ctx.fillStyle = '#ffffff';
+          ctx.font = `bold ${i === 0 ? (isMobile ? 20 : 24) : (isMobile ? 16 : 20)}px Arial`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(node.icon, node.x, node.y);
+        }
 
         // Label with shadow - adjust font size for mobile
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+        ctx.shadowColor = dark ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.3)';
         ctx.shadowBlur = 10;
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = dark ? '#ffffff' : '#1e293b';
         ctx.font = `bold ${i === 0 ? (isMobile ? 13 : 16) : (isMobile ? 11 : 14)}px Arial`;
         ctx.fillText(node.label, node.x, node.y + node.size + (isMobile ? 20 : 25));
         ctx.shadowBlur = 0;
@@ -317,14 +366,14 @@ const TestAutomationNetwork = () => {
   }, [dimensions]);
 
   return (
-    <div className="relative w-full h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 overflow-hidden">
+    <div className="relative w-full h-screen bg-gradient-to-br from-slate-50 via-blue-100/50 to-slate-50 dark:from-black dark:via-slate-950 dark:to-black overflow-hidden">
       <canvas
         ref={canvasRef}
         className="absolute inset-0 animate-in fade-in duration-1000"
       />
       
       {/* Radial gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/40 dark:to-black/40 pointer-events-none" />
     </div>
   );
 };

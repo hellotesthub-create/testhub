@@ -19,7 +19,7 @@ logger = setup_logger("api_client")
 class BackendAPIClient:
     """Client for interacting with TestOps backend API"""
     
-    def __init__(self, base_url="http://backend:8080/api"):
+    def __init__(self, base_url="http://localhost:8080/api"):
         self.base_url = base_url
         self.session = requests.Session()
         self.run_id_string: str = None  # Human-readable run ID
@@ -81,14 +81,14 @@ class BackendAPIClient:
             )
             
             if response.status_code == 201:
-                logger.info(f"✅ Screenshot submitted: {filename}")
+                logger.info(f"Screenshot submitted: {filename}")
                 return True
             else:
-                logger.error(f"❌ Failed to submit screenshot: {response.status_code} - {response.text}")
+                logger.error(f"Failed to submit screenshot: {response.status_code} - {response.text}")
                 return False
                 
         except Exception as e:
-            logger.error(f"❌ Error submitting screenshot: {e}")
+            logger.error(f"Error submitting screenshot: {e}")
             return False
     
     def submit_log(self, run_id: str, test_name: str, message: str, 
@@ -126,11 +126,11 @@ class BackendAPIClient:
             if response.status_code == 201:
                 return True
             else:
-                logger.error(f"❌ Failed to submit log: {response.status_code} - {response.text}")
+                logger.error(f"Failed to submit log: {response.status_code} - {response.text}")
                 return False
                 
         except Exception as e:
-            logger.error(f"❌ Error submitting log: {e}")
+            logger.error(f"Error submitting log: {e}")
             return False
     
     def submit_video(self, run_id: str, test_name: str, video_path: str,
@@ -176,14 +176,14 @@ class BackendAPIClient:
             )
             
             if response.status_code == 201:
-                logger.info(f"✅ Video submitted: {filename}")
+                logger.info(f"Video submitted: {filename}")
                 return True
             else:
-                logger.error(f"❌ Failed to submit video: {response.status_code}")
+                logger.error(f"Failed to submit video: {response.status_code}")
                 return False
                 
         except Exception as e:
-            logger.error(f"❌ Error submitting video: {e}")
+            logger.error(f"Error submitting video: {e}")
             return False
     
     def submit_batch_logs(self, run_id: str, test_name: str, log_entries: list, browser: str = None):
@@ -201,7 +201,7 @@ class BackendAPIClient:
             if self.submit_log(run_id, test_name, message, level, browser):
                 success_count += 1
         
-        logger.info(f"📊 Submitted {success_count}/{len(log_entries)} logs")
+        logger.info(f"Submitted {success_count}/{len(log_entries)} logs")
         return success_count
     
     # Legacy methods for backward compatibility

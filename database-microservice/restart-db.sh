@@ -15,29 +15,29 @@ echo "======================================"
 echo ""
 
 # Stop the services
-echo "🛑 Stopping containers..."
+echo "Stopping containers..."
 docker-compose down
 
 echo ""
-echo "⏳ Waiting 3 seconds..."
+echo "Waiting 3 seconds..."
 sleep 3
 
 # Start the services
 echo ""
-echo "🚀 Starting containers..."
+echo "Starting containers..."
 docker-compose up -d
 
 echo ""
-echo "⏳ Waiting for services to be ready..."
+echo "Waiting for services to be ready..."
 sleep 5
 
 # Check status
 echo ""
-echo "📊 Container Status:"
+echo "Container Status:"
 docker-compose ps
 
 echo ""
 echo "======================================"
-echo "✅ Database Microservice Restarted!"
+echo "Database Microservice Restarted!"
 echo "======================================"
 echo ""

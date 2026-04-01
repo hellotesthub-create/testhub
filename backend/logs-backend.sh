@@ -11,7 +11,7 @@ echo "======================================"
 echo "Backend API Logs"
 echo "======================================"
 echo ""
-echo "📝 Showing logs (press Ctrl+C to exit)..."
+echo "Showing logs (press Ctrl+C to exit)..."
 echo ""
 
 docker-compose logs -f

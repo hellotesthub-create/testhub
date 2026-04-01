@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { NeonButton } from "@/components/ui/neon-button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Shield, Zap, Globe, Code2, Github, ArrowRight, Menu, X } from "lucide-react";
+import { Zap, Globe, Code2, Github, ArrowRight, Menu, X } from "lucide-react";
 import TestAutomationNetwork from "@/components/test-automation-network";
 import { ParticleBackground } from "@/components/particle-background";
 import { useAuth } from "@/lib/authContext";
@@ -20,7 +20,7 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white font-sans overflow-x-hidden transition-colors">
+    <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white font-sans overflow-x-hidden transition-colors">
       <ParticleBackground />
       {/* Hero Section with Canvas Animation */}
       <section className="relative min-h-screen overflow-hidden">
@@ -30,33 +30,31 @@ export default function LandingPage() {
         </div>
 
         {/* Header Overlay */}
-        <header className="relative z-50 border-b border-white/10 bg-slate-950/40 backdrop-blur-md">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
+        <header className="relative z-50 border-b border-slate-300 dark:border-white/10 bg-white/70 dark:bg-black/60 backdrop-blur-md">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 grid grid-cols-[auto_1fr_auto] items-center">
             <Link href="/">
-              <div className="flex items-center gap-2 cursor-pointer">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.6)]">
-                  <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                </div>
-                <span className="text-lg sm:text-2xl font-bold font-display tracking-wider text-white">
+              <div className="flex items-center gap-2 cursor-pointer min-w-0 shrink-0">
+                <img src="/logo.png" alt="TESTHUB" className="w-12 h-12 sm:w-14 sm:h-14 object-contain" />
+                <span className="text-lg sm:text-2xl font-bold font-display tracking-wider text-slate-900 dark:text-white">
                   TESTHUB
                 </span>
               </div>
             </Link>
 
-            <nav className="hidden md:flex items-center gap-6 lg:gap-8">
-              <a href="#features" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">Features</a>
-              <a href="#how-it-works" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">How It Works</a>
-              <a href="#integrations" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">Integrations</a>
-              <a href="#docs" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">Docs</a>
+            <nav className="hidden md:flex items-center justify-center gap-6 lg:gap-8">
+              <a href="#features" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">Features</a>
+              <a href="#how-it-works" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap">How It Works</a>
+              <a href="#integrations" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">Integrations</a>
+              <a href="#docs" className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">Docs</a>
             </nav>
 
-            <div className="flex items-center gap-3 sm:gap-4 md:gap-5">
+            <div className="flex items-center justify-end gap-3 sm:gap-4 md:gap-5">
               <ThemeToggle />
               {isAuthenticated ? (
                 <>
                   <button 
                     onClick={() => setLocation(user?.role === 'Admin' ? '/admin' : '/dashboard')}
-                    className="hidden md:block text-sm md:text-base font-semibold text-slate-300 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5"
+                    className="hidden md:block text-sm md:text-base font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5"
                   >
                     Dashboard
                   </button>
@@ -72,7 +70,7 @@ export default function LandingPage() {
               ) : (
                 <>
                   <Link href="/auth">
-                    <button className="hidden md:block text-sm md:text-base font-semibold text-slate-300 hover:text-cyan-300 transition-all duration-300 px-4 py-2 rounded-lg hover:bg-white/5 border border-transparent hover:border-cyan-500/30">
+                    <button className="hidden md:block text-sm md:text-base font-semibold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-300 transition-all duration-300 px-4 py-2 rounded-lg hover:bg-blue-50 dark:hover:bg-white/5 border border-transparent hover:border-blue-500/30">
                       Log In
                     </button>
                   </Link>
@@ -88,7 +86,7 @@ export default function LandingPage() {
               {/* Mobile Menu Button */}
               <button 
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 text-slate-300 hover:text-white transition-colors"
+                className="md:hidden p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
                 aria-label="Toggle menu"
               >
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -98,33 +96,33 @@ export default function LandingPage() {
 
           {/* Mobile Menu */}
           {mobileMenuOpen && (
-            <div className="md:hidden absolute top-full left-0 right-0 bg-slate-950/95 backdrop-blur-md border-b border-white/10 z-50">
+            <div className="md:hidden absolute top-full left-0 right-0 bg-white/95 dark:bg-black/95 backdrop-blur-md border-b border-slate-200 dark:border-white/10 z-50">
               <nav className="flex flex-col py-4 px-4 space-y-3">
                 <a 
                   href="#features" 
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-sm font-medium text-slate-300 hover:text-white transition-colors py-2"
+                  className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors py-2"
                 >
                   Features
                 </a>
                 <a 
                   href="#how-it-works" 
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-sm font-medium text-slate-300 hover:text-white transition-colors py-2"
+                  className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors py-2"
                 >
                   How It Works
                 </a>
                 <a 
                   href="#integrations" 
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-sm font-medium text-slate-300 hover:text-white transition-colors py-2"
+                  className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors py-2"
                 >
                   Integrations
                 </a>
                 <a 
                   href="#docs" 
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-sm font-medium text-slate-300 hover:text-white transition-colors py-2"
+                  className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors py-2"
                 >
                   Docs
                 </a>
@@ -136,19 +134,19 @@ export default function LandingPage() {
         {/* Hero Content with proper layering */}
         <div className="relative z-20 h-[calc(100vh-64px)] sm:h-[calc(100vh-80px)] flex items-center">
           {/* Stronger gradient on left for text visibility, transparent on right for animation */}
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/85 via-40% to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/85 via-40% to-transparent dark:from-black/95 dark:via-black/85" />
           
           {showContent && (
             <div className="relative z-30 text-left space-y-5 sm:space-y-6 md:space-y-8 px-4 sm:px-6 md:px-12 lg:px-16 max-w-xl md:max-w-2xl animate-in fade-in duration-1000">
               <div className="space-y-3 sm:space-y-4">
-                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-display font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-blue-300 to-cyan-300 leading-tight">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-display font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700 dark:from-blue-300 dark:via-blue-200 dark:to-blue-300 leading-tight">
                   Automated Testing.
                   <br />
                   Simplified
                 </h1>
-                <div className="h-1 w-28 sm:w-40 md:w-48 bg-gradient-to-r from-cyan-500 to-transparent rounded-full" />
+                <div className="h-1 w-28 sm:w-40 md:w-48 bg-gradient-to-r from-blue-500 to-transparent rounded-full" />
               </div>
-              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-cyan-100/90 max-w-md md:max-w-xl font-medium leading-relaxed">
+              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-slate-700 dark:text-blue-100/90 max-w-md md:max-w-xl font-medium leading-relaxed">
                 Execute parallel tests across browsers with real-time monitoring and comprehensive artifacts.
               </p>
               
@@ -158,7 +156,7 @@ export default function LandingPage() {
                     Get Started Free
                   </NeonButton>
                 </Link>
-                <button className="w-full sm:w-auto h-11 sm:h-12 md:h-14 px-6 sm:px-7 md:px-9 text-sm sm:text-base md:text-lg font-semibold border-2 border-cyan-400/60 hover:border-cyan-400 hover:bg-cyan-400/10 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 group text-white shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40">
+                <button className="w-full sm:w-auto h-11 sm:h-12 md:h-14 px-6 sm:px-7 md:px-9 text-sm sm:text-base md:text-lg font-semibold border-2 border-blue-400/60 hover:border-blue-400 hover:bg-blue-400/10 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 group text-slate-800 dark:text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40">
                   <Github className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" />
                   View on GitHub
                 </button>
@@ -167,16 +165,11 @@ export default function LandingPage() {
           )}
         </div>
 
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce z-20">
-          <div className="w-8 h-12 border-2 border-cyan-400 rounded-full flex items-start justify-center p-2">
-            <div className="w-1 h-3 bg-cyan-400 rounded-full animate-pulse" />
-          </div>
-        </div>
+
       </section>
 
       {/* Features Section */}
-      <section id="features" className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-20 bg-white dark:bg-slate-950">
+      <section id="features" className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-20 bg-white dark:bg-black">
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold mb-8 sm:mb-12 md:mb-16 text-center text-slate-900 dark:text-white">Why Choose TESTHUB?</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
@@ -186,8 +179,8 @@ export default function LandingPage() {
             { icon: Globe, title: "Open-Source & Extensible", desc: "Full code access, integrate with any environment" }
           ].map((feature, i) => (
             <GlassCard key={i} className="group bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 transition-all">
-              <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-cyan-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform group-hover:shadow-[0_0_20px_rgba(34,211,238,0.4)]">
-                <feature.icon className="w-6 h-6 text-blue-600 dark:text-cyan-400" />
+              <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform group-hover:shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+                <feature.icon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <h3 className="text-xl font-bold mb-3 text-slate-900 dark:text-white">{feature.title}</h3>
               <p className="text-slate-600 dark:text-slate-300">{feature.desc}</p>
@@ -197,29 +190,29 @@ export default function LandingPage() {
       </section>
 
       {/* See It In Action Section */}
-      <section id="how-it-works" className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-20 bg-white dark:bg-slate-950">
+      <section id="how-it-works" className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-20 bg-white dark:bg-black">
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold mb-8 sm:mb-12 text-center text-slate-900 dark:text-white">See It In Action</h2>
         
         <GlassCard className="bg-slate-100 dark:bg-slate-900/50 border-slate-200 dark:border-white/20 p-4 sm:p-6 md:p-8 lg:p-12">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4">
-              <h3 className="text-2xl font-bold text-blue-600 dark:text-cyan-400">Live Run Monitor</h3>
+              <h3 className="text-2xl font-bold text-blue-600 dark:text-blue-400">Live Run Monitor</h3>
               <p className="text-slate-700 dark:text-slate-300 font-mono text-sm">
-                <span className="text-green-600 dark:text-green-400">✓ Running login test on Chrome...</span><br />
-                <span className="text-blue-600 dark:text-blue-400">⟳ Executing payment flow...</span><br />
-                <span className="text-green-600 dark:text-green-400">✓ Screenshot captured (342ms)</span><br />
-                <span className="text-green-600 dark:text-green-400">✓ All validations passed!</span><br />
+                <span className="text-green-600 dark:text-green-400"> Running login test on Chrome...</span><br />
+                <span className="text-blue-600 dark:text-blue-400"> Executing payment flow...</span><br />
+                <span className="text-green-600 dark:text-green-400"> Screenshot captured (342ms)</span><br />
+                <span className="text-green-600 dark:text-green-400"> All validations passed!</span><br />
                 <span className="text-slate-600 dark:text-slate-500">Total time: 2.45s</span>
               </p>
             </div>
             <div className="space-y-4">
-              <h3 className="text-2xl font-bold text-blue-600 dark:text-cyan-400">Running tests on Chrome...</h3>
+              <h3 className="text-2xl font-bold text-blue-600 dark:text-blue-400">Running tests on Chrome...</h3>
               <p className="text-slate-700 dark:text-slate-300 font-mono text-sm">
-                <span className="text-cyan-600 dark:text-cyan-400">• Suite: E-Commerce Flow</span><br />
-                <span className="text-cyan-600 dark:text-cyan-400">• Browser: Chrome v120</span><br />
-                <span className="text-green-600 dark:text-green-400">✓ 12/12 tests passed</span><br />
-                <span className="text-yellow-600 dark:text-yellow-400">⚠ 1 slow test detected</span><br />
-                <span className="text-slate-600 dark:text-slate-500">View full report →</span>
+                <span className="text-blue-600 dark:text-blue-400">• Suite: E-Commerce Flow</span><br />
+                <span className="text-blue-600 dark:text-blue-400">• Browser: Chrome v120</span><br />
+                <span className="text-green-600 dark:text-green-400">12/12 tests passed</span><br />
+                <span className="text-yellow-600 dark:text-yellow-400">1 slow test detected</span><br />
+                <span className="text-slate-600 dark:text-slate-500">View full report </span>
               </p>
             </div>
           </div>
@@ -227,7 +220,7 @@ export default function LandingPage() {
       </section>
 
       {/* Integrations Section */}
-      <section id="integrations" className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-20 bg-white dark:bg-slate-950">
+      <section id="integrations" className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-20 bg-white dark:bg-black">
         <h2 className="text-2xl sm:text-3xl font-display font-bold mb-6 sm:mb-8 text-slate-900 dark:text-white">Connect Your Stack</h2>
         <div className="flex flex-wrap gap-3 sm:gap-4 mb-12 sm:mb-16">
           {["GlobivateC orp", "DataFlow Inc.", "Jira", "CloudEnv", "CloudEnv", "SkaleiT"].map((partner, i) => (
@@ -248,14 +241,14 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-20 bg-white dark:bg-slate-950">
-        <div className="rounded-xl sm:rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 p-6 sm:p-8 md:p-12 text-center space-y-4 sm:space-y-6">
+      <section className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-20 bg-white dark:bg-black">
+        <div className="rounded-xl sm:rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 p-6 sm:p-8 md:p-12 text-center space-y-4 sm:space-y-6">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-white">Ready to Automate Your Tests?</h2>
           <p className="text-base sm:text-lg text-white/90 max-w-2xl mx-auto">
             Start for free. No credit card required.
           </p>
           <Link href="/auth">
-            <button className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 rounded-lg bg-white text-blue-600 font-bold text-base sm:text-lg hover:bg-slate-100 transition-colors group">
+              <button className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 rounded-lg bg-white text-blue-600 font-bold text-base sm:text-lg hover:bg-slate-100 transition-colors group">
               Get Started Now
               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
             </button>
@@ -264,7 +257,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="relative z-20 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-950 py-8 sm:py-12">
+      <footer className="relative z-20 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black py-8 sm:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-6 sm:mb-8">
             <div className="col-span-2 md:col-span-1">

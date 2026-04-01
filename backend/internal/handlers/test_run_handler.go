@@ -8,8 +8,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -112,6 +114,7 @@ func (h *TestRunHandler) TriggerRun(w http.ResponseWriter, r *http.Request) {
 		SuiteName:   suite.SuiteName,
 		TriggeredBy: claims.Email,
 		Browsers:    req.Browsers,
+		Framework:   suite.Framework,
 		Status:      "pending",
 		TotalTests:  len(testCases) * len(req.Browsers), // Each test runs on each browser
 		Passed:      0,
@@ -435,13 +438,27 @@ func (h *TestRunHandler) CreateAndRunSuite(w http.ResponseWriter, r *http.Reques
 	// Get form values
 	suiteName := r.FormValue("suite_name")
 	browsersJSON := r.FormValue("browsers")
-	username := r.FormValue("username")
-	email := r.FormValue("email")
-	userID := r.FormValue("user_id")
+	language := r.FormValue("language")   // python, java, or both
+	framework := r.FormValue("framework") // selenium or playwright
+
+	// Use JWT claims for user identity (not form values)
+	username := claims.Username
+	email := claims.Email
+	userID := claims.UserID
 
 	if suiteName == "" {
 		http.Error(w, "Suite name is required", http.StatusBadRequest)
 		return
+	}
+
+	// Default language to python if not specified
+	if language == "" {
+		language = "python"
+	}
+
+	// Default framework to selenium if not specified
+	if framework == "" {
+		framework = "selenium"
 	}
 
 	// Parse browsers JSON array
@@ -460,7 +477,7 @@ func (h *TestRunHandler) CreateAndRunSuite(w http.ResponseWriter, r *http.Reques
 		CreatedBy:      claims.Email,
 		Tags:           []string{},
 		DefaultBrowser: browsers[0],
-		Framework:      "selenium",
+		Framework:      framework,
 		IsDeleted:      false,
 		CreatedAt:      time.Now(),
 		UpdatedAt:      time.Now(),
@@ -471,10 +488,12 @@ func (h *TestRunHandler) CreateAndRunSuite(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	// Get uploaded test files
+	// Get uploaded test files OR GitHub file URLs
 	files := r.MultipartForm.File["test_files"]
-	if len(files) == 0 {
-		http.Error(w, "No test files uploaded", http.StatusBadRequest)
+	githubFilesJSON := r.FormValue("github_files") // JSON array of {name, download_url}
+
+	if len(files) == 0 && githubFilesJSON == "" {
+		http.Error(w, "No test files uploaded and no GitHub files specified", http.StatusBadRequest)
 		return
 	}
 
@@ -485,64 +504,126 @@ func (h *TestRunHandler) CreateAndRunSuite(w http.ResponseWriter, r *http.Reques
 		testScriptsDir = "../runner/testscripts"
 	}
 
-	// Create test cases for each uploaded file
+	// Create test cases for each file (uploaded or downloaded from GitHub)
 	var testCases []models.TestCase
-	for _, fileHeader := range files {
-		file, err := fileHeader.Open()
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to open uploaded file: %v", err), http.StatusInternalServerError)
+
+	if len(files) > 0 {
+		// === UPLOADED FILES PATH ===
+		for _, fileHeader := range files {
+			file, err := fileHeader.Open()
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Failed to open uploaded file: %v", err), http.StatusInternalServerError)
+				return
+			}
+			defer file.Close()
+
+			// Generate unique filename to avoid conflicts
+			originalName := fileHeader.Filename
+			ext := filepath.Ext(originalName)
+			baseName := strings.TrimSuffix(originalName, ext)
+			timestamp := time.Now().Format("20060102_150405")
+			uniqueName := fmt.Sprintf("%s_%s%s", baseName, timestamp, ext)
+
+			// Save file to testscripts directory
+			destPath := filepath.Join(testScriptsDir, uniqueName)
+			destFile, err := os.Create(destPath)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Failed to save test file: %v", err), http.StatusInternalServerError)
+				return
+			}
+			defer destFile.Close()
+
+			if _, err := io.Copy(destFile, file); err != nil {
+				http.Error(w, fmt.Sprintf("Failed to write test file: %v", err), http.StatusInternalServerError)
+				return
+			}
+
+			// Determine language from extension
+			language := "python"
+			if strings.HasSuffix(originalName, ".js") {
+				language = "javascript"
+			} else if strings.HasSuffix(originalName, ".java") {
+				language = "java"
+			}
+
+			// Create test case entry
+			testCase := models.TestCase{
+				SuiteID:          suite.ID,
+				TestName:         baseName,
+				OriginalFilename: uniqueName,
+				Language:         language,
+				Framework:        framework,
+				Priority:         "medium",
+				IsActive:         true,
+				CreatedAt:        time.Now(),
+				UpdatedAt:        time.Now(),
+			}
+
+			if err := h.testCaseRepo.Create(r.Context(), &testCase); err != nil {
+				http.Error(w, fmt.Sprintf("Failed to create test case: %v", err), http.StatusInternalServerError)
+				return
+			}
+
+			testCases = append(testCases, testCase)
+		}
+	} else {
+		// === GITHUB FILES PATH ===
+		type githubFileEntry struct {
+			Name        string `json:"name"`
+			DownloadURL string `json:"download_url"`
+		}
+		var githubFiles []githubFileEntry
+		if err := json.Unmarshal([]byte(githubFilesJSON), &githubFiles); err != nil {
+			http.Error(w, fmt.Sprintf("Invalid github_files JSON: %v", err), http.StatusBadRequest)
 			return
 		}
-		defer file.Close()
 
-		// Generate unique filename to avoid conflicts
-		originalName := fileHeader.Filename
-		ext := filepath.Ext(originalName)
-		baseName := strings.TrimSuffix(originalName, ext)
-		timestamp := time.Now().Format("20060102_150405")
-		uniqueName := fmt.Sprintf("%s_%s%s", baseName, timestamp, ext)
+		for _, gf := range githubFiles {
+			// Download file content from GitHub
+			fileData, err := DownloadGitHubFile(gf.DownloadURL)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Failed to download %s from GitHub: %v", gf.Name, err), http.StatusBadGateway)
+				return
+			}
 
-		// Save file to testscripts directory
-		destPath := filepath.Join(testScriptsDir, uniqueName)
-		destFile, err := os.Create(destPath)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to save test file: %v", err), http.StatusInternalServerError)
-			return
+			// Generate unique filename
+			ext := filepath.Ext(gf.Name)
+			baseName := strings.TrimSuffix(gf.Name, ext)
+			timestamp := time.Now().Format("20060102_150405")
+			uniqueName := fmt.Sprintf("%s_%s%s", baseName, timestamp, ext)
+
+			// Save to testscripts directory
+			destPath := filepath.Join(testScriptsDir, uniqueName)
+			if err := os.WriteFile(destPath, fileData, 0644); err != nil {
+				http.Error(w, fmt.Sprintf("Failed to save GitHub file %s: %v", gf.Name, err), http.StatusInternalServerError)
+				return
+			}
+
+			// Determine language from extension
+			fileLang := "python"
+			if strings.HasSuffix(gf.Name, ".java") {
+				fileLang = "java"
+			}
+
+			testCase := models.TestCase{
+				SuiteID:          suite.ID,
+				TestName:         baseName,
+				OriginalFilename: uniqueName,
+				Language:         fileLang,
+				Framework:        framework,
+				Priority:         "medium",
+				IsActive:         true,
+				CreatedAt:        time.Now(),
+				UpdatedAt:        time.Now(),
+			}
+
+			if err := h.testCaseRepo.Create(r.Context(), &testCase); err != nil {
+				http.Error(w, fmt.Sprintf("Failed to create test case: %v", err), http.StatusInternalServerError)
+				return
+			}
+
+			testCases = append(testCases, testCase)
 		}
-		defer destFile.Close()
-
-		if _, err := io.Copy(destFile, file); err != nil {
-			http.Error(w, fmt.Sprintf("Failed to write test file: %v", err), http.StatusInternalServerError)
-			return
-		}
-
-		// Determine language from extension
-		language := "python"
-		if strings.HasSuffix(originalName, ".js") {
-			language = "javascript"
-		} else if strings.HasSuffix(originalName, ".java") {
-			language = "java"
-		}
-
-		// Create test case entry
-		testCase := models.TestCase{
-			SuiteID:          suite.ID,
-			TestName:         baseName,
-			OriginalFilename: uniqueName,
-			Language:         language,
-			Framework:        "selenium",
-			Priority:         "medium",
-			IsActive:         true,
-			CreatedAt:        time.Now(),
-			UpdatedAt:        time.Now(),
-		}
-
-		if err := h.testCaseRepo.Create(r.Context(), &testCase); err != nil {
-			http.Error(w, fmt.Sprintf("Failed to create test case: %v", err), http.StatusInternalServerError)
-			return
-		}
-
-		testCases = append(testCases, testCase)
 	}
 
 	// Generate run ID
@@ -555,6 +636,7 @@ func (h *TestRunHandler) CreateAndRunSuite(w http.ResponseWriter, r *http.Reques
 		SuiteName:   suite.SuiteName,
 		TriggeredBy: claims.Email,
 		Browsers:    browsers,
+		Framework:   framework,
 		Status:      "pending",
 		TotalTests:  len(testCases) * len(browsers), // Expected total — runners check this to know when all are done
 		Passed:      0,
@@ -570,9 +652,10 @@ func (h *TestRunHandler) CreateAndRunSuite(w http.ResponseWriter, r *http.Reques
 	}
 
 	// Create initial TestResult entries for each test case and browser combination
-	// Use the timestamped filename (without extension) as TestName so the runner can match and update it
+	// Use the timestamped filename (WITH extension) as TestName so the runner can match and update it
+	// Extension is critical: DemoQAFormTest_20260301_131410.py vs DemoQAFormTest_20260301_131410.java are different tests
 	for _, tc := range testCases {
-		resultTestName := strings.TrimSuffix(tc.OriginalFilename, filepath.Ext(tc.OriginalFilename))
+		resultTestName := tc.OriginalFilename
 		for _, browser := range browsers {
 			result := models.TestResult{
 				RunID:       testRun.ID,
@@ -587,39 +670,51 @@ func (h *TestRunHandler) CreateAndRunSuite(w http.ResponseWriter, r *http.Reques
 		}
 	}
 
+	// Parse parallel count from form (optional, defaults to auto-calculate)
+	parallelStr := r.FormValue("parallel")
+	parallelCount := 0 // 0 = auto-calculate (files × browsers)
+	if parallelStr != "" {
+		fmt.Sscanf(parallelStr, "%d", &parallelCount)
+	}
+
 	// Log request details for debugging
-	fmt.Printf("CreateAndRunSuite: user=%s, email=%s, userID=%s, suite=%s, browsers=%v, files=%d\n",
-		username, email, userID, suiteName, browsers, len(files))
+	fmt.Printf("CreateAndRunSuite: user=%s, email=%s, userID=%s, suite=%s, browsers=%v, files=%d, parallel=%d, language=%s, framework=%s\n",
+		username, email, userID, suiteName, browsers, len(files), parallelCount, language, framework)
 
-	// Spawn Python runner: tests on the SAME browser run sequentially,
-	// different browsers run in parallel. This prevents video mixing since
-	// each Selenium container has only one display.
+	// Spawn a SINGLE runner container with --files, --browsers, --parallel.
+	// The runner handles all parallelism internally via ThreadPoolExecutor.
 	if h.runnerService != nil {
-		backendURL := fmt.Sprintf("http://localhost:%s/api", os.Getenv("PORT"))
-		if backendURL == "http://localhost:/api" {
-			backendURL = "http://localhost:8080/api"
-		}
-
-		// Group test cases by browser
-		browserTests := make(map[string][]services.RunParams)
-		for _, tc := range testCases {
-			for _, browser := range browsers {
-				params := services.RunParams{
-					RunID:      runID,
-					Email:      claims.Email,
-					Username:   username,
-					UserID:     userID,
-					BackendURL: backendURL,
-					TestFile:   tc.OriginalFilename,
-					Browser:    browser,
-				}
-				browserTests[browser] = append(browserTests[browser], params)
+		backendURL := os.Getenv("BACKEND_INTERNAL_URL")
+		if backendURL == "" {
+			backendURL = fmt.Sprintf("http://testops-backend-api:%s/api", os.Getenv("PORT"))
+			if backendURL == "http://testops-backend-api:/api" {
+				backendURL = "http://testops-backend-api:8080/api"
 			}
 		}
 
-		// Launch one goroutine per browser — tests within each browser run sequentially
-		for browser, paramsList := range browserTests {
-			go h.runnerService.ExecuteTestRunsForBrowser(browser, paramsList)
+		// Collect all test file names
+		var testFileNames []string
+		for _, tc := range testCases {
+			testFileNames = append(testFileNames, tc.OriginalFilename)
+		}
+
+		params := services.RunParams{
+			RunID:      runID,
+			Email:      claims.Email,
+			Username:   username,
+			UserID:     userID,
+			BackendURL: backendURL,
+			TestFiles:  testFileNames,
+			Browsers:   browsers,
+			Parallel:   parallelCount,
+			Language:   language,
+			Framework:  framework,
+		}
+
+		if err := h.runnerService.ExecuteTestRunParallel(params); err != nil {
+			log.Printf("Failed to spawn runner: %v", err)
+			http.Error(w, fmt.Sprintf("Failed to start test runner: %v", err), http.StatusInternalServerError)
+			return
 		}
 	}
 
@@ -632,4 +727,120 @@ func (h *TestRunHandler) CreateAndRunSuite(w http.ResponseWriter, r *http.Reques
 		"run_id":   testRun.ID.Hex(),
 		"run":      testRun,
 	})
+}
+
+// CancelRun cancels a running or pending test run
+// It stops the runner Docker container and updates the run/result statuses
+// Endpoint: POST /api/runs/{run_id}/cancel
+func (h *TestRunHandler) CancelRun(w http.ResponseWriter, r *http.Request) {
+	claims, ok := middleware.GetUserFromContext(r.Context())
+	if !ok || claims.Email == "" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	vars := mux.Vars(r)
+	runIDStr := vars["run_id"]
+
+	// Find the run (try ObjectID first, then human-readable run_id)
+	var run *models.TestRun
+	var err error
+
+	runOID, oidErr := primitive.ObjectIDFromHex(runIDStr)
+	if oidErr == nil {
+		run, err = h.testRunRepo.GetByID(r.Context(), runOID)
+	}
+	if run == nil {
+		run, err = h.testRunRepo.GetByRunID(r.Context(), runIDStr)
+	}
+
+	if err != nil || run == nil {
+		http.Error(w, "Test run not found", http.StatusNotFound)
+		return
+	}
+
+	// Verify ownership
+	if run.TriggeredBy != claims.Email {
+		http.Error(w, "Unauthorized access to this run", http.StatusForbidden)
+		return
+	}
+
+	// Only cancel if status is pending or running
+	if run.Status != "pending" && run.Status != "running" {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": fmt.Sprintf("Cannot cancel run with status: %s", run.Status),
+		})
+		return
+	}
+
+	// Stop the runner Docker container(s)
+	// Container naming convention: testops-runner-{run_id}-{browsers}
+	stoppedContainers := h.stopRunnerContainers(run.RunID)
+
+	// Update run status to cancelled
+	if err := h.testRunRepo.UpdateStatus(r.Context(), run.ID, "cancelled"); err != nil {
+		log.Printf("Failed to update run status to cancelled: %v", err)
+	}
+
+	// Set end time
+	if err := h.testRunRepo.SetEndTime(r.Context(), run.ID); err != nil {
+		log.Printf("Failed to set end time: %v", err)
+	}
+
+	// Update all pending/running results to cancelled
+	results, err := h.testResultRepo.GetByRunID(r.Context(), run.ID)
+	if err == nil {
+		for _, result := range results {
+			if result.Status == "pending" || result.Status == "running" {
+				h.testResultRepo.UpdateStatus(r.Context(), result.ID, "cancelled", "Test cancelled by user")
+			}
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success":            true,
+		"message":            "Test run cancelled successfully",
+		"stopped_containers": stoppedContainers,
+	})
+}
+
+// stopRunnerContainers finds and stops all Docker containers for a given run_id
+func (h *TestRunHandler) stopRunnerContainers(runID string) []string {
+	var stopped []string
+
+	// Find containers matching the runner naming pattern
+	// Container names follow: testops-runner-{runID}-{browserLabel}
+	listCmd := fmt.Sprintf("docker ps --filter name=testops-runner-%s --format {{.Names}}", runID)
+	out, err := exec.Command("bash", "-c", listCmd).Output()
+	if err != nil {
+		log.Printf("Failed to list runner containers: %v", err)
+		return stopped
+	}
+
+	containerNames := strings.TrimSpace(string(out))
+	if containerNames == "" {
+		log.Printf("No runner containers found for run %s", runID)
+		return stopped
+	}
+
+	for _, name := range strings.Split(containerNames, "\n") {
+		name = strings.TrimSpace(name)
+		if name == "" {
+			continue
+		}
+		log.Printf("Stopping runner container: %s", name)
+		stopCmd := exec.Command("docker", "stop", "-t", "5", name)
+		if stopErr := stopCmd.Run(); stopErr != nil {
+			log.Printf("Failed to stop container %s: %v", name, stopErr)
+			// Try force kill
+			killCmd := exec.Command("docker", "kill", name)
+			killCmd.Run()
+		}
+		stopped = append(stopped, name)
+	}
+
+	return stopped
 }
