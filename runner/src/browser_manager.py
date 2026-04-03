@@ -6,6 +6,7 @@ based on browser capabilities (ChromeOptions vs FirefoxOptions).
 """
 import logging
 import os
+import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
@@ -23,6 +24,35 @@ class BrowserManager:
         
         # Single Selenium Grid Hub URL — Hub routes to correct node automatically
         self.hub_url = os.environ.get("SELENIUM_HUB_URL", "http://selenium-hub:4444")
+
+    def _create_remote_with_retry(self, options, browser_label: str) -> webdriver.Remote:
+        """Create a remote session with retries for transient Grid routing/connect issues."""
+        max_attempts = 4
+        for attempt in range(1, max_attempts + 1):
+            try:
+                driver = webdriver.Remote(
+                    command_executor=self.hub_url,
+                    options=options
+                )
+                return driver
+            except Exception as error:
+                error_text = str(error)
+                is_transient = (
+                    "Could not start a new session" in error_text
+                    or "HttpConnectTimeoutException" in error_text
+                    or "HTTP connect timed out" in error_text
+                    or "Unable to create session" in error_text
+                )
+
+                if attempt < max_attempts and is_transient:
+                    sleep_seconds = attempt * 2
+                    logger.warning(
+                        f"{browser_label} session attempt {attempt}/{max_attempts} failed with transient Grid error; retrying in {sleep_seconds}s: {error}"
+                    )
+                    time.sleep(sleep_seconds)
+                    continue
+
+                raise
     
     def initialize_chrome(self) -> webdriver.Remote:
         """Initialize Chrome browser via Selenium Grid Hub"""
@@ -48,10 +78,7 @@ class BrowserManager:
         try:
             if self.use_grid:
                 # Connect to Selenium Grid Hub — Hub routes to a Chrome node
-                driver = webdriver.Remote(
-                    command_executor=self.hub_url,
-                    options=options
-                )
+                driver = self._create_remote_with_retry(options, "Chrome")
                 logger.info(f"Chrome browser initialized via Hub at {self.hub_url} (session: {driver.session_id})")
             else:
                 # Fallback to local Chrome (for backward compatibility)
@@ -76,10 +103,7 @@ class BrowserManager:
         try:
             if self.use_grid:
                 # Connect to Selenium Grid Hub — Hub routes to a Firefox node
-                driver = webdriver.Remote(
-                    command_executor=self.hub_url,
-                    options=options
-                )
+                driver = self._create_remote_with_retry(options, "Firefox")
                 logger.info(f"Firefox browser initialized via Hub at {self.hub_url} (session: {driver.session_id})")
             else:
                 # Fallback to local Firefox (for backward compatibility)
