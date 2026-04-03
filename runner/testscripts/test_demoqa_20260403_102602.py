@@ -17,10 +17,10 @@ def run_test(driver):
     - Form submission works
     """
     try:
-        print("🚀 Starting DemoQA Form Test...")
+        print(" Starting DemoQA Form Test...")
 
         # Open Website
-        print("📍 Navigating to DemoQA form")
+        print(" Navigating to DemoQA form")
         driver.get("https://demoqa.com/automation-practice-form")
 
         # Wait for form
@@ -28,7 +28,7 @@ def run_test(driver):
             EC.presence_of_element_located((By.ID, "firstName"))
         )
 
-        print("✅ Form page loaded")
+        print(" Form page loaded")
 
         # Fill form
         driver.find_element(By.ID, "firstName").send_keys("Inshal")
@@ -51,11 +51,11 @@ def run_test(driver):
             EC.presence_of_element_located((By.CLASS_NAME, "modal-content"))
         )
 
-        print("🎉 TEST PASSED: Form submitted successfully")
+        print(" TEST PASSED: Form submitted successfully")
         return True
 
     except Exception as e:
-        print(f"\n❌ TEST FAILED: {e}")
+        print(f"\n TEST FAILED: {e}")
         import traceback
         traceback.print_exc()
         return False

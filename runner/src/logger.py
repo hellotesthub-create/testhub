@@ -5,7 +5,6 @@ Logger configuration for the runner service
 import logging
 import os
 from logging.handlers import RotatingFileHandler
-from datetime import datetime
 
 
 def setup_logger(name: str = "runner", log_dir: str = "./logs") -> logging.Logger:

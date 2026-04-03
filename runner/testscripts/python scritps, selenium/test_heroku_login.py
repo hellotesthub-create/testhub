@@ -17,10 +17,10 @@ def run_test(driver):
     - Success message appears
     """
     try:
-        print("🚀 Starting Heroku Login Test...")
+        print(" Starting Heroku Login Test...")
 
         # Open Website
-        print("📍 Navigating to login page")
+        print(" Navigating to login page")
         driver.get("https://the-internet.herokuapp.com/login")
 
         # Wait for login form
@@ -30,10 +30,10 @@ def run_test(driver):
 
         # Verify title
         title = driver.title
-        print(f"📄 Page title: {title}")
-        assert "The Internet" in title, "❌ Page title incorrect"
+        print(f" Page title: {title}")
+        assert "The Internet" in title, " Page title incorrect"
 
-        print("✅ Login page loaded successfully")
+        print(" Login page loaded successfully")
 
         # Enter credentials
         driver.find_element(By.ID, "username").send_keys("tomsmith")
@@ -47,14 +47,14 @@ def run_test(driver):
             EC.presence_of_element_located((By.ID, "flash"))
         )
 
-        print(f"📢 Message displayed: {success_msg.text}")
+        print(f" Message displayed: {success_msg.text}")
         assert "You logged into a secure area!" in success_msg.text
 
-        print("🎉 TEST PASSED: Heroku login successful")
+        print(" TEST PASSED: Heroku login successful")
         return True
 
     except Exception as e:
-        print(f"\n❌ TEST FAILED: {e}")
+        print(f"\n TEST FAILED: {e}")
         import traceback
         traceback.print_exc()
         return False

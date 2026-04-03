@@ -18,7 +18,7 @@ def run_test(driver):
         print(" Starting Google Homepage Test...")
         
         # Navigate to Google
-        print("📍 Navigating to www.google.com")
+        print(" Navigating to www.google.com")
         driver.get("https://www.google.com")
         
         # Wait for page to load
@@ -29,25 +29,25 @@ def run_test(driver):
         
         # Get page title
         title = driver.title
-        print(f"📄 Page title: {title}")
+        print(f" Page title: {title}")
         
         # Assert title contains 'Google'
         assert "Google" in title, f"Expected 'Google' in title, got: {title}"
-        print("✅ Title assertion passed")
+        print(" Title assertion passed")
         
         # Verify search box is present
         search_box = driver.find_element(By.NAME, "q")
         assert search_box.is_displayed(), "Search box is not visible"
-        print("✅ Search box is visible")
+        print(" Search box is visible")
         
         # Type in search box
-        print("⌨️  Typing 'Selenium automation' in search box")
+        print("⌨  Typing 'Selenium automation' in search box")
         search_box.send_keys("Selenium automation")
         time.sleep(1)
         
         # Click search button or submit
         search_box.submit()
-        print("🔍 Search submitted")
+        print(" Search submitted")
         
         # Wait for results
         print("⏳ Waiting for search results...")
@@ -55,14 +55,14 @@ def run_test(driver):
             EC.presence_of_element_located((By.ID, "search"))
         )
         
-        print("✅ Search results loaded successfully")
+        print(" Search results loaded successfully")
         time.sleep(2)
         
-        print("✅ TEST PASSED: Google search test completed successfully")
+        print(" TEST PASSED: Google search test completed successfully")
         return True
         
     except Exception as e:
-        print(f"❌ TEST FAILED: {e}")
+        print(f" TEST FAILED: {e}")
         import traceback
         traceback.print_exc()
         return False

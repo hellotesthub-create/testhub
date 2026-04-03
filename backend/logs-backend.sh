@@ -14,4 +14,13 @@ echo ""
 echo "Showing logs (press Ctrl+C to exit)..."
 echo ""
 
-docker-compose logs -f
+if docker compose version > /dev/null 2>&1; then
+	COMPOSE_CMD=(docker compose)
+elif command -v docker-compose > /dev/null 2>&1; then
+	COMPOSE_CMD=(docker-compose)
+else
+	echo "Error: Docker Compose is not installed"
+	exit 1
+fi
+
+"${COMPOSE_CMD[@]}" logs -f

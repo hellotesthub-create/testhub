@@ -5,7 +5,6 @@ Supports both frameworks: selenium (external Grid) and playwright (self-containe
 """
 import os
 import sys
-import time
 import importlib.util
 import traceback
 import subprocess
@@ -613,7 +612,6 @@ class TestRunner:
         result = TestResult(test_file.name, browser=browser_type)
         result.status = "RUNNING"
         result.start_time = datetime.now()
-        video_path = None
         
         # Create LOCAL instances for thread safety — each test gets its own
         browser_manager = BrowserManager(browser_type=browser_type, headless=False)
@@ -632,7 +630,7 @@ class TestRunner:
             
             # Start video recording AFTER browser is initialized
             # Pass session_id so video recorder can find the exact Grid node container
-            video_path = video_recorder.start_recording(
+            video_recorder.start_recording(
                 test_file.stem,
                 browser=browser_type,
                 session_id=browser_manager.session_id
@@ -793,7 +791,6 @@ class TestRunner:
         result.start_time = datetime.now()
         
         pw_manager = PlaywrightBrowserManager(browser_type=browser_type, headless=True)
-        screenshot_handler = Screenshot(str(self.screenshots_dir))
         
         logger.info("")
         logger.info("=" * 80)

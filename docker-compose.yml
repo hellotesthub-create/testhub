@@ -64,7 +64,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./docker-compose.yml:/app/docker-compose.yml
       - ./:/app/project
-    # No depends_on: postgres or redis
     networks:
       - testops-network
       - testops-db-network

@@ -14,8 +14,17 @@ echo "Stopping Backend API"
 echo "======================================"
 echo ""
 
+if docker compose version > /dev/null 2>&1; then
+	COMPOSE_CMD=(docker compose)
+elif command -v docker-compose > /dev/null 2>&1; then
+	COMPOSE_CMD=(docker-compose)
+else
+	echo "Error: Docker Compose is not installed"
+	exit 1
+fi
+
 echo "Stopping backend container..."
-docker-compose down
+"${COMPOSE_CMD[@]}" down --remove-orphans
 
 echo ""
 echo "======================================"

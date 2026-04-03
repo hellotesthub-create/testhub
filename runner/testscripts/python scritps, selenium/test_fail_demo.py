@@ -17,11 +17,11 @@ def run_test(driver):
     NOTE: Comment out the assertion to make it pass
     """
     try:
-        print("🚀 Starting Intentional Failure Test...")
-        print("⚠️  This test is designed to fail for demonstration purposes")
+        print(" Starting Intentional Failure Test...")
+        print("  This test is designed to fail for demonstration purposes")
         
         # Navigate to example.com
-        print("📍 Navigating to example.com")
+        print(" Navigating to example.com")
         driver.get("https://www.example.com")
         
         # Wait for page to load
@@ -30,21 +30,21 @@ def run_test(driver):
         
         # Get page title
         title = driver.title
-        print(f"📄 Page title: {title}")
+        print(f" Page title: {title}")
         
         # This assertion will fail intentionally
-        print("🔍 Checking for non-existent text in title...")
+        print(" Checking for non-existent text in title...")
         assert "NonExistentText12345" in title, "This assertion is designed to fail!"
         
         # This line won't be reached
-        print("✅ TEST PASSED")
+        print(" TEST PASSED")
         return True
         
     except AssertionError as e:
-        print(f"❌ ASSERTION FAILED: {e}")
+        print(f" ASSERTION FAILED: {e}")
         return False
     except Exception as e:
-        print(f"❌ TEST FAILED: {e}")
+        print(f" TEST FAILED: {e}")
         import traceback
         traceback.print_exc()
         return False

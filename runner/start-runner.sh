@@ -4,14 +4,23 @@
 echo "Starting Selenium Test Runner..."
 echo "=================================="
 
+if docker compose version > /dev/null 2>&1; then
+	COMPOSE_CMD=(docker compose)
+elif command -v docker-compose > /dev/null 2>&1; then
+	COMPOSE_CMD=(docker-compose)
+else
+	echo "Error: Docker Compose is not installed"
+	exit 1
+fi
+
 # Build the runner image
 echo "Building Docker image..."
-docker-compose build runner
+"${COMPOSE_CMD[@]}" build runner
 
 # Run the tests
 echo ""
 echo "Running Selenium tests..."
-docker-compose up runner
+"${COMPOSE_CMD[@]}" up runner
 
 echo ""
 echo "=================================="

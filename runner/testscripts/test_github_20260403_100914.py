@@ -18,10 +18,10 @@ def run_test(driver):
         # Screenshot directory (framework handles this path)
         screenshot_dir = os.getenv("OUTPUT_DIR", "/app/output") + "/screenshots"
         
-        print("🚀 Starting GitHub Full Page Scroll Test...")
+        print(" Starting GitHub Full Page Scroll Test...")
 
         # Open GitHub
-        print("📍 Navigating to github.com")
+        print(" Navigating to github.com")
         driver.get("https://github.com")
 
         # Wait for body load
@@ -33,11 +33,11 @@ def run_test(driver):
 
         # Verify title
         title = driver.title
-        print(f"📄 Page title: {title}")
-        assert "GitHub" in title, "❌ GitHub title missing"
-        print("✅ GitHub homepage loaded")
+        print(f" Page title: {title}")
+        assert "GitHub" in title, " GitHub title missing"
+        print(" GitHub homepage loaded")
 
-        print("\n📜 Starting full page scrolling...")
+        print("\n Starting full page scrolling...")
 
         # Find page height
         last_height = driver.execute_script("return document.body.scrollHeight")
@@ -48,13 +48,13 @@ def run_test(driver):
             screenshot_name = f"github_scroll_{scroll_count + 1}.png"
             screenshot_path = os.path.join(screenshot_dir, screenshot_name)
             driver.save_screenshot(screenshot_path)
-            print(f"📸 Saved screenshot: {screenshot_name}")
+            print(f" Saved screenshot: {screenshot_name}")
             
             # Scroll down by viewport height
             driver.execute_script("window.scrollBy(0, window.innerHeight);")
             time.sleep(1)
             scroll_count += 1
-            print(f"📜 Scroll step {scroll_count}...")
+            print(f" Scroll step {scroll_count}...")
 
             # Calculate new height
             new_height = driver.execute_script("return window.pageYOffset + window.innerHeight")
@@ -68,7 +68,7 @@ def run_test(driver):
                 # Check if footer is currently visible in viewport
                 if new_height >= footer_y:
                     footer_visible = True
-                    print("🛑 Footer reached")
+                    print(" Footer reached")
             except:
                 pass
 
@@ -77,18 +77,18 @@ def run_test(driver):
                 # Take final screenshot at bottom
                 final_screenshot = os.path.join(screenshot_dir, "github_scroll_footer.png")
                 driver.save_screenshot(final_screenshot)
-                print("📸 Saved screenshot: github_scroll_footer.png")
+                print(" Saved screenshot: github_scroll_footer.png")
                 break
 
         # Scroll back to top
         driver.execute_script("window.scrollTo(0, 0);")
         time.sleep(1)
         
-        print("\n🎉 TEST PASSED: Full GitHub page viewed successfully with screenshots")
+        print("\n TEST PASSED: Full GitHub page viewed successfully with screenshots")
         return True
 
     except Exception as e:
-        print(f"\n❌ TEST FAILED: {e}")
+        print(f"\n TEST FAILED: {e}")
         import traceback
         traceback.print_exc()
         return False

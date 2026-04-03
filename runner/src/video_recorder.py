@@ -249,7 +249,7 @@ class VideoRecorder:
             
             # Execute command (detached mode — runs in background inside container)
             logger.info(f"Starting ffmpeg in container {self.container_id[:12]}...")
-            result = subprocess.Popen(
+            subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE

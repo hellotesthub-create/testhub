@@ -11,6 +11,15 @@
 
 SERVICE_NAME=${1:-}
 
+if docker compose version > /dev/null 2>&1; then
+    COMPOSE_CMD=(docker compose)
+elif command -v docker-compose > /dev/null 2>&1; then
+    COMPOSE_CMD=(docker-compose)
+else
+    echo "Error: Docker Compose is not installed"
+    exit 1
+fi
+
 echo "======================================"
 echo "Database Microservice Logs"
 echo "======================================"
@@ -19,9 +28,9 @@ echo ""
 if [ -z "$SERVICE_NAME" ]; then
     echo "Showing logs for all services (press Ctrl+C to exit)..."
     echo ""
-    docker-compose logs -f
+    "${COMPOSE_CMD[@]}" logs -f
 else
     echo "Showing logs for: $SERVICE_NAME (press Ctrl+C to exit)..."
     echo ""
-    docker-compose logs -f "$SERVICE_NAME"
+    "${COMPOSE_CMD[@]}" logs -f "$SERVICE_NAME"
 fi
