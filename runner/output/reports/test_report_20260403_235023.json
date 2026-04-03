@@ -1,0 +1,30 @@
+{
+  "timestamp": "20260403_235023",
+  "total_tests": 2,
+  "passed": 2,
+  "failed": 0,
+  "success_rate": "100.0%",
+  "total_duration_seconds": 26.627648999999998,
+  "results": [
+    {
+      "test_name": "test_heroku_login_20260302_085545.py",
+      "browser": "chrome",
+      "status": "PASSED",
+      "start_time": "2026-04-03 23:50:01.667744",
+      "end_time": "2026-04-03 23:50:09.338872",
+      "duration_seconds": 7.671128,
+      "error_message": null,
+      "screenshot_path": "/app/output/screenshots/test_heroku_login_20260302_085545_chrome_success_20260403_235009.png"
+    },
+    {
+      "test_name": "test_heroku_login_20260403_102602.py",
+      "browser": "chrome",
+      "status": "PASSED",
+      "start_time": "2026-04-03 23:50:01.667970",
+      "end_time": "2026-04-03 23:50:20.624491",
+      "duration_seconds": 18.956521,
+      "error_message": null,
+      "screenshot_path": "/app/output/screenshots/test_heroku_login_20260403_102602_chrome_success_20260403_235020.png"
+    }
+  ]
+}
