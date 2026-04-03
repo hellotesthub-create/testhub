@@ -50,9 +50,9 @@ def capture_step(driver, step_name):
     filepath = os.path.join(screenshots_dir, filename)
     try:
         driver.save_screenshot(filepath)
-        print(f"📸 Step screenshot saved: {filename}")
+        print(f" Step screenshot saved: {filename}")
     except Exception as e:
-        print(f"⚠️ Failed to capture step screenshot: {e}")
+        print(f" Failed to capture step screenshot: {e}")
 
 
 def run_test(driver):
@@ -67,10 +67,10 @@ def run_test(driver):
     _step_counter = 0
 
     try:
-        print("🚀 Starting Swag Labs Login Test...")
+        print(" Starting Swag Labs Login Test...")
 
         # Step 1: Open Website
-        print("📍 Navigating to Swag Labs")
+        print(" Navigating to Swag Labs")
         driver.get("https://www.saucedemo.com/")
 
         # Wait for login page to load
@@ -82,25 +82,25 @@ def run_test(driver):
 
         # Verify page title
         title = driver.title
-        print(f"📄 Page title: {title}")
-        assert "Swag Labs" in title, "❌ Title does not contain 'Swag Labs'"
-        print("✅ Login page loaded successfully")
+        print(f" Page title: {title}")
+        assert "Swag Labs" in title, " Title does not contain 'Swag Labs'"
+        print(" Login page loaded successfully")
         capture_step(driver, "login_page_loaded")
 
         # Step 2: Enter username
-        print("✏️ Entering username")
+        print(" Entering username")
         username_field = driver.find_element(By.ID, "user-name")
         human_type(username_field, "standard_user")
         capture_step(driver, "username_entered")
 
         # Step 3: Enter password
-        print("✏️ Entering password")
+        print(" Entering password")
         password_field = driver.find_element(By.ID, "password")
         human_type(password_field, "secret_sauce")
         capture_step(driver, "password_entered")
 
         # Step 4: Click login
-        print("🔐 Clicking login button")
+        print(" Clicking login button")
         small_pause()
         driver.find_element(By.ID, "login-button").click()
 
@@ -113,17 +113,17 @@ def run_test(driver):
 
         # Validate URL
         current_url = driver.current_url
-        print(f"🔗 Current URL: {current_url}")
-        assert "inventory" in current_url, "❌ Did not navigate to inventory page"
+        print(f" Current URL: {current_url}")
+        assert "inventory" in current_url, " Did not navigate to inventory page"
 
-        print("✅ Login successful - Inventory page loaded")
+        print(" Login successful - Inventory page loaded")
         capture_step(driver, "inventory_page_loaded")
 
-        print("\n🎉 TEST PASSED: Swag Labs login test completed successfully!")
+        print("\n TEST PASSED: Swag Labs login test completed successfully!")
         return True
 
     except Exception as e:
-        print(f"\n❌ TEST FAILED: {e}")
+        print(f"\n TEST FAILED: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -132,7 +132,7 @@ def run_test(driver):
 if __name__ == "__main__":
     from selenium import webdriver
 
-    print("🔧 Setting up WebDriver...")
+    print(" Setting up WebDriver...")
 
     options = webdriver.ChromeOptions()
     options.add_argument("--start-maximized")
@@ -141,11 +141,11 @@ if __name__ == "__main__":
 
     result = run_test(driver)
 
-    print("\n🧹 Closing browser...")
+    print("\n Closing browser...")
     time.sleep(2)
     driver.quit()
 
     if result:
-        print("✅ Script finished successfully.")
+        print(" Script finished successfully.")
     else:
-        print("❌ Script finished with errors.")
+        print(" Script finished with errors.")

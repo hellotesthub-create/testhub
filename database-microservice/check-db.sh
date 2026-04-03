@@ -12,15 +12,19 @@ echo "Database Microservice Status"
 echo "======================================"
 echo ""
 
-# Check if docker-compose is installed
-if ! command -v docker-compose &> /dev/null; then
-    echo "Error: docker-compose is not installed"
+# Resolve compose command (prefer Compose v2 plugin)
+if docker compose version > /dev/null 2>&1; then
+    COMPOSE_CMD=(docker compose)
+elif command -v docker-compose > /dev/null 2>&1; then
+    COMPOSE_CMD=(docker-compose)
+else
+    echo "Error: Docker Compose is not installed"
     exit 1
 fi
 
 # Check container status
 echo "Container Status:"
-docker-compose ps
+"${COMPOSE_CMD[@]}" ps
 echo ""
 
 # Check if MongoDB is accessible
@@ -46,10 +50,10 @@ echo ""
 echo "Recent Logs (last 10 lines):"
 echo ""
 echo "--- MongoDB Logs ---"
-docker-compose logs --tail=10 mongo
+"${COMPOSE_CMD[@]}" logs --tail=10 mongo
 echo ""
 echo "--- Mongo Express Logs ---"
-docker-compose logs --tail=10 mongo-express
+"${COMPOSE_CMD[@]}" logs --tail=10 mongo-express
 echo ""
 
 # Check database collections

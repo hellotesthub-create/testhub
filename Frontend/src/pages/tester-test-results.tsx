@@ -799,7 +799,7 @@ export default function TesterTestResults() {
                 className={`text-xs sm:text-sm ${copySuccess ? "border-green-500 text-green-600 dark:text-green-400" : ""}`}
               >
                 {copySuccess ? (
-                  <><Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" /> <span className="hidden sm:inline">Copied!</span><span className="sm:hidden">✓</span></>
+                  <><Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" /> <span className="hidden sm:inline">Copied!</span><span className="sm:hidden"></span></>
                 ) : (
                   <><Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" /> <span className="hidden sm:inline">Copy Logs</span><span className="sm:hidden">Copy</span></>
                 )}

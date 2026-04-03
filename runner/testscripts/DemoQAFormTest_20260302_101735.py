@@ -20,7 +20,7 @@ def capture_step(page: Page, step_name: str):
     os.makedirs(SCREENSHOTS_DIR, exist_ok=True)
     path = os.path.join(SCREENSHOTS_DIR, f"{step_name}.png")
     page.screenshot(path=path)
-    print(f"  📸 Screenshot: {step_name}")
+    print(f"   Screenshot: {step_name}")
 
 
 # ── Main test function (this is what the runner calls) ──

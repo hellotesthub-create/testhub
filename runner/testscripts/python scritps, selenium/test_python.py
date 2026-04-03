@@ -15,10 +15,10 @@ def run_test(driver):
     This test verifies homepage load, navigation menu links, and page transitions.
     """
     try:
-        print("🚀 Starting Python.org Website Navigation Test...")
+        print(" Starting Python.org Website Navigation Test...")
 
         # Open Website
-        print("📍 Navigating to python.org")
+        print(" Navigating to python.org")
         driver.get("https://www.python.org")
 
         # Wait for page to load
@@ -30,12 +30,12 @@ def run_test(driver):
 
         # Verify Title
         title = driver.title
-        print(f"📄 Page title: {title}")
-        assert "Python" in title, "❌ Title does not contain 'Python'"
-        print("✅ Python.org homepage loaded")
+        print(f" Page title: {title}")
+        assert "Python" in title, " Title does not contain 'Python'"
+        print(" Python.org homepage loaded")
 
         # Scroll a bit
-        print("📜 Scrolling page...")
+        print(" Scrolling page...")
         driver.execute_script("window.scrollTo(0, 400);")
         time.sleep(1)
         driver.execute_script("window.scrollTo(0, 800);")
@@ -44,9 +44,9 @@ def run_test(driver):
         time.sleep(1)
 
         # -----------------------------
-        # 🔗 NAVIGATION THROUGH PAGES
+        #  NAVIGATION THROUGH PAGES
         # -----------------------------
-        print("\n🔗 Starting navigation through menu links...")
+        print("\n Starting navigation through menu links...")
 
         pages_to_test = [
             ("Downloads", "downloads"),
@@ -56,7 +56,7 @@ def run_test(driver):
         ]
 
         for page_name, expected_url_part in pages_to_test:
-            print(f"\n➡️ Navigating to: {page_name}")
+            print(f"\n Navigating to: {page_name}")
 
             # Click navigation link
             link = WebDriverWait(driver, 10).until(
@@ -69,18 +69,18 @@ def run_test(driver):
 
             # Verify URL contains expected section
             current_url = driver.current_url
-            print(f"🔗 URL after navigation: {current_url}")
+            print(f" URL after navigation: {current_url}")
 
             assert expected_url_part.lower() in current_url.lower(), (
-                f"❌ Expected '{expected_url_part}' in URL"
+                f" Expected '{expected_url_part}' in URL"
             )
-            print(f"✅ Navigation to {page_name} page successful")
+            print(f" Navigation to {page_name} page successful")
 
-        print("\n🎉 TEST PASSED: Python.org navigation test completed successfully!")
+        print("\n TEST PASSED: Python.org navigation test completed successfully!")
         return True
 
     except Exception as e:
-        print(f"\n❌ TEST FAILED: {e}")
+        print(f"\n TEST FAILED: {e}")
         import traceback
         traceback.print_exc()
         return False

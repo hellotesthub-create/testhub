@@ -21,9 +21,14 @@ if ! docker info > /dev/null 2>&1; then
     exit 1
 fi
 
-# Check if docker-compose is installed
-if ! command -v docker-compose &> /dev/null; then
-    echo "Error: docker-compose is not installed"
+# Resolve compose command (prefer Compose v2 plugin)
+if docker compose version > /dev/null 2>&1; then
+    COMPOSE_CMD=(docker compose)
+elif command -v docker-compose > /dev/null 2>&1; then
+    COMPOSE_CMD=(docker-compose)
+    echo "Warning: using legacy docker-compose v1; Compose v2 is recommended"
+else
+    echo "Error: Docker Compose is not installed"
     exit 1
 fi
 
@@ -35,7 +40,12 @@ if [ ! -f .env ]; then
 fi
 
 echo "Starting containers..."
-docker-compose up -d
+
+# Clean stale containers to avoid docker-compose v1 'ContainerConfig' recreate bug
+"${COMPOSE_CMD[@]}" down --remove-orphans > /dev/null 2>&1 || true
+docker ps -aq --filter "name=testops-mongo" --filter "name=testops-mongo-express" | xargs -r docker rm -f > /dev/null 2>&1 || true
+
+"${COMPOSE_CMD[@]}" up -d --force-recreate --remove-orphans
 
 echo ""
 echo "Waiting for services to be ready..."
@@ -44,7 +54,7 @@ sleep 5
 # Check if containers are running
 echo ""
 echo "Container Status:"
-docker-compose ps
+"${COMPOSE_CMD[@]}" ps
 
 echo ""
 echo "======================================"
@@ -64,7 +74,7 @@ echo "Database Name: testops"
 echo "Collections: users"
 echo ""
 echo "Useful Commands:"
-echo "View logs: docker-compose logs -f"
+echo "View logs: docker compose logs -f"
 echo "Stop service: ./stop-db.sh"
 echo "Check status: ./check-db.sh"
 echo ""

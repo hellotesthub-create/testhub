@@ -663,14 +663,10 @@ THEX/
 |   |-- check-db.sh
 |   +-- restart-db.sh
 |
-|-- database/postgres/                 # PostgreSQL init scripts (alternative)
-|   +-- init.sql/
-|
 +-- docker/                            # Additional Dockerfiles
     |-- backend.Dockerfile
     |-- gateway.Dockerfile
     |-- mongo.Dockerfile
-    |-- redis.Dockerfile
     +-- runner.Dockerfile
 ```
 

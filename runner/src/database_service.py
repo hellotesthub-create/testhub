@@ -9,11 +9,10 @@ Schema:
 - screenshots/videos/logs: Artifacts linked to result_id and run_id
 """
 import os
-import base64
 from datetime import datetime
 from typing import Optional
 from pymongo import MongoClient
-from pymongo.errors import ConnectionFailure, DuplicateKeyError
+from pymongo.errors import ConnectionFailure
 from bson import ObjectId
 import gridfs
 from logger import setup_logger
