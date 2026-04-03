@@ -419,7 +419,7 @@ func (s *RunnerService) ExecuteTestRunParallel(params RunParams) error {
 
 	// Build docker create command (create container without starting it)
 	// This allows us to connect to BOTH networks BEFORE the runner process starts.
-	seleniumNetwork := "thex_testops-network"
+	seleniumNetwork := s.resolveSeleniumNetwork(dockerPath)
 
 	createArgs := []string{
 		"create", "--rm",
@@ -472,13 +472,22 @@ func (s *RunnerService) ExecuteTestRunParallel(params RunParams) error {
 	// Step 2: Connect to the Selenium Grid network BEFORE starting
 	// Only needed for Selenium framework — Playwright doesn't use external Grid
 	if framework == "selenium" {
-		connectCmd := exec.Command(dockerPath, "network", "connect", seleniumNetwork, containerName)
-		if out, err := connectCmd.CombinedOutput(); err != nil {
-			// Clean up the created container since it can't reach Selenium
+		if seleniumNetwork == "" {
 			exec.Command(dockerPath, "rm", "-f", containerName).Run()
-			return fmt.Errorf("failed to connect runner to %s: %v (%s)", seleniumNetwork, err, string(out))
+			return fmt.Errorf("failed to resolve Selenium Docker network")
 		}
-		log.Printf("Runner connected to Selenium network: %s", seleniumNetwork)
+
+		if seleniumNetwork == s.dockerNetwork {
+			log.Printf("Runner already on Selenium network: %s", seleniumNetwork)
+		} else {
+			connectCmd := exec.Command(dockerPath, "network", "connect", seleniumNetwork, containerName)
+			if out, err := connectCmd.CombinedOutput(); err != nil {
+				// Clean up the created container since it can't reach Selenium
+				exec.Command(dockerPath, "rm", "-f", containerName).Run()
+				return fmt.Errorf("failed to connect runner to %s: %v (%s)", seleniumNetwork, err, string(out))
+			}
+			log.Printf("Runner connected to Selenium network: %s", seleniumNetwork)
+		}
 	} else {
 		log.Printf("Playwright mode — skipping Selenium Grid network connection")
 	}
@@ -512,6 +521,39 @@ func (s *RunnerService) ExecuteTestRunParallel(params RunParams) error {
 
 	log.Printf("Runner container spawned: %s", containerName)
 	return nil
+}
+
+// resolveSeleniumNetwork resolves the Docker network that contains selenium-hub.
+// Priority:
+// 1. SELENIUM_DOCKER_NETWORK env var
+// 2. First network discovered from `docker inspect selenium-hub`
+func (s *RunnerService) resolveSeleniumNetwork(dockerPath string) string {
+	if networkFromEnv := strings.TrimSpace(os.Getenv("SELENIUM_DOCKER_NETWORK")); networkFromEnv != "" {
+		return networkFromEnv
+	}
+
+	inspectCmd := exec.Command(
+		dockerPath,
+		"inspect",
+		"--format",
+		"{{range $name, $_ := .NetworkSettings.Networks}}{{println $name}}{{end}}",
+		"selenium-hub",
+	)
+	out, err := inspectCmd.Output()
+	if err != nil {
+		log.Printf("Warning: unable to inspect selenium-hub network: %v", err)
+		return ""
+	}
+
+	networkLines := strings.Split(strings.TrimSpace(string(out)), "\n")
+	for _, line := range networkLines {
+		network := strings.TrimSpace(line)
+		if network != "" {
+			return network
+		}
+	}
+
+	return ""
 }
 
 // GetRunnerDir returns the runner directory path

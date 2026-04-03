@@ -97,7 +97,10 @@ services:
 
   # Chrome Node - Scalable via: docker-compose up --scale chrome-node=5
   chrome-node:
-    image: selenium/node-chrome:4.21.0
+    build:
+      context: .
+      dockerfile: docker/selenium-node-chrome-video.Dockerfile
+    image: testhub/selenium-node-chrome-video:4.21.0
     # NO container_name — allows multiple replicas
     # Scale with: docker-compose up -d --scale chrome-node=3
     environment:
@@ -125,7 +128,10 @@ services:
 
   # Firefox Node - Scalable via: docker-compose up --scale firefox-node=5
   firefox-node:
-    image: selenium/node-firefox:4.21.0
+    build:
+      context: .
+      dockerfile: docker/selenium-node-firefox-video.Dockerfile
+    image: testhub/selenium-node-firefox-video:4.21.0
     # NO container_name — allows multiple replicas
     # Scale with: docker-compose up -d --scale firefox-node=3
     environment:
