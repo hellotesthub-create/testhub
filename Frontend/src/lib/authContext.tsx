@@ -98,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     setToken(null);
     setUser(null);
-    setLocation('/auth');
+    setLocation('/');
   };
 
   const value = {
