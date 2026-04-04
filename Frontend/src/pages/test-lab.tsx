@@ -58,6 +58,7 @@ export default function TestLab() {
   // Create Test Suite state
   const [suiteName, setSuiteName] = useState("");
   const [selectedBrowsers, setSelectedBrowsers] = useState<string[]>([]);
+  const [sendCompletionEmail, setSendCompletionEmail] = useState(true);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [selectedLanguage, setSelectedLanguage] = useState<"python" | "java" | "both">("python");
   const [selectedFramework, setSelectedFramework] = useState<"selenium" | "playwright">("selenium");
@@ -284,6 +285,7 @@ export default function TestLab() {
       formData.append("username", user?.username || "");
       formData.append("email", user?.email || "");
       formData.append("user_id", user?.id || "");
+      formData.append("send_email_on_completion", String(sendCompletionEmail));
 
       if (scriptSource === "upload") {
         uploadedFiles.forEach((fileObj) => {
@@ -536,6 +538,7 @@ export default function TestLab() {
     setShowSuccessDialog(false);
     setSuiteName("");
     setSelectedBrowsers([]);
+    setSendCompletionEmail(true);
     setUploadedFiles([]);
     setSelectedLanguage("python");
     setSelectedFramework("selenium");
@@ -952,6 +955,19 @@ export default function TestLab() {
                       {cancelling ? "Cancelling..." : "Cancel Run"}
                     </Button>
                   )}
+
+                  <div className="flex items-start gap-2 rounded-lg border border-slate-300 dark:border-white/10 p-2.5 w-full sm:w-auto">
+                    <Checkbox
+                      checked={sendCompletionEmail}
+                      onCheckedChange={(checked) => setSendCompletionEmail(checked === true)}
+                      disabled={isRunning}
+                      className="mt-0.5"
+                    />
+                    <div>
+                      <p className="text-xs sm:text-sm font-medium text-slate-900 dark:text-white">Send completion email</p>
+                      <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400">Includes summary, logs and report attachment.</p>
+                    </div>
+                  </div>
                   
                   {!isSuiteReady && (
                     <div className="flex items-center gap-1.5 sm:gap-2 text-amber-500 text-xs sm:text-sm">

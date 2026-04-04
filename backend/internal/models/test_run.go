@@ -8,28 +8,29 @@ import (
 
 // TestRun represents a single execution of a test suite
 type TestRun struct {
-	ID              primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	RunID           string             `json:"run_id" bson:"run_id"`             // Human-readable ID (e.g., 20260220_143052)
-	SuiteID         primitive.ObjectID `json:"suite_id" bson:"suite_id"`         // Reference to test_suites._id
-	SuiteName       string             `json:"suite_name" bson:"suite_name"`     // Denormalized
-	TriggeredBy     string             `json:"triggered_by" bson:"triggered_by"` // User email who triggered
-	TriggerType     string             `json:"trigger_type" bson:"trigger_type"` // manual, github, scheduled
-	Browsers        []string           `json:"browsers" bson:"browsers"`         // Browsers used in this run
-	StartTime       *time.Time         `json:"start_time,omitempty" bson:"start_time,omitempty"`
-	EndTime         *time.Time         `json:"end_time,omitempty" bson:"end_time,omitempty"`
-	DurationSeconds float64            `json:"duration_seconds" bson:"duration_seconds"`
-	Framework       string             `json:"framework" bson:"framework"` // selenium, playwright
-	Status          string             `json:"status" bson:"status"`       // pending, running, completed, failed, cancelled
-	TotalTests      int                `json:"total_tests" bson:"total_tests"`
-	Passed          int                `json:"passed" bson:"passed"`
-	Failed          int                `json:"failed" bson:"failed"`
-	Skipped         int                `json:"skipped" bson:"skipped"`
-	SuccessRate     float64            `json:"success_rate" bson:"success_rate"`
-	EmailStatus     string             `json:"email_status,omitempty" bson:"email_status,omitempty"`       // pending, sending, sent, failed
-	EmailSentAt     *time.Time         `json:"email_sent_at,omitempty" bson:"email_sent_at,omitempty"`
-	EmailError      string             `json:"email_error,omitempty" bson:"email_error,omitempty"`
-	CreatedAt       time.Time          `json:"created_at" bson:"created_at"`
-	UpdatedAt       time.Time          `json:"updated_at" bson:"updated_at"`
+	ID                primitive.ObjectID `json:"id" bson:"_id,omitempty"`
+	RunID             string             `json:"run_id" bson:"run_id"`             // Human-readable ID (e.g., 20260220_143052)
+	SuiteID           primitive.ObjectID `json:"suite_id" bson:"suite_id"`         // Reference to test_suites._id
+	SuiteName         string             `json:"suite_name" bson:"suite_name"`     // Denormalized
+	TriggeredBy       string             `json:"triggered_by" bson:"triggered_by"` // User email who triggered
+	TriggerType       string             `json:"trigger_type" bson:"trigger_type"` // manual, github, scheduled
+	Browsers          []string           `json:"browsers" bson:"browsers"`         // Browsers used in this run
+	StartTime         *time.Time         `json:"start_time,omitempty" bson:"start_time,omitempty"`
+	EndTime           *time.Time         `json:"end_time,omitempty" bson:"end_time,omitempty"`
+	DurationSeconds   float64            `json:"duration_seconds" bson:"duration_seconds"`
+	Framework         string             `json:"framework" bson:"framework"` // selenium, playwright
+	Status            string             `json:"status" bson:"status"`       // pending, running, completed, failed, cancelled
+	TotalTests        int                `json:"total_tests" bson:"total_tests"`
+	Passed            int                `json:"passed" bson:"passed"`
+	Failed            int                `json:"failed" bson:"failed"`
+	Skipped           int                `json:"skipped" bson:"skipped"`
+	SuccessRate       float64            `json:"success_rate" bson:"success_rate"`
+	EmailOnCompletion bool               `json:"email_on_completion,omitempty" bson:"email_on_completion,omitempty"`
+	EmailStatus       string             `json:"email_status,omitempty" bson:"email_status,omitempty"` // pending, sending, sent, failed
+	EmailSentAt       *time.Time         `json:"email_sent_at,omitempty" bson:"email_sent_at,omitempty"`
+	EmailError        string             `json:"email_error,omitempty" bson:"email_error,omitempty"`
+	CreatedAt         time.Time          `json:"created_at" bson:"created_at"`
+	UpdatedAt         time.Time          `json:"updated_at" bson:"updated_at"`
 }
 
 // TestRunCreateRequest is used for starting a new test run

@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -440,6 +441,12 @@ func (h *TestRunHandler) CreateAndRunSuite(w http.ResponseWriter, r *http.Reques
 	browsersJSON := r.FormValue("browsers")
 	language := r.FormValue("language")   // python, java, or both
 	framework := r.FormValue("framework") // selenium or playwright
+	sendEmailOnCompletion := false
+	if v := strings.TrimSpace(r.FormValue("send_email_on_completion")); v != "" {
+		if b, err := strconv.ParseBool(v); err == nil {
+			sendEmailOnCompletion = b
+		}
+	}
 
 	// Use JWT claims for user identity (not form values)
 	username := claims.Username
@@ -631,19 +638,26 @@ func (h *TestRunHandler) CreateAndRunSuite(w http.ResponseWriter, r *http.Reques
 
 	// Create test run
 	testRun := models.TestRun{
-		RunID:       runID,
-		SuiteID:     suite.ID,
-		SuiteName:   suite.SuiteName,
-		TriggeredBy: claims.Email,
-		Browsers:    browsers,
-		Framework:   framework,
-		Status:      "pending",
-		TotalTests:  len(testCases) * len(browsers), // Expected total — runners check this to know when all are done
-		Passed:      0,
-		Failed:      0,
-		SuccessRate: 0,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		RunID:             runID,
+		SuiteID:           suite.ID,
+		SuiteName:         suite.SuiteName,
+		TriggeredBy:       claims.Email,
+		Browsers:          browsers,
+		Framework:         framework,
+		Status:            "pending",
+		TotalTests:        len(testCases) * len(browsers), // Expected total — runners check this to know when all are done
+		Passed:            0,
+		Failed:            0,
+		SuccessRate:       0,
+		EmailOnCompletion: sendEmailOnCompletion,
+		EmailStatus: func() string {
+			if sendEmailOnCompletion {
+				return "pending"
+			}
+			return ""
+		}(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	if err := h.testRunRepo.Create(r.Context(), &testRun); err != nil {

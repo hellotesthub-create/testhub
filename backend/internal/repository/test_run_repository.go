@@ -237,8 +237,9 @@ func (r *TestRunRepository) GetRunsNeedingEmail(ctx context.Context, limit int64
 	}
 
 	filter := bson.M{
-		"status": bson.M{"$in": []string{"completed", "failed"}},
-		"triggered_by": bson.M{"$ne": ""},
+		"status":              bson.M{"$in": []string{"completed", "failed"}},
+		"triggered_by":        bson.M{"$ne": ""},
+		"email_on_completion": true,
 		"$or": []bson.M{
 			{"email_status": bson.M{"$exists": false}},
 			{"email_status": bson.M{"$nin": []string{"sent", "sending"}}},
@@ -264,8 +265,9 @@ func (r *TestRunRepository) GetRunsNeedingEmail(ctx context.Context, limit int64
 // Returns true if this call acquired the send responsibility.
 func (r *TestRunRepository) TryMarkEmailSending(ctx context.Context, id primitive.ObjectID) (bool, error) {
 	filter := bson.M{
-		"_id": id,
-		"status": bson.M{"$in": []string{"completed", "failed"}},
+		"_id":                 id,
+		"status":              bson.M{"$in": []string{"completed", "failed"}},
+		"email_on_completion": true,
 		"$or": []bson.M{
 			{"email_status": bson.M{"$exists": false}},
 			{"email_status": bson.M{"$nin": []string{"sent", "sending"}}},
