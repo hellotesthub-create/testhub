@@ -285,7 +285,7 @@ export default function LandingPage() {
             <p>&copy; 2025 TESTHUB Inc. All rights reserved.</p>
             <div className="flex gap-4">
               <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Twitter</a>
-              <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">GitHub</a>
+                <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">GitHub</a>
               <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Discord</a>
             </div>
           </div>
