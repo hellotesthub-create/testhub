@@ -629,6 +629,43 @@ export default function TestLab() {
             )}
           </div>
 
+          <div className="max-w-3xl mx-auto mb-3 sm:mb-4 md:mb-6">
+            <GlassCard>
+              <h3 className="text-sm sm:text-base md:text-lg font-semibold text-slate-900 dark:text-white mb-3 sm:mb-4">Test Framework</h3>
+              <div className="flex rounded-lg border border-slate-300 dark:border-white/10 overflow-hidden">
+                <button
+                  onClick={() => !isRunning && setSelectedFramework("selenium")}
+                  disabled={isRunning}
+                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium transition-all ${
+                    selectedFramework === "selenium"
+                      ? "bg-green-500/20 text-green-600 dark:text-green-400 border-r border-slate-300 dark:border-white/10"
+                      : "text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 border-r border-slate-300 dark:border-white/10"
+                  } ${isRunning ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                >
+                  <Globe className="w-4 h-4" />
+                  Selenium
+                </button>
+                <button
+                  onClick={() => !isRunning && setSelectedFramework("playwright")}
+                  disabled={isRunning}
+                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium transition-all ${
+                    selectedFramework === "playwright"
+                      ? "bg-violet-500/20 text-violet-600 dark:text-violet-400"
+                      : "text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5"
+                  } ${isRunning ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                >
+                  <Zap className="w-4 h-4" />
+                  Playwright
+                </button>
+              </div>
+              <p className="text-xs text-slate-400 mt-2">
+                {selectedFramework === "selenium"
+                  ? "Selenium Grid - tests run on remote browser nodes"
+                  : "Playwright - tests run with bundled browsers (faster startup)"}
+              </p>
+            </GlassCard>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
             {/* Suite Configuration */}
             <GlassCard>
@@ -727,42 +764,6 @@ export default function TestLab() {
                   <span className="text-sm text-slate-900 dark:text-white">Firefox</span>
                 </div>
               </div>
-            </GlassCard>
-
-            {/* Framework Selection */}
-            <GlassCard>
-              <h3 className="text-sm sm:text-base md:text-lg font-semibold text-slate-900 dark:text-white mb-3 sm:mb-4">Test Framework</h3>
-              <div className="flex rounded-lg border border-slate-300 dark:border-white/10 overflow-hidden">
-                <button
-                  onClick={() => !isRunning && setSelectedFramework("selenium")}
-                  disabled={isRunning}
-                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium transition-all ${
-                    selectedFramework === "selenium"
-                      ? "bg-green-500/20 text-green-600 dark:text-green-400 border-r border-slate-300 dark:border-white/10"
-                      : "text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 border-r border-slate-300 dark:border-white/10"
-                  } ${isRunning ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                >
-                  <Globe className="w-4 h-4" />
-                  Selenium
-                </button>
-                <button
-                  onClick={() => !isRunning && setSelectedFramework("playwright")}
-                  disabled={isRunning}
-                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium transition-all ${
-                    selectedFramework === "playwright"
-                      ? "bg-violet-500/20 text-violet-600 dark:text-violet-400"
-                      : "text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5"
-                  } ${isRunning ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                >
-                  <Zap className="w-4 h-4" />
-                  Playwright
-                </button>
-              </div>
-              <p className="text-xs text-slate-400 mt-2">
-                {selectedFramework === "selenium"
-                  ? "Selenium Grid - tests run on remote browser nodes"
-                  : "Playwright - tests run with bundled browsers (faster startup)"}
-              </p>
             </GlassCard>
 
             {/* Script Upload */}

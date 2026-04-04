@@ -7,6 +7,7 @@ interface Node {
   icon: string;
   iconSrc?: string;
   iconImg?: HTMLImageElement;
+  iconBounds?: { sx: number; sy: number; sw: number; sh: number };
   x: number;
   y: number;
   baseX: number;
@@ -60,11 +61,58 @@ const TestAutomationNetwork = () => {
     const nodes: Node[] = [
       { label: 'Test Hub', type: 'hub', color: '#a78bfa', icon: '', iconSrc: '/logo.png' },
       { label: 'Parallel Testing', type: 'feature', color: '#3b82f6', icon: '', iconSrc: '/parallel.png' },
-      { label: 'Cross Browser', type: 'feature', color: '#7dd3fc', icon: '' },
+      { label: 'GitHub', type: 'feature', color: '#7dd3fc', icon: '', iconSrc: '/githubIcon.png' },
       { label: 'Chrome', type: 'browser', color: '#3b82f6', icon: '', iconSrc: '/chrome.png' },
       { label: 'Firefox', type: 'browser', color: '#f59e0b', icon: '', iconSrc: '/firefox.png' },
       { label: 'Reports', type: 'feature', color: '#f0b27a', icon: '', iconSrc: '/report.png' }
     ] as Node[];
+
+    const getImageVisibleBounds = (img: HTMLImageElement) => {
+      const width = img.naturalWidth || img.width;
+      const height = img.naturalHeight || img.height;
+      if (!width || !height) {
+        return { sx: 0, sy: 0, sw: width || 1, sh: height || 1 };
+      }
+
+      const offscreen = document.createElement('canvas');
+      offscreen.width = width;
+      offscreen.height = height;
+      const offCtx = offscreen.getContext('2d');
+      if (!offCtx) {
+        return { sx: 0, sy: 0, sw: width, sh: height };
+      }
+
+      offCtx.drawImage(img, 0, 0, width, height);
+      const { data } = offCtx.getImageData(0, 0, width, height);
+
+      let minX = width;
+      let minY = height;
+      let maxX = -1;
+      let maxY = -1;
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const alpha = data[(y * width + x) * 4 + 3];
+          if (alpha > 8) {
+            if (x < minX) minX = x;
+            if (y < minY) minY = y;
+            if (x > maxX) maxX = x;
+            if (y > maxY) maxY = y;
+          }
+        }
+      }
+
+      if (maxX < minX || maxY < minY) {
+        return { sx: 0, sy: 0, sw: width, sh: height };
+      }
+
+      return {
+        sx: minX,
+        sy: minY,
+        sw: Math.max(1, maxX - minX + 1),
+        sh: Math.max(1, maxY - minY + 1),
+      };
+    };
 
     // Preload icon images
     let imagesLoaded = 0;
@@ -75,6 +123,7 @@ const TestAutomationNetwork = () => {
         img.src = node.iconSrc;
         img.onload = () => {
           node.iconImg = img;
+          node.iconBounds = getImageVisibleBounds(img);
           imagesLoaded++;
         };
         img.onerror = () => {
@@ -323,13 +372,23 @@ const TestAutomationNetwork = () => {
 
         // Draw icon image or fallback emoji
         if (node.iconImg) {
-          const imgSize = (i === 0 ? node.size * 1.2 : node.size * 1.0);
+          const imgSize = i === 0 ? node.size * 1.2 : node.label === 'GitHub' ? node.size * 1.22 : node.size * 1.0;
+          const bounds = node.iconBounds || {
+            sx: 0,
+            sy: 0,
+            sw: node.iconImg.naturalWidth || node.iconImg.width,
+            sh: node.iconImg.naturalHeight || node.iconImg.height,
+          };
           ctx.save();
           ctx.beginPath();
-          ctx.arc(node.x, node.y, node.size * 0.75, 0, Math.PI * 2);
+          ctx.arc(node.x, node.y, node.size * 0.78, 0, Math.PI * 2);
           ctx.clip();
           ctx.drawImage(
             node.iconImg,
+            bounds.sx,
+            bounds.sy,
+            bounds.sw,
+            bounds.sh,
             node.x - imgSize / 2,
             node.y - imgSize / 2,
             imgSize,
