@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation, Link } from "wouter";
-import { Shield, Mail, Lock, Eye, EyeOff, X, ArrowRight, CheckCircle } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, X, ArrowRight, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ParticleBackground } from "@/components/particle-background";
@@ -541,9 +541,11 @@ export default function AuthPage() {
 
       <div className="relative z-20 w-full max-w-lg px-4 sm:px-6 animate-in zoom-in-95 duration-300">
         <div className="text-center mb-6 sm:mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 mb-4 sm:mb-6 shadow-lg">
-            <Shield className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-          </div>
+          <img
+            src="/logo.png"
+            alt="TESTHUB"
+            className="w-20 h-20 object-contain mx-auto mb-4 sm:mb-6"
+          />
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-1">
             TESTHUB
           </h1>

@@ -2,7 +2,6 @@ import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, 
-  Shield, 
   LogOut,
   Menu,
   Zap,
@@ -56,14 +55,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       <div className="p-6">
-        <div className="flex items-center gap-2 mb-8">
-          <div className="w-8 h-8 rounded bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center shadow-[0_0_15px_rgba(37,99,235,0.5)]">
-            <Shield className="w-5 h-5 text-white" />
+        <Link href="/">
+          <div className="flex items-center gap-2 mb-8 cursor-pointer">
+            <img src="/logo.png" alt="TESTHUB" className="w-14 h-14 object-contain" />
+            <span className="text-xl font-bold font-display tracking-wider text-slate-900 dark:text-white">
+              TESTHUB
+            </span>
           </div>
-          <span className="text-xl font-bold font-display tracking-wider text-slate-900 dark:text-white">
-            TESTHUB
-          </span>
-        </div>
+        </Link>
         
         <div className="space-y-1">
           {navItems.map((item) => (
@@ -119,10 +118,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 border-b border-slate-200 dark:border-white/10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg z-30 flex items-center justify-between px-4 transition-colors">
-        <div className="flex items-center gap-2">
-          <Shield className="w-6 h-6 text-primary" />
-          <span className="font-display font-bold text-lg text-slate-900 dark:text-white">TESTHUB</span>
-        </div>
+        <Link href="/">
+          <div className="flex items-center gap-2 cursor-pointer">
+            <img src="/logo.png" alt="TESTHUB" className="w-7 h-7 object-contain" />
+            <span className="font-display font-bold text-lg text-slate-900 dark:text-white">TESTHUB</span>
+          </div>
+        </Link>
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>

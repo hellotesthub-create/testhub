@@ -9,7 +9,7 @@ import { ParticleBackground } from "@/components/particle-background";
 import { useAuth } from "@/lib/authContext";
 
 export default function LandingPage() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const [, setLocation] = useLocation();
   const [showContent, setShowContent] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -61,10 +61,10 @@ export default function LandingPage() {
                   <NeonButton 
                     className="h-9 sm:h-10 px-4 sm:px-6 text-sm sm:text-base font-semibold"
                     neonColor="blue" 
-                    onClick={() => setLocation(user?.role === 'Admin' ? '/admin' : '/dashboard')}
+                    onClick={logout}
                   >
-                    <span className="hidden sm:inline">Open App</span>
-                    <span className="sm:hidden">App</span>
+                    <span className="hidden sm:inline">Log Out</span>
+                    <span className="sm:hidden">Logout</span>
                   </NeonButton>
                 </>
               ) : (
