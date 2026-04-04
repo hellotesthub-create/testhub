@@ -24,6 +24,13 @@ else
     exit 1
 fi
 
+COMPOSE_ENV_ARGS=()
+if [ -f "../.env" ]; then
+    COMPOSE_ENV_ARGS=(--env-file ../.env)
+elif [ -f ".env" ]; then
+    COMPOSE_ENV_ARGS=(--env-file .env)
+fi
+
 # Check if Docker is running
 if ! docker info > /dev/null 2>&1; then
     echo "Error: Docker is not running"
@@ -43,10 +50,10 @@ fi
 echo "Starting backend API..."
 
 # Clean stale containers to avoid docker-compose v1 'ContainerConfig' recreate bug
-"${COMPOSE_CMD[@]}" down --remove-orphans > /dev/null 2>&1 || true
+"${COMPOSE_CMD[@]}" "${COMPOSE_ENV_ARGS[@]}" down --remove-orphans > /dev/null 2>&1 || true
 docker rm -f testops-backend-api > /dev/null 2>&1 || true
 
-"${COMPOSE_CMD[@]}" up -d --force-recreate --remove-orphans
+"${COMPOSE_CMD[@]}" "${COMPOSE_ENV_ARGS[@]}" up -d --force-recreate --remove-orphans
 
 echo ""
 echo "Waiting for service to be ready..."

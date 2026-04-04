@@ -25,6 +25,7 @@ export default function CreateSuite() {
   const { user } = useAuth();
   const [suiteName, setSuiteName] = useState("");
   const [selectedBrowsers, setSelectedBrowsers] = useState<string[]>([]);
+  const [sendCompletionEmail, setSendCompletionEmail] = useState(true);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -103,6 +104,7 @@ export default function CreateSuite() {
       formData.append("username", user?.username || "");
       formData.append("email", user?.email || "");
       formData.append("user_id", user?.id || "");
+      formData.append("send_email_on_completion", String(sendCompletionEmail));
 
       // Add all files to formData
       uploadedFiles.forEach((fileObj, index) => {
@@ -213,6 +215,7 @@ export default function CreateSuite() {
     setShowSuccessDialog(false);
     setSuiteName("");
     setSelectedBrowsers([]);
+    setSendCompletionEmail(true);
     setUploadedFiles([]);
     setProgress(0);
     setProgressMessage("");
@@ -245,6 +248,18 @@ export default function CreateSuite() {
                   className="bg-slate-50 dark:bg-slate-950/50 border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-500"
                 />
                 <p className="text-xs text-slate-600 dark:text-slate-500">A unique name for your test suite</p>
+              </div>
+              <div className="flex items-start gap-3 p-3 rounded-lg border border-slate-300 dark:border-white/10">
+                <Checkbox
+                  checked={sendCompletionEmail}
+                  onCheckedChange={(checked) => setSendCompletionEmail(checked === true)}
+                  disabled={isRunning}
+                  className="mt-0.5"
+                />
+                <div>
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">Email me when this run completes</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-500">Report is delivered to your account email.</p>
+                </div>
               </div>
             </form>
           </GlassCard>

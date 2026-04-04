@@ -21,6 +21,9 @@ interface ApiTestRun {
   success_rate: number;
   duration_seconds: number;
   status: string;
+  email_status?: string;
+  email_sent_at?: string;
+  email_error?: string;
   created_at: string;
 }
 
@@ -49,6 +52,9 @@ interface TestRun {
   passedTests: number;
   failedTests: number;
   successRate: number;
+  emailStatus?: string;
+  emailSentAt?: string;
+  emailError?: string;
 }
 
 export default function Reports() {
@@ -150,6 +156,9 @@ export default function Reports() {
             passedTests: run.passed,
             failedTests: run.failed,
             successRate: run.success_rate,
+            emailStatus: run.email_status,
+            emailSentAt: run.email_sent_at,
+            emailError: run.email_error,
           };
         });
 
@@ -335,7 +344,30 @@ export default function Reports() {
                           {report.duration}
                         </div>
                         <span className="break-all">{report.date} at {report.time}</span>
+                        {report.emailStatus && (
+                          <Badge className={`border text-[10px] sm:text-xs shrink-0 ${
+                            report.emailStatus === "sent"
+                              ? "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20"
+                              : report.emailStatus === "failed"
+                              ? "bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/20"
+                              : report.emailStatus === "sending"
+                              ? "bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/20"
+                              : "bg-slate-100 dark:bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-200 dark:border-slate-500/20"
+                          }`}>
+                            Email: {report.emailStatus}
+                          </Badge>
+                        )}
                       </div>
+                      {report.emailStatus === "failed" && report.emailError && (
+                        <p className="mt-2 text-[11px] sm:text-xs text-amber-700 dark:text-amber-400">
+                          Email delivery failed: {report.emailError}
+                        </p>
+                      )}
+                      {report.emailStatus === "sent" && report.emailSentAt && (
+                        <p className="mt-2 text-[11px] sm:text-xs text-emerald-700 dark:text-emerald-400">
+                          Email sent at {new Date(report.emailSentAt).toLocaleString()}
+                        </p>
+                      )}
                     </div>
                     <div className="flex flex-wrap gap-1.5 sm:gap-2">
                       <Button

@@ -56,6 +56,9 @@ export interface TestRun {
   failed: number;
   skipped: number;
   success_rate: number;
+  email_status?: 'pending' | 'sending' | 'sent' | 'failed';
+  email_sent_at?: string;
+  email_error?: string;
   created_at: string;
 }
 
