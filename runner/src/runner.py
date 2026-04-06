@@ -23,6 +23,7 @@ from logger import setup_logger
 from api_client import BackendAPIClient
 from database_service import DatabaseService
 from database_log_handler import DatabaseLogHandler
+from selenium_step_screenshot import create_step_screenshot_driver
 
 # Playwright import (conditional — only used when framework=playwright)
 try:
@@ -623,10 +624,20 @@ class TestRunner:
         logger.info(f" {log_prefix} RUNNING TEST: {test_file.name} on {browser_type}")
         logger.info("=" * 80)
         
+        raw_driver = None
+
         try:
             # Initialize browser via Grid Hub
-            driver = browser_manager.get_driver()
+            raw_driver = browser_manager.get_driver()
             logger.info(f"{log_prefix} Browser initialized (session: {browser_manager.session_id})")
+
+            # Wrap Selenium driver to auto-capture step-level screenshots
+            driver = create_step_screenshot_driver(
+                driver=raw_driver,
+                screenshot_handler=screenshot_handler,
+                test_id=test_file.stem,
+                browser_type=browser_type,
+            )
             
             # Start video recording AFTER browser is initialized
             # Pass session_id so video recorder can find the exact Grid node container
@@ -652,7 +663,7 @@ class TestRunner:
                     logger.info(f"{log_prefix} TEST PASSED")
                     # Capture success screenshot (include browser in filename for uniqueness)
                     screenshot_path = screenshot_handler.capture_success(
-                        driver, f"{test_file.stem}_{browser_type}"
+                        raw_driver, f"{test_file.stem}_{browser_type}"
                     )
                     result.screenshot_path = screenshot_path
                     
@@ -675,7 +686,7 @@ class TestRunner:
                     logger.error(f"{log_prefix} TEST FAILED")
                     # Capture failure screenshot
                     screenshot_path = screenshot_handler.capture_failure(
-                        driver, f"{test_file.stem}_{browser_type}"
+                        raw_driver, f"{test_file.stem}_{browser_type}"
                     )
                     result.screenshot_path = screenshot_path
                     result.error_message = "Test returned False"
@@ -705,9 +716,9 @@ class TestRunner:
             
             # Try to capture failure screenshot
             try:
-                if browser_manager and browser_manager.driver:
+                if raw_driver:
                     screenshot_path = screenshot_handler.capture_failure(
-                        browser_manager.driver, f"{test_file.stem}_{browser_type}"
+                        raw_driver, f"{test_file.stem}_{browser_type}"
                     )
                     result.screenshot_path = screenshot_path
             except:

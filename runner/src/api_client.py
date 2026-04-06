@@ -150,12 +150,23 @@ class BackendAPIClient:
             
             if Path(video_path).exists():
                 size_bytes = Path(video_path).stat().st_size
+
+            ext = Path(video_path).suffix.lower()
+            if ext == ".webm":
+                content_type = "video/webm"
+            elif ext == ".mp4":
+                content_type = "video/mp4"
+            elif ext == ".mov":
+                content_type = "video/quicktime"
+            else:
+                content_type = "video/mp4"
             
             payload = {
                 "run_id": run_id or self.run_id_string,
                 "test_name": test_name,
                 "browser": browser or self.browser,
                 "name": filename,
+                "content_type": content_type,
                 "duration_seconds": duration_seconds,
                 "size_bytes": size_bytes
             }

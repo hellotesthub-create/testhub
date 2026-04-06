@@ -6,7 +6,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"mime"
 	"net/http"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -29,6 +32,23 @@ func NewArtifactsHandler(
 		logRepo:        logRepo,
 		videoRepo:      videoRepo,
 	}
+}
+
+func detectVideoContentType(filename string, fallback string) string {
+	if ext := strings.ToLower(filepath.Ext(filename)); ext != "" {
+		if guessed := mime.TypeByExtension(ext); guessed != "" {
+			return guessed
+		}
+	}
+	if strings.TrimSpace(fallback) != "" {
+		return fallback
+	}
+	return "video/mp4"
+}
+
+func shouldForceDownload(r *http.Request) bool {
+	value := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("download")))
+	return value == "1" || value == "true" || value == "yes"
 }
 
 // ====================================================================
@@ -65,7 +85,7 @@ func (h *ArtifactsHandler) GetRunScreenshots(w http.ResponseWriter, r *http.Requ
 			ID:        s.ID.Hex(),
 			Name:      s.Name,
 			Timestamp: s.CreatedAt.Format("3:04:05 PM"),
-			URL: fmt.Sprintf("/api/screenshots/%s", s.ID.Hex()),
+			URL:       fmt.Sprintf("/api/screenshots/%s", s.ID.Hex()),
 			Step:      s.Step,
 			TestName:  s.TestName,
 		})
@@ -158,7 +178,7 @@ func (h *ArtifactsHandler) GetRunVideos(w http.ResponseWriter, r *http.Request) 
 			DurationSeconds: v.DurationSeconds,
 			Size:            size,
 			SizeBytes:       v.SizeBytes,
-			URL: fmt.Sprintf("/api/videos/%s", v.ID.Hex()),
+			URL:             fmt.Sprintf("/api/videos/%s", v.ID.Hex()),
 		})
 	}
 
@@ -329,6 +349,7 @@ func (h *ArtifactsHandler) CreateVideo(w http.ResponseWriter, r *http.Request) {
 		TestName        string  `json:"test_name"`
 		Browser         string  `json:"browser"`
 		Name            string  `json:"name"`
+		ContentType     string  `json:"content_type"`
 		DurationSeconds float64 `json:"duration_seconds"`
 		SizeBytes       int64   `json:"size_bytes"`
 		GridFSID        string  `json:"gridfs_id"`
@@ -375,7 +396,7 @@ func (h *ArtifactsHandler) CreateVideo(w http.ResponseWriter, r *http.Request) {
 		DurationSeconds: req.DurationSeconds,
 		SizeBytes:       req.SizeBytes,
 		GridFSID:        req.GridFSID,
-		ContentType:     "video/mp4",
+		ContentType:     detectVideoContentType(req.Name, req.ContentType),
 		CreatedAt:       time.Now(),
 	}
 
@@ -424,6 +445,13 @@ func (h *ArtifactsHandler) ServeScreenshotImage(w http.ResponseWriter, r *http.R
 	// Try FileData (binary) first, then ImageData (base64 legacy)
 	if len(screenshot.FileData) > 0 {
 		w.Header().Set("Content-Type", contentType)
+		if shouldForceDownload(r) {
+			filename := screenshot.Name
+			if strings.TrimSpace(filename) == "" {
+				filename = "screenshot.png"
+			}
+			w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
+		}
 		w.Header().Set("Cache-Control", "public, max-age=3600")
 		w.Write(screenshot.FileData)
 		return
@@ -441,6 +469,13 @@ func (h *ArtifactsHandler) ServeScreenshotImage(w http.ResponseWriter, r *http.R
 	}
 
 	w.Header().Set("Content-Type", contentType)
+	if shouldForceDownload(r) {
+		filename := screenshot.Name
+		if strings.TrimSpace(filename) == "" {
+			filename = "screenshot.png"
+		}
+		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
+	}
 	w.Header().Set("Cache-Control", "public, max-age=3600")
 	w.Write(imageData)
 }
@@ -482,7 +517,19 @@ func (h *ArtifactsHandler) ServeVideoStream(w http.ResponseWriter, r *http.Reque
 
 	videoSize := int64(len(videoData))
 
-	w.Header().Set("Content-Type", "video/mp4")
+	contentType := detectVideoContentType(video.Name, video.ContentType)
+	w.Header().Set("Content-Type", contentType)
+	if shouldForceDownload(r) {
+		filename := video.Name
+		if strings.TrimSpace(filename) == "" {
+			if strings.Contains(contentType, "webm") {
+				filename = "video.webm"
+			} else {
+				filename = "video.mp4"
+			}
+		}
+		w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
+	}
 	w.Header().Set("Accept-Ranges", "bytes")
 	w.Header().Set("Cache-Control", "public, max-age=3600")
 

@@ -98,6 +98,31 @@ export default function TesterTestResults() {
   const [error, setError] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
 
+  const downloadArtifact = async (url: string, filename: string) => {
+    try {
+      const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+      const response = await fetch(url, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const objectUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(objectUrl);
+    } catch (downloadError) {
+      console.error('Artifact download failed:', downloadError);
+      alert('Download failed. Please try again.');
+    }
+  };
+
   // Derived: unique browsers from results
   const uniqueBrowsers = useMemo(() => {
     const browsers = new Set<string>();
@@ -870,10 +895,10 @@ export default function TesterTestResults() {
                       <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" /> Play
                     </Button>
                     <Button variant="outline" size="sm" className="flex-1 sm:flex-none text-xs sm:text-sm" onClick={() => {
-                      const link = document.createElement('a');
-                      link.href = video.url;
-                      link.download = video.name;
-                      link.click();
+                      const videoUrl = video.id
+                        ? `${API_ENDPOINTS.VIDEO_STREAM(video.id)}?download=1`
+                        : `${video.url}?download=1`;
+                      void downloadArtifact(videoUrl, video.name || 'video.mp4');
                     }}>
                       <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" /> <span className="hidden sm:inline">Download</span><span className="sm:hidden">Save</span>
                     </Button>
@@ -898,10 +923,9 @@ export default function TesterTestResults() {
                 <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                   <Button variant="ghost" size="icon" className="text-white hover:bg-white/10"
                     onClick={() => {
-                      const link = document.createElement('a');
-                      link.href = selectedImage?.id ? API_ENDPOINTS.SCREENSHOT_IMAGE(selectedImage.id) : '';
-                      link.download = selectedImage?.name || 'screenshot.png';
-                      link.click();
+                      if (!selectedImage?.id) return;
+                      const screenshotUrl = `${API_ENDPOINTS.SCREENSHOT_IMAGE(selectedImage.id)}?download=1`;
+                      void downloadArtifact(screenshotUrl, selectedImage.name || 'screenshot.png');
                     }}>
                     <Download className="w-5 h-5" />
                   </Button>
@@ -963,10 +987,8 @@ export default function TesterTestResults() {
             <div className="p-2 sm:p-4 bg-gradient-to-t from-black/80 to-transparent">
               <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm" onClick={() => {
                 if (selectedVideo?.id) {
-                  const link = document.createElement('a');
-                  link.href = API_ENDPOINTS.VIDEO_STREAM(selectedVideo.id);
-                  link.download = selectedVideo.name;
-                  link.click();
+                  const videoUrl = `${API_ENDPOINTS.VIDEO_STREAM(selectedVideo.id)}?download=1`;
+                  void downloadArtifact(videoUrl, selectedVideo.name || 'video.mp4');
                 }
               }}>
                 <Download className="w-4 h-4 mr-2" /> Download Video
