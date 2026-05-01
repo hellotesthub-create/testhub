@@ -130,4 +130,4 @@ This repository includes mutation testing setup for `runner/src/database_service
    mutmut results
    ```
 
-5. The HTML reports for the baseline and final mutation run are saved in `runner/reports/mutation_baseline/` and `runner/reports/mutation_final/`.
+5. The HTML reports for the baseline and final mutation run are saved in `reports/mutation_baseline/` and `reports/mutation_final/`.
