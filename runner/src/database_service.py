@@ -341,12 +341,18 @@ class DatabaseService:
             now = datetime.now()
             
             # Build screenshot document matching Go model
+            run_id_string = self.current_run_id_string or screenshot_data.get("run_id_string")
+            test_name = screenshot_data.get("test_name")
+            browser = screenshot_data.get("browser", self.current_browser)
+            name = screenshot_data.get("name") or screenshot_data.get("filename")
+            step = screenshot_data.get("step", "")
+
             screenshot_doc = {
-                "run_id_string": self.current_run_id_string or screenshot_data.get("run_id_string"),
-                "test_name": screenshot_data.get("test_name"),
-                "browser": screenshot_data.get("browser", self.current_browser),
-                "name": screenshot_data.get("name") or screenshot_data.get("filename"),
-                "step": screenshot_data.get("step", ""),
+                "run_id_string": run_id_string,
+                "test_name": test_name,
+                "browser": browser,
+                "name": name,
+                "step": step,
                 "content_type": "image/png",
                 "size_bytes": size_bytes,
                 "created_at": now
@@ -361,11 +367,29 @@ class DatabaseService:
             # Store binary data
             if file_data:
                 screenshot_doc["file_data"] = file_data
-            
-            # Insert into database
-            self.db.screenshots.insert_one(screenshot_doc)
-            
-            logger.info(f"Screenshot saved: {screenshot_doc.get('name')}")
+
+            # Prevent duplicate inserts caused by repeated directory scans across parallel executions.
+            # This upsert is atomic: same screenshot key will be inserted once and reused on retries.
+            dedupe_filter = {
+                "run_id_string": run_id_string,
+                "test_name": test_name,
+                "browser": browser,
+                "name": name,
+                "step": step,
+            }
+            if self.current_run_id:
+                dedupe_filter["run_id"] = self.current_run_id
+
+            result = self.db.screenshots.update_one(
+                dedupe_filter,
+                {"$setOnInsert": screenshot_doc},
+                upsert=True,
+            )
+
+            if result.upserted_id is not None:
+                logger.info(f"Screenshot saved: {screenshot_doc.get('name')}")
+            else:
+                logger.debug(f"Screenshot already exists, skipped duplicate: {screenshot_doc.get('name')}")
             return True
             
         except Exception as e:

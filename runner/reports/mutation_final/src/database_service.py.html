@@ -1,0 +1,3168 @@
+<html><body><h1>src/database_service.py</h1>Killed 166 out of 452 mutants<h2>Survived</h2>Survived mutation testing. These mutants show holes in your test suite.<h3>Mutant 1</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -17,7 +17,7 @@
+ import gridfs
+ from logger import setup_logger
+ 
+-logger = setup_logger("database_service")
++logger = setup_logger("XXdatabase_serviceXX")
+ 
+ 
+ class DatabaseService:
+</pre><h3>Mutant 6</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -33,7 +33,7 @@
+             user_id: User's MongoDB ObjectID (optional)
+         """
+         if not username or not email:
+-            logger.error("Username and email are required for DatabaseService!")
++            logger.error("XXUsername and email are required for DatabaseService!XX")
+             raise ValueError("username and email are required parameters")
+         
+         self.username = username
+</pre><h3>Mutant 7</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -34,7 +34,7 @@
+         """
+         if not username or not email:
+             logger.error("Username and email are required for DatabaseService!")
+-            raise ValueError("username and email are required parameters")
++            raise ValueError("XXusername and email are required parametersXX")
+         
+         self.username = username
+         self.email = email
+</pre><h3>Mutant 10</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -38,7 +38,7 @@
+         
+         self.username = username
+         self.email = email
+-        self.user_id = user_id
++        self.user_id = None
+         self.db = None
+         self.client = None
+         self.connected = False
+</pre><h3>Mutant 11</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -39,7 +39,7 @@
+         self.username = username
+         self.email = email
+         self.user_id = user_id
+-        self.db = None
++        self.db = ""
+         self.client = None
+         self.connected = False
+         
+</pre><h3>Mutant 12</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -40,7 +40,7 @@
+         self.email = email
+         self.user_id = user_id
+         self.db = None
+-        self.client = None
++        self.client = ""
+         self.connected = False
+         
+         # Track current run for linking artifacts
+</pre><h3>Mutant 13</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -41,7 +41,7 @@
+         self.user_id = user_id
+         self.db = None
+         self.client = None
+-        self.connected = False
++        self.connected = True
+         
+         # Track current run for linking artifacts
+         self.current_run_id: Optional[ObjectId] = None
+</pre><h3>Mutant 14</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -41,7 +41,7 @@
+         self.user_id = user_id
+         self.db = None
+         self.client = None
+-        self.connected = False
++        self.connected = None
+         
+         # Track current run for linking artifacts
+         self.current_run_id: Optional[ObjectId] = None
+</pre><h3>Mutant 15</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -44,7 +44,7 @@
+         self.connected = False
+         
+         # Track current run for linking artifacts
+-        self.current_run_id: Optional[ObjectId] = None
++        self.current_run_id: Optional[ObjectId] = ""
+         self.current_run_id_string: Optional[str] = None
+         self.current_result_id: Optional[ObjectId] = None
+         self.current_browser: str = "chrome"
+</pre><h3>Mutant 16</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -45,7 +45,7 @@
+         
+         # Track current run for linking artifacts
+         self.current_run_id: Optional[ObjectId] = None
+-        self.current_run_id_string: Optional[str] = None
++        self.current_run_id_string: Optional[str] = ""
+         self.current_result_id: Optional[ObjectId] = None
+         self.current_browser: str = "chrome"
+         
+</pre><h3>Mutant 17</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -46,7 +46,7 @@
+         # Track current run for linking artifacts
+         self.current_run_id: Optional[ObjectId] = None
+         self.current_run_id_string: Optional[str] = None
+-        self.current_result_id: Optional[ObjectId] = None
++        self.current_result_id: Optional[ObjectId] = ""
+         self.current_browser: str = "chrome"
+         
+         # Get MongoDB connection details from environment
+</pre><h3>Mutant 20</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -50,7 +50,7 @@
+         self.current_browser: str = "chrome"
+         
+         # Get MongoDB connection details from environment
+-        mongo_host = os.getenv("MONGO_HOST", "mongodb")
++        mongo_host = os.getenv("XXMONGO_HOSTXX", "mongodb")
+         mongo_port = int(os.getenv("MONGO_PORT", "27017"))
+         mongo_db = os.getenv("MONGO_DATABASE", "testops")
+         mongo_user = os.getenv("MONGO_USERNAME", "admin")
+</pre><h3>Mutant 21</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -50,7 +50,7 @@
+         self.current_browser: str = "chrome"
+         
+         # Get MongoDB connection details from environment
+-        mongo_host = os.getenv("MONGO_HOST", "mongodb")
++        mongo_host = os.getenv("MONGO_HOST", "XXmongodbXX")
+         mongo_port = int(os.getenv("MONGO_PORT", "27017"))
+         mongo_db = os.getenv("MONGO_DATABASE", "testops")
+         mongo_user = os.getenv("MONGO_USERNAME", "admin")
+</pre><h3>Mutant 22</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -50,7 +50,7 @@
+         self.current_browser: str = "chrome"
+         
+         # Get MongoDB connection details from environment
+-        mongo_host = os.getenv("MONGO_HOST", "mongodb")
++        mongo_host = None
+         mongo_port = int(os.getenv("MONGO_PORT", "27017"))
+         mongo_db = os.getenv("MONGO_DATABASE", "testops")
+         mongo_user = os.getenv("MONGO_USERNAME", "admin")
+</pre><h3>Mutant 23</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -51,7 +51,7 @@
+         
+         # Get MongoDB connection details from environment
+         mongo_host = os.getenv("MONGO_HOST", "mongodb")
+-        mongo_port = int(os.getenv("MONGO_PORT", "27017"))
++        mongo_port = int(os.getenv("XXMONGO_PORTXX", "27017"))
+         mongo_db = os.getenv("MONGO_DATABASE", "testops")
+         mongo_user = os.getenv("MONGO_USERNAME", "admin")
+         mongo_password = os.getenv("MONGO_PASSWORD", "admin123")
+</pre><h3>Mutant 26</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -52,7 +52,7 @@
+         # Get MongoDB connection details from environment
+         mongo_host = os.getenv("MONGO_HOST", "mongodb")
+         mongo_port = int(os.getenv("MONGO_PORT", "27017"))
+-        mongo_db = os.getenv("MONGO_DATABASE", "testops")
++        mongo_db = os.getenv("XXMONGO_DATABASEXX", "testops")
+         mongo_user = os.getenv("MONGO_USERNAME", "admin")
+         mongo_password = os.getenv("MONGO_PASSWORD", "admin123")
+         
+</pre><h3>Mutant 29</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -53,7 +53,7 @@
+         mongo_host = os.getenv("MONGO_HOST", "mongodb")
+         mongo_port = int(os.getenv("MONGO_PORT", "27017"))
+         mongo_db = os.getenv("MONGO_DATABASE", "testops")
+-        mongo_user = os.getenv("MONGO_USERNAME", "admin")
++        mongo_user = os.getenv("XXMONGO_USERNAMEXX", "admin")
+         mongo_password = os.getenv("MONGO_PASSWORD", "admin123")
+         
+         # Connection string with authentication
+</pre><h3>Mutant 30</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -53,7 +53,7 @@
+         mongo_host = os.getenv("MONGO_HOST", "mongodb")
+         mongo_port = int(os.getenv("MONGO_PORT", "27017"))
+         mongo_db = os.getenv("MONGO_DATABASE", "testops")
+-        mongo_user = os.getenv("MONGO_USERNAME", "admin")
++        mongo_user = os.getenv("MONGO_USERNAME", "XXadminXX")
+         mongo_password = os.getenv("MONGO_PASSWORD", "admin123")
+         
+         # Connection string with authentication
+</pre><h3>Mutant 31</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -53,7 +53,7 @@
+         mongo_host = os.getenv("MONGO_HOST", "mongodb")
+         mongo_port = int(os.getenv("MONGO_PORT", "27017"))
+         mongo_db = os.getenv("MONGO_DATABASE", "testops")
+-        mongo_user = os.getenv("MONGO_USERNAME", "admin")
++        mongo_user = None
+         mongo_password = os.getenv("MONGO_PASSWORD", "admin123")
+         
+         # Connection string with authentication
+</pre><h3>Mutant 32</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -54,7 +54,7 @@
+         mongo_port = int(os.getenv("MONGO_PORT", "27017"))
+         mongo_db = os.getenv("MONGO_DATABASE", "testops")
+         mongo_user = os.getenv("MONGO_USERNAME", "admin")
+-        mongo_password = os.getenv("MONGO_PASSWORD", "admin123")
++        mongo_password = os.getenv("XXMONGO_PASSWORDXX", "admin123")
+         
+         # Connection string with authentication
+         self.connection_string = f"mongodb://{mongo_user}:{mongo_password}@{mongo_host}:{mongo_port}/"
+</pre><h3>Mutant 33</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -54,7 +54,7 @@
+         mongo_port = int(os.getenv("MONGO_PORT", "27017"))
+         mongo_db = os.getenv("MONGO_DATABASE", "testops")
+         mongo_user = os.getenv("MONGO_USERNAME", "admin")
+-        mongo_password = os.getenv("MONGO_PASSWORD", "admin123")
++        mongo_password = os.getenv("MONGO_PASSWORD", "XXadmin123XX")
+         
+         # Connection string with authentication
+         self.connection_string = f"mongodb://{mongo_user}:{mongo_password}@{mongo_host}:{mongo_port}/"
+</pre><h3>Mutant 34</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -54,7 +54,7 @@
+         mongo_port = int(os.getenv("MONGO_PORT", "27017"))
+         mongo_db = os.getenv("MONGO_DATABASE", "testops")
+         mongo_user = os.getenv("MONGO_USERNAME", "admin")
+-        mongo_password = os.getenv("MONGO_PASSWORD", "admin123")
++        mongo_password = None
+         
+         # Connection string with authentication
+         self.connection_string = f"mongodb://{mongo_user}:{mongo_password}@{mongo_host}:{mongo_port}/"
+</pre><h3>Mutant 35</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -57,7 +57,7 @@
+         mongo_password = os.getenv("MONGO_PASSWORD", "admin123")
+         
+         # Connection string with authentication
+-        self.connection_string = f"mongodb://{mongo_user}:{mongo_password}@{mongo_host}:{mongo_port}/"
++        self.connection_string = f"XXmongodb://{mongo_user}:{mongo_password}@{mongo_host}:{mongo_port}/XX"
+         self.database_name = mongo_db
+         
+         # Connect to database
+</pre><h3>Mutant 38</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -68,7 +68,7 @@
+         try:
+             self.client = MongoClient(
+                 self.connection_string,
+-                serverSelectionTimeoutMS=5000,
++                serverSelectionTimeoutMS=5001,
+                 connectTimeoutMS=5000
+             )
+             
+</pre><h3>Mutant 39</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -69,7 +69,7 @@
+             self.client = MongoClient(
+                 self.connection_string,
+                 serverSelectionTimeoutMS=5000,
+-                connectTimeoutMS=5000
++                connectTimeoutMS=5001
+             )
+             
+             # Test connection
+</pre><h3>Mutant 40</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -66,11 +66,7 @@
+     def _connect(self):
+         """Establish MongoDB connection"""
+         try:
+-            self.client = MongoClient(
+-                self.connection_string,
+-                serverSelectionTimeoutMS=5000,
+-                connectTimeoutMS=5000
+-            )
++            self.client = None
+             
+             # Test connection
+             self.client.admin.command('ping')
+</pre><h3>Mutant 41</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -73,7 +73,7 @@
+             )
+             
+             # Test connection
+-            self.client.admin.command('ping')
++            self.client.admin.command('XXpingXX')
+             
+             self.db = self.client[self.database_name]
+             self.fs = gridfs.GridFS(self.db)  # Initialize GridFS for video storage
+</pre><h3>Mutant 42</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -75,7 +75,7 @@
+             # Test connection
+             self.client.admin.command('ping')
+             
+-            self.db = self.client[self.database_name]
++            self.db = None
+             self.fs = gridfs.GridFS(self.db)  # Initialize GridFS for video storage
+             self.connected = True
+             logger.info(f"Connected to MongoDB: {self.database_name}")
+</pre><h3>Mutant 43</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -76,7 +76,7 @@
+             self.client.admin.command('ping')
+             
+             self.db = self.client[self.database_name]
+-            self.fs = gridfs.GridFS(self.db)  # Initialize GridFS for video storage
++            self.fs = None  # Initialize GridFS for video storage
+             self.connected = True
+             logger.info(f"Connected to MongoDB: {self.database_name}")
+             
+</pre><h3>Mutant 44</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -77,7 +77,7 @@
+             
+             self.db = self.client[self.database_name]
+             self.fs = gridfs.GridFS(self.db)  # Initialize GridFS for video storage
+-            self.connected = True
++            self.connected = False
+             logger.info(f"Connected to MongoDB: {self.database_name}")
+             
+         except ConnectionFailure as e:
+</pre><h3>Mutant 45</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -77,7 +77,7 @@
+             
+             self.db = self.client[self.database_name]
+             self.fs = gridfs.GridFS(self.db)  # Initialize GridFS for video storage
+-            self.connected = True
++            self.connected = None
+             logger.info(f"Connected to MongoDB: {self.database_name}")
+             
+         except ConnectionFailure as e:
+</pre><h3>Mutant 46</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -78,7 +78,7 @@
+             self.db = self.client[self.database_name]
+             self.fs = gridfs.GridFS(self.db)  # Initialize GridFS for video storage
+             self.connected = True
+-            logger.info(f"Connected to MongoDB: {self.database_name}")
++            logger.info(f"XXConnected to MongoDB: {self.database_name}XX")
+             
+         except ConnectionFailure as e:
+             logger.error(f"Failed to connect to MongoDB: {e}")
+</pre><h3>Mutant 47</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -81,7 +81,7 @@
+             logger.info(f"Connected to MongoDB: {self.database_name}")
+             
+         except ConnectionFailure as e:
+-            logger.error(f"Failed to connect to MongoDB: {e}")
++            logger.error(f"XXFailed to connect to MongoDB: {e}XX")
+             self.connected = False
+         except Exception as e:
+             logger.error(f"Database connection error: {e}")
+</pre><h3>Mutant 48</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -82,7 +82,7 @@
+             
+         except ConnectionFailure as e:
+             logger.error(f"Failed to connect to MongoDB: {e}")
+-            self.connected = False
++            self.connected = True
+         except Exception as e:
+             logger.error(f"Database connection error: {e}")
+             self.connected = False
+</pre><h3>Mutant 49</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -82,7 +82,7 @@
+             
+         except ConnectionFailure as e:
+             logger.error(f"Failed to connect to MongoDB: {e}")
+-            self.connected = False
++            self.connected = None
+         except Exception as e:
+             logger.error(f"Database connection error: {e}")
+             self.connected = False
+</pre><h3>Mutant 50</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -84,7 +84,7 @@
+             logger.error(f"Failed to connect to MongoDB: {e}")
+             self.connected = False
+         except Exception as e:
+-            logger.error(f"Database connection error: {e}")
++            logger.error(f"XXDatabase connection error: {e}XX")
+             self.connected = False
+     
+     def set_current_browser(self, browser: str):
+</pre><h3>Mutant 51</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -85,7 +85,7 @@
+             self.connected = False
+         except Exception as e:
+             logger.error(f"Database connection error: {e}")
+-            self.connected = False
++            self.connected = True
+     
+     def set_current_browser(self, browser: str):
+         """Set the browser being used for testing"""
+</pre><h3>Mutant 52</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -85,7 +85,7 @@
+             self.connected = False
+         except Exception as e:
+             logger.error(f"Database connection error: {e}")
+-            self.connected = False
++            self.connected = None
+     
+     def set_current_browser(self, browser: str):
+         """Set the browser being used for testing"""
+</pre><h3>Mutant 54</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -90,7 +90,7 @@
+     def set_current_browser(self, browser: str):
+         """Set the browser being used for testing"""
+         self.current_browser = browser
+-        logger.info(f"Current browser set to: {browser}")
++        logger.info(f"XXCurrent browser set to: {browser}XX")
+     
+     def create_test_run(self, run_data: dict) -> Optional[ObjectId]:
+         """
+</pre><h3>Mutant 56</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -108,7 +108,7 @@
+             ObjectId of created run, or None on failure
+         """
+         if not self.connected:
+-            logger.warning("Database not connected, skipping test run creation")
++            logger.warning("XXDatabase not connected, skipping test run creationXX")
+             return None
+         
+         try:
+</pre><h3>Mutant 60</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -116,7 +116,7 @@
+             
+             # Build run document matching Go model
+             run_doc = {
+-                "run_id": run_data.get("run_id", now.strftime("%Y%m%d_%H%M%S")),
++                "run_id": run_data.get("run_id", now.strftime("XX%Y%m%d_%H%M%SXX")),
+                 "suite_name": run_data.get("suite_name", "Test Run"),
+                 "triggered_by": self.email,
+                 "trigger_type": run_data.get("trigger_type", "manual"),
+</pre><h3>Mutant 66</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -119,7 +119,7 @@
+                 "run_id": run_data.get("run_id", now.strftime("%Y%m%d_%H%M%S")),
+                 "suite_name": run_data.get("suite_name", "Test Run"),
+                 "triggered_by": self.email,
+-                "trigger_type": run_data.get("trigger_type", "manual"),
++                "trigger_type": run_data.get("XXtrigger_typeXX", "manual"),
+                 "browsers": run_data.get("browsers", [self.current_browser]),
+                 "start_time": now,
+                 "status": "running",
+</pre><h3>Mutant 68</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -120,7 +120,7 @@
+                 "suite_name": run_data.get("suite_name", "Test Run"),
+                 "triggered_by": self.email,
+                 "trigger_type": run_data.get("trigger_type", "manual"),
+-                "browsers": run_data.get("browsers", [self.current_browser]),
++                "XXbrowsersXX": run_data.get("browsers", [self.current_browser]),
+                 "start_time": now,
+                 "status": "running",
+                 "total_tests": 0,  # Always start at 0 - finalize_run uses $inc
+</pre><h3>Mutant 69</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -120,7 +120,7 @@
+                 "suite_name": run_data.get("suite_name", "Test Run"),
+                 "triggered_by": self.email,
+                 "trigger_type": run_data.get("trigger_type", "manual"),
+-                "browsers": run_data.get("browsers", [self.current_browser]),
++                "browsers": run_data.get("XXbrowsersXX", [self.current_browser]),
+                 "start_time": now,
+                 "status": "running",
+                 "total_tests": 0,  # Always start at 0 - finalize_run uses $inc
+</pre><h3>Mutant 70</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -121,7 +121,7 @@
+                 "triggered_by": self.email,
+                 "trigger_type": run_data.get("trigger_type", "manual"),
+                 "browsers": run_data.get("browsers", [self.current_browser]),
+-                "start_time": now,
++                "XXstart_timeXX": now,
+                 "status": "running",
+                 "total_tests": 0,  # Always start at 0 - finalize_run uses $inc
+                 "passed": 0,
+</pre><h3>Mutant 81</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -127,7 +127,7 @@
+                 "passed": 0,
+                 "failed": 0,
+                 "skipped": 0,
+-                "success_rate": 0.0,
++                "XXsuccess_rateXX": 0.0,
+                 "duration_seconds": 0.0,
+                 "created_at": now,
+                 "updated_at": now
+</pre><h3>Mutant 82</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -127,7 +127,7 @@
+                 "passed": 0,
+                 "failed": 0,
+                 "skipped": 0,
+-                "success_rate": 0.0,
++                "success_rate": 1.0,
+                 "duration_seconds": 0.0,
+                 "created_at": now,
+                 "updated_at": now
+</pre><h3>Mutant 83</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -128,7 +128,7 @@
+                 "failed": 0,
+                 "skipped": 0,
+                 "success_rate": 0.0,
+-                "duration_seconds": 0.0,
++                "XXduration_secondsXX": 0.0,
+                 "created_at": now,
+                 "updated_at": now
+             }
+</pre><h3>Mutant 84</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -128,7 +128,7 @@
+                 "failed": 0,
+                 "skipped": 0,
+                 "success_rate": 0.0,
+-                "duration_seconds": 0.0,
++                "duration_seconds": 1.0,
+                 "created_at": now,
+                 "updated_at": now
+             }
+</pre><h3>Mutant 85</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -129,7 +129,7 @@
+                 "skipped": 0,
+                 "success_rate": 0.0,
+                 "duration_seconds": 0.0,
+-                "created_at": now,
++                "XXcreated_atXX": now,
+                 "updated_at": now
+             }
+             
+</pre><h3>Mutant 86</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -130,7 +130,7 @@
+                 "success_rate": 0.0,
+                 "duration_seconds": 0.0,
+                 "created_at": now,
+-                "updated_at": now
++                "XXupdated_atXX": now
+             }
+             
+             # Add suite reference if provided
+</pre><h3>Mutant 88</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -134,7 +134,7 @@
+             }
+             
+             # Add suite reference if provided
+-            if run_data.get("suite_id"):
++            if run_data.get("XXsuite_idXX"):
+                 try:
+                     run_doc["suite_id"] = ObjectId(run_data["suite_id"])
+                 except:
+</pre><h3>Mutant 89</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -136,7 +136,7 @@
+             # Add suite reference if provided
+             if run_data.get("suite_id"):
+                 try:
+-                    run_doc["suite_id"] = ObjectId(run_data["suite_id"])
++                    run_doc["XXsuite_idXX"] = ObjectId(run_data["suite_id"])
+                 except:
+                     pass
+             
+</pre><h3>Mutant 90</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -136,7 +136,7 @@
+             # Add suite reference if provided
+             if run_data.get("suite_id"):
+                 try:
+-                    run_doc["suite_id"] = ObjectId(run_data["suite_id"])
++                    run_doc["suite_id"] = ObjectId(run_data["XXsuite_idXX"])
+                 except:
+                     pass
+             
+</pre><h3>Mutant 91</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -136,7 +136,7 @@
+             # Add suite reference if provided
+             if run_data.get("suite_id"):
+                 try:
+-                    run_doc["suite_id"] = ObjectId(run_data["suite_id"])
++                    run_doc["suite_id"] = None
+                 except:
+                     pass
+             
+</pre><h3>Mutant 95</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -146,7 +146,7 @@
+                 # Update existing run to "running" status (only if not already running/completed)
+                 # Also add this runner's browser to the browsers array if not already present
+                 self.db.test_runs.update_one(
+-                    {"_id": existing_run["_id"], "status": {"$nin": ["running", "completed"]}},
++                    {"XX_idXX": existing_run["_id"], "status": {"$nin": ["running", "completed"]}},
+                     {"$set": {"status": "running", "start_time": now, "updated_at": now}}
+                 )
+                 # Add browser to list (avoid duplicates)
+</pre><h3>Mutant 97</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -146,7 +146,7 @@
+                 # Update existing run to "running" status (only if not already running/completed)
+                 # Also add this runner's browser to the browsers array if not already present
+                 self.db.test_runs.update_one(
+-                    {"_id": existing_run["_id"], "status": {"$nin": ["running", "completed"]}},
++                    {"_id": existing_run["_id"], "XXstatusXX": {"$nin": ["running", "completed"]}},
+                     {"$set": {"status": "running", "start_time": now, "updated_at": now}}
+                 )
+                 # Add browser to list (avoid duplicates)
+</pre><h3>Mutant 98</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -146,7 +146,7 @@
+                 # Update existing run to "running" status (only if not already running/completed)
+                 # Also add this runner's browser to the browsers array if not already present
+                 self.db.test_runs.update_one(
+-                    {"_id": existing_run["_id"], "status": {"$nin": ["running", "completed"]}},
++                    {"_id": existing_run["_id"], "status": {"XX$ninXX": ["running", "completed"]}},
+                     {"$set": {"status": "running", "start_time": now, "updated_at": now}}
+                 )
+                 # Add browser to list (avoid duplicates)
+</pre><h3>Mutant 99</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -146,7 +146,7 @@
+                 # Update existing run to "running" status (only if not already running/completed)
+                 # Also add this runner's browser to the browsers array if not already present
+                 self.db.test_runs.update_one(
+-                    {"_id": existing_run["_id"], "status": {"$nin": ["running", "completed"]}},
++                    {"_id": existing_run["_id"], "status": {"$nin": ["XXrunningXX", "completed"]}},
+                     {"$set": {"status": "running", "start_time": now, "updated_at": now}}
+                 )
+                 # Add browser to list (avoid duplicates)
+</pre><h3>Mutant 100</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -146,7 +146,7 @@
+                 # Update existing run to "running" status (only if not already running/completed)
+                 # Also add this runner's browser to the browsers array if not already present
+                 self.db.test_runs.update_one(
+-                    {"_id": existing_run["_id"], "status": {"$nin": ["running", "completed"]}},
++                    {"_id": existing_run["_id"], "status": {"$nin": ["running", "XXcompletedXX"]}},
+                     {"$set": {"status": "running", "start_time": now, "updated_at": now}}
+                 )
+                 # Add browser to list (avoid duplicates)
+</pre><h3>Mutant 102</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -147,7 +147,7 @@
+                 # Also add this runner's browser to the browsers array if not already present
+                 self.db.test_runs.update_one(
+                     {"_id": existing_run["_id"], "status": {"$nin": ["running", "completed"]}},
+-                    {"$set": {"status": "running", "start_time": now, "updated_at": now}}
++                    {"$set": {"XXstatusXX": "running", "start_time": now, "updated_at": now}}
+                 )
+                 # Add browser to list (avoid duplicates)
+                 self.db.test_runs.update_one(
+</pre><h3>Mutant 103</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -147,7 +147,7 @@
+                 # Also add this runner's browser to the browsers array if not already present
+                 self.db.test_runs.update_one(
+                     {"_id": existing_run["_id"], "status": {"$nin": ["running", "completed"]}},
+-                    {"$set": {"status": "running", "start_time": now, "updated_at": now}}
++                    {"$set": {"status": "XXrunningXX", "start_time": now, "updated_at": now}}
+                 )
+                 # Add browser to list (avoid duplicates)
+                 self.db.test_runs.update_one(
+</pre><h3>Mutant 104</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -147,7 +147,7 @@
+                 # Also add this runner's browser to the browsers array if not already present
+                 self.db.test_runs.update_one(
+                     {"_id": existing_run["_id"], "status": {"$nin": ["running", "completed"]}},
+-                    {"$set": {"status": "running", "start_time": now, "updated_at": now}}
++                    {"$set": {"status": "running", "XXstart_timeXX": now, "updated_at": now}}
+                 )
+                 # Add browser to list (avoid duplicates)
+                 self.db.test_runs.update_one(
+</pre><h3>Mutant 105</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -147,7 +147,7 @@
+                 # Also add this runner's browser to the browsers array if not already present
+                 self.db.test_runs.update_one(
+                     {"_id": existing_run["_id"], "status": {"$nin": ["running", "completed"]}},
+-                    {"$set": {"status": "running", "start_time": now, "updated_at": now}}
++                    {"$set": {"status": "running", "start_time": now, "XXupdated_atXX": now}}
+                 )
+                 # Add browser to list (avoid duplicates)
+                 self.db.test_runs.update_one(
+</pre><h3>Mutant 106</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -151,7 +151,7 @@
+                 )
+                 # Add browser to list (avoid duplicates)
+                 self.db.test_runs.update_one(
+-                    {"_id": existing_run["_id"]},
++                    {"XX_idXX": existing_run["_id"]},
+                     {"$addToSet": {"browsers": self.current_browser}}
+                 )
+                 self.current_run_id = existing_run["_id"]
+</pre><h3>Mutant 109</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -152,7 +152,7 @@
+                 # Add browser to list (avoid duplicates)
+                 self.db.test_runs.update_one(
+                     {"_id": existing_run["_id"]},
+-                    {"$addToSet": {"browsers": self.current_browser}}
++                    {"$addToSet": {"XXbrowsersXX": self.current_browser}}
+                 )
+                 self.current_run_id = existing_run["_id"]
+                 self.current_run_id_string = run_doc["run_id"]
+</pre><h3>Mutant 111</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -154,7 +154,7 @@
+                     {"_id": existing_run["_id"]},
+                     {"$addToSet": {"browsers": self.current_browser}}
+                 )
+-                self.current_run_id = existing_run["_id"]
++                self.current_run_id = None
+                 self.current_run_id_string = run_doc["run_id"]
+                 logger.info(f"Found existing test run: {run_doc['run_id']} (ID: {existing_run['_id']}), updated to running")
+                 return existing_run["_id"]
+</pre><h3>Mutant 113</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -155,7 +155,7 @@
+                     {"$addToSet": {"browsers": self.current_browser}}
+                 )
+                 self.current_run_id = existing_run["_id"]
+-                self.current_run_id_string = run_doc["run_id"]
++                self.current_run_id_string = None
+                 logger.info(f"Found existing test run: {run_doc['run_id']} (ID: {existing_run['_id']}), updated to running")
+                 return existing_run["_id"]
+             
+</pre><h3>Mutant 116</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -156,7 +156,7 @@
+                 )
+                 self.current_run_id = existing_run["_id"]
+                 self.current_run_id_string = run_doc["run_id"]
+-                logger.info(f"Found existing test run: {run_doc['run_id']} (ID: {existing_run['_id']}), updated to running")
++                logger.info(f"XXFound existing test run: {run_doc['run_id']} (ID: {existing_run['_id']}), updated to runningXX")
+                 return existing_run["_id"]
+             
+             # Insert new run into database
+</pre><h3>Mutant 123</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -166,7 +166,7 @@
+             self.current_run_id = result.inserted_id
+             self.current_run_id_string = run_doc["run_id"]
+             
+-            logger.info(f"Test run created: {run_doc['run_id']} (ID: {result.inserted_id})")
++            logger.info(f"XXTest run created: {run_doc['run_id']} (ID: {result.inserted_id})XX")
+             return result.inserted_id
+             
+         except Exception as e:
+</pre><h3>Mutant 124</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -170,7 +170,7 @@
+             return result.inserted_id
+             
+         except Exception as e:
+-            logger.error(f"Failed to create test run: {e}")
++            logger.error(f"XXFailed to create test run: {e}XX")
+             return None
+     
+     def save_test_result(self, result_data: dict) -> Optional[ObjectId]:
+</pre><h3>Mutant 126</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -188,7 +188,7 @@
+             ObjectId of created result, or None on failure
+         """
+         if not self.connected:
+-            logger.warning("Database not connected, skipping test result save")
++            logger.warning("XXDatabase not connected, skipping test result saveXX")
+             return None
+         
+         try:
+</pre><h3>Mutant 127</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -192,7 +192,7 @@
+             return None
+         
+         try:
+-            now = datetime.now()
++            now = None
+             
+             # Build result document matching Go model
+             result_doc = {
+</pre><h3>Mutant 128</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -196,7 +196,7 @@
+             
+             # Build result document matching Go model
+             result_doc = {
+-                "run_id_string": self.current_run_id_string or result_data.get("run_id_string"),
++                "XXrun_id_stringXX": self.current_run_id_string or result_data.get("run_id_string"),
+                 "test_name": result_data.get("test_name"),
+                 "browser": result_data.get("browser", self.current_browser),
+                 "status": result_data.get("status", "UNKNOWN"),
+</pre><h3>Mutant 129</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -196,7 +196,7 @@
+             
+             # Build result document matching Go model
+             result_doc = {
+-                "run_id_string": self.current_run_id_string or result_data.get("run_id_string"),
++                "run_id_string": self.current_run_id_string or result_data.get("XXrun_id_stringXX"),
+                 "test_name": result_data.get("test_name"),
+                 "browser": result_data.get("browser", self.current_browser),
+                 "status": result_data.get("status", "UNKNOWN"),
+</pre><h3>Mutant 130</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -196,7 +196,7 @@
+             
+             # Build result document matching Go model
+             result_doc = {
+-                "run_id_string": self.current_run_id_string or result_data.get("run_id_string"),
++                "run_id_string": self.current_run_id_string and result_data.get("run_id_string"),
+                 "test_name": result_data.get("test_name"),
+                 "browser": result_data.get("browser", self.current_browser),
+                 "status": result_data.get("status", "UNKNOWN"),
+</pre><h3>Mutant 133</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -198,7 +198,7 @@
+             result_doc = {
+                 "run_id_string": self.current_run_id_string or result_data.get("run_id_string"),
+                 "test_name": result_data.get("test_name"),
+-                "browser": result_data.get("browser", self.current_browser),
++                "XXbrowserXX": result_data.get("browser", self.current_browser),
+                 "status": result_data.get("status", "UNKNOWN"),
+                 "duration_seconds": result_data.get("duration_seconds", 0),
+                 "start_time": result_data.get("start_time", now),
+</pre><h3>Mutant 134</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -198,7 +198,7 @@
+             result_doc = {
+                 "run_id_string": self.current_run_id_string or result_data.get("run_id_string"),
+                 "test_name": result_data.get("test_name"),
+-                "browser": result_data.get("browser", self.current_browser),
++                "browser": result_data.get("XXbrowserXX", self.current_browser),
+                 "status": result_data.get("status", "UNKNOWN"),
+                 "duration_seconds": result_data.get("duration_seconds", 0),
+                 "start_time": result_data.get("start_time", now),
+</pre><h3>Mutant 141</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -201,7 +201,7 @@
+                 "browser": result_data.get("browser", self.current_browser),
+                 "status": result_data.get("status", "UNKNOWN"),
+                 "duration_seconds": result_data.get("duration_seconds", 0),
+-                "start_time": result_data.get("start_time", now),
++                "XXstart_timeXX": result_data.get("start_time", now),
+                 "end_time": result_data.get("end_time", now),
+                 "error_message": result_data.get("error_message"),
+                 "created_at": now
+</pre><h3>Mutant 142</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -201,7 +201,7 @@
+                 "browser": result_data.get("browser", self.current_browser),
+                 "status": result_data.get("status", "UNKNOWN"),
+                 "duration_seconds": result_data.get("duration_seconds", 0),
+-                "start_time": result_data.get("start_time", now),
++                "start_time": result_data.get("XXstart_timeXX", now),
+                 "end_time": result_data.get("end_time", now),
+                 "error_message": result_data.get("error_message"),
+                 "created_at": now
+</pre><h3>Mutant 143</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -202,7 +202,7 @@
+                 "status": result_data.get("status", "UNKNOWN"),
+                 "duration_seconds": result_data.get("duration_seconds", 0),
+                 "start_time": result_data.get("start_time", now),
+-                "end_time": result_data.get("end_time", now),
++                "XXend_timeXX": result_data.get("end_time", now),
+                 "error_message": result_data.get("error_message"),
+                 "created_at": now
+             }
+</pre><h3>Mutant 144</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -202,7 +202,7 @@
+                 "status": result_data.get("status", "UNKNOWN"),
+                 "duration_seconds": result_data.get("duration_seconds", 0),
+                 "start_time": result_data.get("start_time", now),
+-                "end_time": result_data.get("end_time", now),
++                "end_time": result_data.get("XXend_timeXX", now),
+                 "error_message": result_data.get("error_message"),
+                 "created_at": now
+             }
+</pre><h3>Mutant 147</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -204,7 +204,7 @@
+                 "start_time": result_data.get("start_time", now),
+                 "end_time": result_data.get("end_time", now),
+                 "error_message": result_data.get("error_message"),
+-                "created_at": now
++                "XXcreated_atXX": now
+             }
+             
+             # Add run reference if available
+</pre><h3>Mutant 149</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -209,7 +209,7 @@
+             
+             # Add run reference if available
+             if self.current_run_id:
+-                result_doc["run_id"] = self.current_run_id
++                result_doc["XXrun_idXX"] = self.current_run_id
+             
+             # Check if a pending result already exists (created by backend)
+             existing_result = None
+</pre><h3>Mutant 150</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -209,7 +209,7 @@
+             
+             # Add run reference if available
+             if self.current_run_id:
+-                result_doc["run_id"] = self.current_run_id
++                result_doc["run_id"] = None
+             
+             # Check if a pending result already exists (created by backend)
+             existing_result = None
+</pre><h3>Mutant 151</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -212,7 +212,7 @@
+                 result_doc["run_id"] = self.current_run_id
+             
+             # Check if a pending result already exists (created by backend)
+-            existing_result = None
++            existing_result = ""
+             if self.current_run_id:
+                 existing_result = self.db.test_results.find_one({
+                     "run_id": self.current_run_id,
+</pre><h3>Mutant 152</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -215,7 +215,7 @@
+             existing_result = None
+             if self.current_run_id:
+                 existing_result = self.db.test_results.find_one({
+-                    "run_id": self.current_run_id,
++                    "XXrun_idXX": self.current_run_id,
+                     "test_name": result_data.get("test_name"),
+                     "browser": result_data.get("browser", self.current_browser)
+                 })
+</pre><h3>Mutant 153</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -216,7 +216,7 @@
+             if self.current_run_id:
+                 existing_result = self.db.test_results.find_one({
+                     "run_id": self.current_run_id,
+-                    "test_name": result_data.get("test_name"),
++                    "XXtest_nameXX": result_data.get("test_name"),
+                     "browser": result_data.get("browser", self.current_browser)
+                 })
+             
+</pre><h3>Mutant 154</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -216,7 +216,7 @@
+             if self.current_run_id:
+                 existing_result = self.db.test_results.find_one({
+                     "run_id": self.current_run_id,
+-                    "test_name": result_data.get("test_name"),
++                    "test_name": result_data.get("XXtest_nameXX"),
+                     "browser": result_data.get("browser", self.current_browser)
+                 })
+             
+</pre><h3>Mutant 155</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -217,7 +217,7 @@
+                 existing_result = self.db.test_results.find_one({
+                     "run_id": self.current_run_id,
+                     "test_name": result_data.get("test_name"),
+-                    "browser": result_data.get("browser", self.current_browser)
++                    "XXbrowserXX": result_data.get("browser", self.current_browser)
+                 })
+             
+             if existing_result:
+</pre><h3>Mutant 156</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -217,7 +217,7 @@
+                 existing_result = self.db.test_results.find_one({
+                     "run_id": self.current_run_id,
+                     "test_name": result_data.get("test_name"),
+-                    "browser": result_data.get("browser", self.current_browser)
++                    "browser": result_data.get("XXbrowserXX", self.current_browser)
+                 })
+             
+             if existing_result:
+</pre><h3>Mutant 157</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -214,11 +214,7 @@
+             # Check if a pending result already exists (created by backend)
+             existing_result = None
+             if self.current_run_id:
+-                existing_result = self.db.test_results.find_one({
+-                    "run_id": self.current_run_id,
+-                    "test_name": result_data.get("test_name"),
+-                    "browser": result_data.get("browser", self.current_browser)
+-                })
++                existing_result = None
+             
+             if existing_result:
+                 # Update existing result
+</pre><h3>Mutant 158</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -223,7 +223,7 @@
+             if existing_result:
+                 # Update existing result
+                 self.db.test_results.update_one(
+-                    {"_id": existing_result["_id"]},
++                    {"XX_idXX": existing_result["_id"]},
+                     {"$set": {
+                         "status": result_data.get("status", "UNKNOWN"),
+                         "duration_seconds": result_data.get("duration_seconds", 0),
+</pre><h3>Mutant 159</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -223,7 +223,7 @@
+             if existing_result:
+                 # Update existing result
+                 self.db.test_results.update_one(
+-                    {"_id": existing_result["_id"]},
++                    {"_id": existing_result["XX_idXX"]},
+                     {"$set": {
+                         "status": result_data.get("status", "UNKNOWN"),
+                         "duration_seconds": result_data.get("duration_seconds", 0),
+</pre><h3>Mutant 160</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -224,7 +224,7 @@
+                 # Update existing result
+                 self.db.test_results.update_one(
+                     {"_id": existing_result["_id"]},
+-                    {"$set": {
++                    {"XX$setXX": {
+                         "status": result_data.get("status", "UNKNOWN"),
+                         "duration_seconds": result_data.get("duration_seconds", 0),
+                         "start_time": result_data.get("start_time", now),
+</pre><h3>Mutant 161</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -225,7 +225,7 @@
+                 self.db.test_results.update_one(
+                     {"_id": existing_result["_id"]},
+                     {"$set": {
+-                        "status": result_data.get("status", "UNKNOWN"),
++                        "XXstatusXX": result_data.get("status", "UNKNOWN"),
+                         "duration_seconds": result_data.get("duration_seconds", 0),
+                         "start_time": result_data.get("start_time", now),
+                         "end_time": result_data.get("end_time", now),
+</pre><h3>Mutant 162</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -225,7 +225,7 @@
+                 self.db.test_results.update_one(
+                     {"_id": existing_result["_id"]},
+                     {"$set": {
+-                        "status": result_data.get("status", "UNKNOWN"),
++                        "status": result_data.get("XXstatusXX", "UNKNOWN"),
+                         "duration_seconds": result_data.get("duration_seconds", 0),
+                         "start_time": result_data.get("start_time", now),
+                         "end_time": result_data.get("end_time", now),
+</pre><h3>Mutant 163</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -225,7 +225,7 @@
+                 self.db.test_results.update_one(
+                     {"_id": existing_result["_id"]},
+                     {"$set": {
+-                        "status": result_data.get("status", "UNKNOWN"),
++                        "status": result_data.get("status", "XXUNKNOWNXX"),
+                         "duration_seconds": result_data.get("duration_seconds", 0),
+                         "start_time": result_data.get("start_time", now),
+                         "end_time": result_data.get("end_time", now),
+</pre><h3>Mutant 164</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -226,7 +226,7 @@
+                     {"_id": existing_result["_id"]},
+                     {"$set": {
+                         "status": result_data.get("status", "UNKNOWN"),
+-                        "duration_seconds": result_data.get("duration_seconds", 0),
++                        "XXduration_secondsXX": result_data.get("duration_seconds", 0),
+                         "start_time": result_data.get("start_time", now),
+                         "end_time": result_data.get("end_time", now),
+                         "error_message": result_data.get("error_message"),
+</pre><h3>Mutant 165</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -226,7 +226,7 @@
+                     {"_id": existing_result["_id"]},
+                     {"$set": {
+                         "status": result_data.get("status", "UNKNOWN"),
+-                        "duration_seconds": result_data.get("duration_seconds", 0),
++                        "duration_seconds": result_data.get("XXduration_secondsXX", 0),
+                         "start_time": result_data.get("start_time", now),
+                         "end_time": result_data.get("end_time", now),
+                         "error_message": result_data.get("error_message"),
+</pre><h3>Mutant 166</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -226,7 +226,7 @@
+                     {"_id": existing_result["_id"]},
+                     {"$set": {
+                         "status": result_data.get("status", "UNKNOWN"),
+-                        "duration_seconds": result_data.get("duration_seconds", 0),
++                        "duration_seconds": result_data.get("duration_seconds", 1),
+                         "start_time": result_data.get("start_time", now),
+                         "end_time": result_data.get("end_time", now),
+                         "error_message": result_data.get("error_message"),
+</pre><h3>Mutant 167</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -227,7 +227,7 @@
+                     {"$set": {
+                         "status": result_data.get("status", "UNKNOWN"),
+                         "duration_seconds": result_data.get("duration_seconds", 0),
+-                        "start_time": result_data.get("start_time", now),
++                        "XXstart_timeXX": result_data.get("start_time", now),
+                         "end_time": result_data.get("end_time", now),
+                         "error_message": result_data.get("error_message"),
+                     }}
+</pre><h3>Mutant 168</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -227,7 +227,7 @@
+                     {"$set": {
+                         "status": result_data.get("status", "UNKNOWN"),
+                         "duration_seconds": result_data.get("duration_seconds", 0),
+-                        "start_time": result_data.get("start_time", now),
++                        "start_time": result_data.get("XXstart_timeXX", now),
+                         "end_time": result_data.get("end_time", now),
+                         "error_message": result_data.get("error_message"),
+                     }}
+</pre><h3>Mutant 169</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -228,7 +228,7 @@
+                         "status": result_data.get("status", "UNKNOWN"),
+                         "duration_seconds": result_data.get("duration_seconds", 0),
+                         "start_time": result_data.get("start_time", now),
+-                        "end_time": result_data.get("end_time", now),
++                        "XXend_timeXX": result_data.get("end_time", now),
+                         "error_message": result_data.get("error_message"),
+                     }}
+                 )
+</pre><h3>Mutant 170</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -228,7 +228,7 @@
+                         "status": result_data.get("status", "UNKNOWN"),
+                         "duration_seconds": result_data.get("duration_seconds", 0),
+                         "start_time": result_data.get("start_time", now),
+-                        "end_time": result_data.get("end_time", now),
++                        "end_time": result_data.get("XXend_timeXX", now),
+                         "error_message": result_data.get("error_message"),
+                     }}
+                 )
+</pre><h3>Mutant 171</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -229,7 +229,7 @@
+                         "duration_seconds": result_data.get("duration_seconds", 0),
+                         "start_time": result_data.get("start_time", now),
+                         "end_time": result_data.get("end_time", now),
+-                        "error_message": result_data.get("error_message"),
++                        "XXerror_messageXX": result_data.get("error_message"),
+                     }}
+                 )
+                 self.current_result_id = existing_result["_id"]
+</pre><h3>Mutant 172</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -229,7 +229,7 @@
+                         "duration_seconds": result_data.get("duration_seconds", 0),
+                         "start_time": result_data.get("start_time", now),
+                         "end_time": result_data.get("end_time", now),
+-                        "error_message": result_data.get("error_message"),
++                        "error_message": result_data.get("XXerror_messageXX"),
+                     }}
+                 )
+                 self.current_result_id = existing_result["_id"]
+</pre><h3>Mutant 173</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -232,7 +232,7 @@
+                         "error_message": result_data.get("error_message"),
+                     }}
+                 )
+-                self.current_result_id = existing_result["_id"]
++                self.current_result_id = existing_result["XX_idXX"]
+                 logger.info(f"Test result updated: {result_data['test_name']} ({result_data.get('status')})")
+                 return existing_result["_id"]
+             
+</pre><h3>Mutant 174</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -232,7 +232,7 @@
+                         "error_message": result_data.get("error_message"),
+                     }}
+                 )
+-                self.current_result_id = existing_result["_id"]
++                self.current_result_id = None
+                 logger.info(f"Test result updated: {result_data['test_name']} ({result_data.get('status')})")
+                 return existing_result["_id"]
+             
+</pre><h3>Mutant 175</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -233,7 +233,7 @@
+                     }}
+                 )
+                 self.current_result_id = existing_result["_id"]
+-                logger.info(f"Test result updated: {result_data['test_name']} ({result_data.get('status')})")
++                logger.info(f"Test result updated: {result_data['XXtest_nameXX']} ({result_data.get('status')})")
+                 return existing_result["_id"]
+             
+             # Insert new result into database
+</pre><h3>Mutant 176</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -233,7 +233,7 @@
+                     }}
+                 )
+                 self.current_result_id = existing_result["_id"]
+-                logger.info(f"Test result updated: {result_data['test_name']} ({result_data.get('status')})")
++                logger.info(f"Test result updated: {result_data['test_name']} ({result_data.get('XXstatusXX')})")
+                 return existing_result["_id"]
+             
+             # Insert new result into database
+</pre><h3>Mutant 177</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -233,7 +233,7 @@
+                     }}
+                 )
+                 self.current_result_id = existing_result["_id"]
+-                logger.info(f"Test result updated: {result_data['test_name']} ({result_data.get('status')})")
++                logger.info(f"XXTest result updated: {result_data['test_name']} ({result_data.get('status')})XX")
+                 return existing_result["_id"]
+             
+             # Insert new result into database
+</pre><h3>Mutant 178</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -234,7 +234,7 @@
+                 )
+                 self.current_result_id = existing_result["_id"]
+                 logger.info(f"Test result updated: {result_data['test_name']} ({result_data.get('status')})")
+-                return existing_result["_id"]
++                return existing_result["XX_idXX"]
+             
+             # Insert new result into database
+             result = self.db.test_results.insert_one(result_doc)
+</pre><h3>Mutant 180</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -240,7 +240,7 @@
+             result = self.db.test_results.insert_one(result_doc)
+             
+             # Store for linking artifacts
+-            self.current_result_id = result.inserted_id
++            self.current_result_id = None
+             
+             logger.info(f"Test result saved: {result_data['test_name']} ({result_data.get('status')})")
+             return result.inserted_id
+</pre><h3>Mutant 182</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -242,7 +242,7 @@
+             # Store for linking artifacts
+             self.current_result_id = result.inserted_id
+             
+-            logger.info(f"Test result saved: {result_data['test_name']} ({result_data.get('status')})")
++            logger.info(f"Test result saved: {result_data['test_name']} ({result_data.get('XXstatusXX')})")
+             return result.inserted_id
+             
+         except Exception as e:
+</pre><h3>Mutant 183</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -242,7 +242,7 @@
+             # Store for linking artifacts
+             self.current_result_id = result.inserted_id
+             
+-            logger.info(f"Test result saved: {result_data['test_name']} ({result_data.get('status')})")
++            logger.info(f"XXTest result saved: {result_data['test_name']} ({result_data.get('status')})XX")
+             return result.inserted_id
+             
+         except Exception as e:
+</pre><h3>Mutant 184</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -246,7 +246,7 @@
+             return result.inserted_id
+             
+         except Exception as e:
+-            logger.error(f"Failed to save test result: {e}")
++            logger.error(f"XXFailed to save test result: {e}XX")
+             return None
+     
+     def save_video(self, video_data: dict) -> bool:
+</pre><h3>Mutant 186</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -260,7 +260,7 @@
+             True if successful, False otherwise
+         """
+         if not self.connected:
+-            logger.warning("Database not connected, skipping video save")
++            logger.warning("XXDatabase not connected, skipping video saveXX")
+             return False
+         
+         try:
+</pre><h3>Mutant 188</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -264,7 +264,7 @@
+             return False
+         
+         try:
+-            filepath = video_data.get('filepath')
++            filepath = video_data.get('XXfilepathXX')
+             gridfs_id = None
+             size_bytes = 0
+             
+</pre><h3>Mutant 189</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -264,7 +264,7 @@
+             return False
+         
+         try:
+-            filepath = video_data.get('filepath')
++            filepath = None
+             gridfs_id = None
+             size_bytes = 0
+             
+</pre><h3>Mutant 190</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -265,7 +265,7 @@
+         
+         try:
+             filepath = video_data.get('filepath')
+-            gridfs_id = None
++            gridfs_id = ""
+             size_bytes = 0
+             
+             # Save video file to GridFS if it exists
+</pre><h3>Mutant 191</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -266,7 +266,7 @@
+         try:
+             filepath = video_data.get('filepath')
+             gridfs_id = None
+-            size_bytes = 0
++            size_bytes = 1
+             
+             # Save video file to GridFS if it exists
+             if filepath and os.path.exists(filepath):
+</pre><h3>Mutant 196</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -274,7 +274,7 @@
+                 with open(filepath, 'rb') as video_file:
+                     gridfs_id = self.fs.put(
+                         video_file,
+-                        filename=video_data.get('filename', video_data.get('name')),
++                        filename=video_data.get('XXfilenameXX', video_data.get('name')),
+                         content_type='video/mp4',
+                         run_id_string=self.current_run_id_string,
+                         test_name=video_data.get('test_name')
+</pre><h3>Mutant 197</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -274,7 +274,7 @@
+                 with open(filepath, 'rb') as video_file:
+                     gridfs_id = self.fs.put(
+                         video_file,
+-                        filename=video_data.get('filename', video_data.get('name')),
++                        filename=video_data.get('filename', video_data.get('XXnameXX')),
+                         content_type='video/mp4',
+                         run_id_string=self.current_run_id_string,
+                         test_name=video_data.get('test_name')
+</pre><h3>Mutant 198</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -275,7 +275,7 @@
+                     gridfs_id = self.fs.put(
+                         video_file,
+                         filename=video_data.get('filename', video_data.get('name')),
+-                        content_type='video/mp4',
++                        content_type='XXvideo/mp4XX',
+                         run_id_string=self.current_run_id_string,
+                         test_name=video_data.get('test_name')
+                     )
+</pre><h3>Mutant 199</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -277,7 +277,7 @@
+                         filename=video_data.get('filename', video_data.get('name')),
+                         content_type='video/mp4',
+                         run_id_string=self.current_run_id_string,
+-                        test_name=video_data.get('test_name')
++                        test_name=video_data.get('XXtest_nameXX')
+                     )
+                 logger.info(f"Video uploaded to GridFS: {gridfs_id}")
+             
+</pre><h3>Mutant 200</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -272,13 +272,7 @@
+             if filepath and os.path.exists(filepath):
+                 size_bytes = os.path.getsize(filepath)
+                 with open(filepath, 'rb') as video_file:
+-                    gridfs_id = self.fs.put(
+-                        video_file,
+-                        filename=video_data.get('filename', video_data.get('name')),
+-                        content_type='video/mp4',
+-                        run_id_string=self.current_run_id_string,
+-                        test_name=video_data.get('test_name')
+-                    )
++                    gridfs_id = None
+                 logger.info(f"Video uploaded to GridFS: {gridfs_id}")
+             
+             now = datetime.now()
+</pre><h3>Mutant 201</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -279,7 +279,7 @@
+                         run_id_string=self.current_run_id_string,
+                         test_name=video_data.get('test_name')
+                     )
+-                logger.info(f"Video uploaded to GridFS: {gridfs_id}")
++                logger.info(f"XXVideo uploaded to GridFS: {gridfs_id}XX")
+             
+             now = datetime.now()
+             
+</pre><h3>Mutant 202</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -281,7 +281,7 @@
+                     )
+                 logger.info(f"Video uploaded to GridFS: {gridfs_id}")
+             
+-            now = datetime.now()
++            now = None
+             
+             # Build video document matching Go model
+             video_doc = {
+</pre><h3>Mutant 203</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -285,7 +285,7 @@
+             
+             # Build video document matching Go model
+             video_doc = {
+-                "run_id_string": self.current_run_id_string or video_data.get("run_id_string"),
++                "XXrun_id_stringXX": self.current_run_id_string or video_data.get("run_id_string"),
+                 "test_name": video_data.get("test_name"),
+                 "browser": video_data.get("browser", self.current_browser),
+                 "name": video_data.get("name") or video_data.get("filename"),
+</pre><h3>Mutant 204</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -285,7 +285,7 @@
+             
+             # Build video document matching Go model
+             video_doc = {
+-                "run_id_string": self.current_run_id_string or video_data.get("run_id_string"),
++                "run_id_string": self.current_run_id_string or video_data.get("XXrun_id_stringXX"),
+                 "test_name": video_data.get("test_name"),
+                 "browser": video_data.get("browser", self.current_browser),
+                 "name": video_data.get("name") or video_data.get("filename"),
+</pre><h3>Mutant 205</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -285,7 +285,7 @@
+             
+             # Build video document matching Go model
+             video_doc = {
+-                "run_id_string": self.current_run_id_string or video_data.get("run_id_string"),
++                "run_id_string": self.current_run_id_string and video_data.get("run_id_string"),
+                 "test_name": video_data.get("test_name"),
+                 "browser": video_data.get("browser", self.current_browser),
+                 "name": video_data.get("name") or video_data.get("filename"),
+</pre><h3>Mutant 208</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -287,7 +287,7 @@
+             video_doc = {
+                 "run_id_string": self.current_run_id_string or video_data.get("run_id_string"),
+                 "test_name": video_data.get("test_name"),
+-                "browser": video_data.get("browser", self.current_browser),
++                "XXbrowserXX": video_data.get("browser", self.current_browser),
+                 "name": video_data.get("name") or video_data.get("filename"),
+                 "content_type": "video/mp4",
+                 "duration_seconds": video_data.get("duration_seconds", 0),
+</pre><h3>Mutant 209</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -287,7 +287,7 @@
+             video_doc = {
+                 "run_id_string": self.current_run_id_string or video_data.get("run_id_string"),
+                 "test_name": video_data.get("test_name"),
+-                "browser": video_data.get("browser", self.current_browser),
++                "browser": video_data.get("XXbrowserXX", self.current_browser),
+                 "name": video_data.get("name") or video_data.get("filename"),
+                 "content_type": "video/mp4",
+                 "duration_seconds": video_data.get("duration_seconds", 0),
+</pre><h3>Mutant 210</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -288,7 +288,7 @@
+                 "run_id_string": self.current_run_id_string or video_data.get("run_id_string"),
+                 "test_name": video_data.get("test_name"),
+                 "browser": video_data.get("browser", self.current_browser),
+-                "name": video_data.get("name") or video_data.get("filename"),
++                "XXnameXX": video_data.get("name") or video_data.get("filename"),
+                 "content_type": "video/mp4",
+                 "duration_seconds": video_data.get("duration_seconds", 0),
+                 "size_bytes": size_bytes,
+</pre><h3>Mutant 211</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -288,7 +288,7 @@
+                 "run_id_string": self.current_run_id_string or video_data.get("run_id_string"),
+                 "test_name": video_data.get("test_name"),
+                 "browser": video_data.get("browser", self.current_browser),
+-                "name": video_data.get("name") or video_data.get("filename"),
++                "name": video_data.get("XXnameXX") or video_data.get("filename"),
+                 "content_type": "video/mp4",
+                 "duration_seconds": video_data.get("duration_seconds", 0),
+                 "size_bytes": size_bytes,
+</pre><h3>Mutant 212</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -288,7 +288,7 @@
+                 "run_id_string": self.current_run_id_string or video_data.get("run_id_string"),
+                 "test_name": video_data.get("test_name"),
+                 "browser": video_data.get("browser", self.current_browser),
+-                "name": video_data.get("name") or video_data.get("filename"),
++                "name": video_data.get("name") or video_data.get("XXfilenameXX"),
+                 "content_type": "video/mp4",
+                 "duration_seconds": video_data.get("duration_seconds", 0),
+                 "size_bytes": size_bytes,
+</pre><h3>Mutant 213</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -288,7 +288,7 @@
+                 "run_id_string": self.current_run_id_string or video_data.get("run_id_string"),
+                 "test_name": video_data.get("test_name"),
+                 "browser": video_data.get("browser", self.current_browser),
+-                "name": video_data.get("name") or video_data.get("filename"),
++                "name": video_data.get("name") and video_data.get("filename"),
+                 "content_type": "video/mp4",
+                 "duration_seconds": video_data.get("duration_seconds", 0),
+                 "size_bytes": size_bytes,
+</pre><h3>Mutant 218</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -290,7 +290,7 @@
+                 "browser": video_data.get("browser", self.current_browser),
+                 "name": video_data.get("name") or video_data.get("filename"),
+                 "content_type": "video/mp4",
+-                "duration_seconds": video_data.get("duration_seconds", 0),
++                "duration_seconds": video_data.get("duration_seconds", 1),
+                 "size_bytes": size_bytes,
+                 "created_at": now
+             }
+</pre><h3>Mutant 219</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -291,7 +291,7 @@
+                 "name": video_data.get("name") or video_data.get("filename"),
+                 "content_type": "video/mp4",
+                 "duration_seconds": video_data.get("duration_seconds", 0),
+-                "size_bytes": size_bytes,
++                "XXsize_bytesXX": size_bytes,
+                 "created_at": now
+             }
+             
+</pre><h3>Mutant 220</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -292,7 +292,7 @@
+                 "content_type": "video/mp4",
+                 "duration_seconds": video_data.get("duration_seconds", 0),
+                 "size_bytes": size_bytes,
+-                "created_at": now
++                "XXcreated_atXX": now
+             }
+             
+             # Add ObjectID references if available
+</pre><h3>Mutant 222</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -297,7 +297,7 @@
+             
+             # Add ObjectID references if available
+             if self.current_run_id:
+-                video_doc["run_id"] = self.current_run_id
++                video_doc["XXrun_idXX"] = self.current_run_id
+             if self.current_result_id:
+                 video_doc["result_id"] = self.current_result_id
+             if gridfs_id:
+</pre><h3>Mutant 223</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -297,7 +297,7 @@
+             
+             # Add ObjectID references if available
+             if self.current_run_id:
+-                video_doc["run_id"] = self.current_run_id
++                video_doc["run_id"] = None
+             if self.current_result_id:
+                 video_doc["result_id"] = self.current_result_id
+             if gridfs_id:
+</pre><h3>Mutant 224</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -299,7 +299,7 @@
+             if self.current_run_id:
+                 video_doc["run_id"] = self.current_run_id
+             if self.current_result_id:
+-                video_doc["result_id"] = self.current_result_id
++                video_doc["XXresult_idXX"] = self.current_result_id
+             if gridfs_id:
+                 video_doc["gridfs_id"] = str(gridfs_id)
+             
+</pre><h3>Mutant 225</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -299,7 +299,7 @@
+             if self.current_run_id:
+                 video_doc["run_id"] = self.current_run_id
+             if self.current_result_id:
+-                video_doc["result_id"] = self.current_result_id
++                video_doc["result_id"] = None
+             if gridfs_id:
+                 video_doc["gridfs_id"] = str(gridfs_id)
+             
+</pre><h3>Mutant 226</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -301,7 +301,7 @@
+             if self.current_result_id:
+                 video_doc["result_id"] = self.current_result_id
+             if gridfs_id:
+-                video_doc["gridfs_id"] = str(gridfs_id)
++                video_doc["XXgridfs_idXX"] = str(gridfs_id)
+             
+             # Insert metadata into database
+             self.db.videos.insert_one(video_doc)
+</pre><h3>Mutant 227</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -301,7 +301,7 @@
+             if self.current_result_id:
+                 video_doc["result_id"] = self.current_result_id
+             if gridfs_id:
+-                video_doc["gridfs_id"] = str(gridfs_id)
++                video_doc["gridfs_id"] = None
+             
+             # Insert metadata into database
+             self.db.videos.insert_one(video_doc)
+</pre><h3>Mutant 228</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -306,7 +306,7 @@
+             # Insert metadata into database
+             self.db.videos.insert_one(video_doc)
+             
+-            logger.info(f"Video saved: {video_doc.get('name')} ({size_bytes / (1024*1024):.2f} MB)")
++            logger.info(f"Video saved: {video_doc.get('XXnameXX')} ({size_bytes / (1024*1024):.2f} MB)")
+             return True
+             
+         except Exception as e:
+</pre><h3>Mutant 229</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -306,7 +306,7 @@
+             # Insert metadata into database
+             self.db.videos.insert_one(video_doc)
+             
+-            logger.info(f"Video saved: {video_doc.get('name')} ({size_bytes / (1024*1024):.2f} MB)")
++            logger.info(f"Video saved: {video_doc.get('name')} ({size_bytes * (1024*1024):.2f} MB)")
+             return True
+             
+         except Exception as e:
+</pre><h3>Mutant 230</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -306,7 +306,7 @@
+             # Insert metadata into database
+             self.db.videos.insert_one(video_doc)
+             
+-            logger.info(f"Video saved: {video_doc.get('name')} ({size_bytes / (1024*1024):.2f} MB)")
++            logger.info(f"Video saved: {video_doc.get('name')} ({size_bytes / (1025*1024):.2f} MB)")
+             return True
+             
+         except Exception as e:
+</pre><h3>Mutant 231</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -306,7 +306,7 @@
+             # Insert metadata into database
+             self.db.videos.insert_one(video_doc)
+             
+-            logger.info(f"Video saved: {video_doc.get('name')} ({size_bytes / (1024*1024):.2f} MB)")
++            logger.info(f"Video saved: {video_doc.get('name')} ({size_bytes / (1024/1024):.2f} MB)")
+             return True
+             
+         except Exception as e:
+</pre><h3>Mutant 232</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -306,7 +306,7 @@
+             # Insert metadata into database
+             self.db.videos.insert_one(video_doc)
+             
+-            logger.info(f"Video saved: {video_doc.get('name')} ({size_bytes / (1024*1024):.2f} MB)")
++            logger.info(f"Video saved: {video_doc.get('name')} ({size_bytes / (1024*1025):.2f} MB)")
+             return True
+             
+         except Exception as e:
+</pre><h3>Mutant 233</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -306,7 +306,7 @@
+             # Insert metadata into database
+             self.db.videos.insert_one(video_doc)
+             
+-            logger.info(f"Video saved: {video_doc.get('name')} ({size_bytes / (1024*1024):.2f} MB)")
++            logger.info(f"XXVideo saved: {video_doc.get('name')} ({size_bytes / (1024*1024):.2f} MB)XX")
+             return True
+             
+         except Exception as e:
+</pre><h3>Mutant 235</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -310,7 +310,7 @@
+             return True
+             
+         except Exception as e:
+-            logger.error(f"Failed to save video: {e}")
++            logger.error(f"XXFailed to save video: {e}XX")
+             return False
+     
+     def save_screenshot(self, screenshot_data: dict) -> bool:
+</pre><h3>Mutant 236</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -311,7 +311,7 @@
+             
+         except Exception as e:
+             logger.error(f"Failed to save video: {e}")
+-            return False
++            return True
+     
+     def save_screenshot(self, screenshot_data: dict) -> bool:
+         """
+</pre><h3>Mutant 238</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -324,7 +324,7 @@
+             True if successful, False otherwise
+         """
+         if not self.connected:
+-            logger.warning("Database not connected, skipping screenshot save")
++            logger.warning("XXDatabase not connected, skipping screenshot saveXX")
+             return False
+         
+         try:
+</pre><h3>Mutant 240</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -329,7 +329,7 @@
+         
+         try:
+             # Read the screenshot file
+-            filepath = screenshot_data.get('filepath')
++            filepath = screenshot_data.get('XXfilepathXX')
+             file_data = None
+             size_bytes = 0
+             
+</pre><h3>Mutant 241</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -329,7 +329,7 @@
+         
+         try:
+             # Read the screenshot file
+-            filepath = screenshot_data.get('filepath')
++            filepath = None
+             file_data = None
+             size_bytes = 0
+             
+</pre><h3>Mutant 242</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -330,7 +330,7 @@
+         try:
+             # Read the screenshot file
+             filepath = screenshot_data.get('filepath')
+-            file_data = None
++            file_data = ""
+             size_bytes = 0
+             
+             if filepath and os.path.exists(filepath):
+</pre><h3>Mutant 243</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -331,7 +331,7 @@
+             # Read the screenshot file
+             filepath = screenshot_data.get('filepath')
+             file_data = None
+-            size_bytes = 0
++            size_bytes = 1
+             
+             if filepath and os.path.exists(filepath):
+                 with open(filepath, 'rb') as image_file:
+</pre><h3>Mutant 244</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -331,7 +331,7 @@
+             # Read the screenshot file
+             filepath = screenshot_data.get('filepath')
+             file_data = None
+-            size_bytes = 0
++            size_bytes = None
+             
+             if filepath and os.path.exists(filepath):
+                 with open(filepath, 'rb') as image_file:
+</pre><h3>Mutant 245</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -333,7 +333,7 @@
+             file_data = None
+             size_bytes = 0
+             
+-            if filepath and os.path.exists(filepath):
++            if filepath or os.path.exists(filepath):
+                 with open(filepath, 'rb') as image_file:
+                     file_data = image_file.read()
+                     size_bytes = len(file_data)
+</pre><h3>Mutant 248</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -336,7 +336,7 @@
+             if filepath and os.path.exists(filepath):
+                 with open(filepath, 'rb') as image_file:
+                     file_data = image_file.read()
+-                    size_bytes = len(file_data)
++                    size_bytes = None
+             
+             now = datetime.now()
+             
+</pre><h3>Mutant 249</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -338,7 +338,7 @@
+                     file_data = image_file.read()
+                     size_bytes = len(file_data)
+             
+-            now = datetime.now()
++            now = None
+             
+             # Build screenshot document matching Go model
+             run_id_string = self.current_run_id_string or screenshot_data.get("run_id_string")
+</pre><h3>Mutant 250</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -341,7 +341,7 @@
+             now = datetime.now()
+             
+             # Build screenshot document matching Go model
+-            run_id_string = self.current_run_id_string or screenshot_data.get("run_id_string")
++            run_id_string = self.current_run_id_string or screenshot_data.get("XXrun_id_stringXX")
+             test_name = screenshot_data.get("test_name")
+             browser = screenshot_data.get("browser", self.current_browser)
+             name = screenshot_data.get("name") or screenshot_data.get("filename")
+</pre><h3>Mutant 251</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -341,7 +341,7 @@
+             now = datetime.now()
+             
+             # Build screenshot document matching Go model
+-            run_id_string = self.current_run_id_string or screenshot_data.get("run_id_string")
++            run_id_string = self.current_run_id_string and screenshot_data.get("run_id_string")
+             test_name = screenshot_data.get("test_name")
+             browser = screenshot_data.get("browser", self.current_browser)
+             name = screenshot_data.get("name") or screenshot_data.get("filename")
+</pre><h3>Mutant 252</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -341,7 +341,7 @@
+             now = datetime.now()
+             
+             # Build screenshot document matching Go model
+-            run_id_string = self.current_run_id_string or screenshot_data.get("run_id_string")
++            run_id_string = None
+             test_name = screenshot_data.get("test_name")
+             browser = screenshot_data.get("browser", self.current_browser)
+             name = screenshot_data.get("name") or screenshot_data.get("filename")
+</pre><h3>Mutant 255</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -343,7 +343,7 @@
+             # Build screenshot document matching Go model
+             run_id_string = self.current_run_id_string or screenshot_data.get("run_id_string")
+             test_name = screenshot_data.get("test_name")
+-            browser = screenshot_data.get("browser", self.current_browser)
++            browser = screenshot_data.get("XXbrowserXX", self.current_browser)
+             name = screenshot_data.get("name") or screenshot_data.get("filename")
+             step = screenshot_data.get("step", "")
+ 
+</pre><h3>Mutant 256</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -343,7 +343,7 @@
+             # Build screenshot document matching Go model
+             run_id_string = self.current_run_id_string or screenshot_data.get("run_id_string")
+             test_name = screenshot_data.get("test_name")
+-            browser = screenshot_data.get("browser", self.current_browser)
++            browser = None
+             name = screenshot_data.get("name") or screenshot_data.get("filename")
+             step = screenshot_data.get("step", "")
+ 
+</pre><h3>Mutant 257</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -344,7 +344,7 @@
+             run_id_string = self.current_run_id_string or screenshot_data.get("run_id_string")
+             test_name = screenshot_data.get("test_name")
+             browser = screenshot_data.get("browser", self.current_browser)
+-            name = screenshot_data.get("name") or screenshot_data.get("filename")
++            name = screenshot_data.get("XXnameXX") or screenshot_data.get("filename")
+             step = screenshot_data.get("step", "")
+ 
+             screenshot_doc = {
+</pre><h3>Mutant 258</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -344,7 +344,7 @@
+             run_id_string = self.current_run_id_string or screenshot_data.get("run_id_string")
+             test_name = screenshot_data.get("test_name")
+             browser = screenshot_data.get("browser", self.current_browser)
+-            name = screenshot_data.get("name") or screenshot_data.get("filename")
++            name = screenshot_data.get("name") or screenshot_data.get("XXfilenameXX")
+             step = screenshot_data.get("step", "")
+ 
+             screenshot_doc = {
+</pre><h3>Mutant 259</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -344,7 +344,7 @@
+             run_id_string = self.current_run_id_string or screenshot_data.get("run_id_string")
+             test_name = screenshot_data.get("test_name")
+             browser = screenshot_data.get("browser", self.current_browser)
+-            name = screenshot_data.get("name") or screenshot_data.get("filename")
++            name = screenshot_data.get("name") and screenshot_data.get("filename")
+             step = screenshot_data.get("step", "")
+ 
+             screenshot_doc = {
+</pre><h3>Mutant 260</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -344,7 +344,7 @@
+             run_id_string = self.current_run_id_string or screenshot_data.get("run_id_string")
+             test_name = screenshot_data.get("test_name")
+             browser = screenshot_data.get("browser", self.current_browser)
+-            name = screenshot_data.get("name") or screenshot_data.get("filename")
++            name = None
+             step = screenshot_data.get("step", "")
+ 
+             screenshot_doc = {
+</pre><h3>Mutant 262</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -345,7 +345,7 @@
+             test_name = screenshot_data.get("test_name")
+             browser = screenshot_data.get("browser", self.current_browser)
+             name = screenshot_data.get("name") or screenshot_data.get("filename")
+-            step = screenshot_data.get("step", "")
++            step = screenshot_data.get("step", "XXXX")
+ 
+             screenshot_doc = {
+                 "run_id_string": run_id_string,
+</pre><h3>Mutant 264</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -348,7 +348,7 @@
+             step = screenshot_data.get("step", "")
+ 
+             screenshot_doc = {
+-                "run_id_string": run_id_string,
++                "XXrun_id_stringXX": run_id_string,
+                 "test_name": test_name,
+                 "browser": browser,
+                 "name": name,
+</pre><h3>Mutant 265</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -349,7 +349,7 @@
+ 
+             screenshot_doc = {
+                 "run_id_string": run_id_string,
+-                "test_name": test_name,
++                "XXtest_nameXX": test_name,
+                 "browser": browser,
+                 "name": name,
+                 "step": step,
+</pre><h3>Mutant 266</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -350,7 +350,7 @@
+             screenshot_doc = {
+                 "run_id_string": run_id_string,
+                 "test_name": test_name,
+-                "browser": browser,
++                "XXbrowserXX": browser,
+                 "name": name,
+                 "step": step,
+                 "content_type": "image/png",
+</pre><h3>Mutant 267</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -351,7 +351,7 @@
+                 "run_id_string": run_id_string,
+                 "test_name": test_name,
+                 "browser": browser,
+-                "name": name,
++                "XXnameXX": name,
+                 "step": step,
+                 "content_type": "image/png",
+                 "size_bytes": size_bytes,
+</pre><h3>Mutant 268</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -352,7 +352,7 @@
+                 "test_name": test_name,
+                 "browser": browser,
+                 "name": name,
+-                "step": step,
++                "XXstepXX": step,
+                 "content_type": "image/png",
+                 "size_bytes": size_bytes,
+                 "created_at": now
+</pre><h3>Mutant 271</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -354,7 +354,7 @@
+                 "name": name,
+                 "step": step,
+                 "content_type": "image/png",
+-                "size_bytes": size_bytes,
++                "XXsize_bytesXX": size_bytes,
+                 "created_at": now
+             }
+             
+</pre><h3>Mutant 272</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -355,7 +355,7 @@
+                 "step": step,
+                 "content_type": "image/png",
+                 "size_bytes": size_bytes,
+-                "created_at": now
++                "XXcreated_atXX": now
+             }
+             
+             # Add ObjectID references if available
+</pre><h3>Mutant 274</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -360,7 +360,7 @@
+             
+             # Add ObjectID references if available
+             if self.current_run_id:
+-                screenshot_doc["run_id"] = self.current_run_id
++                screenshot_doc["XXrun_idXX"] = self.current_run_id
+             if self.current_result_id:
+                 screenshot_doc["result_id"] = self.current_result_id
+             
+</pre><h3>Mutant 275</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -360,7 +360,7 @@
+             
+             # Add ObjectID references if available
+             if self.current_run_id:
+-                screenshot_doc["run_id"] = self.current_run_id
++                screenshot_doc["run_id"] = None
+             if self.current_result_id:
+                 screenshot_doc["result_id"] = self.current_result_id
+             
+</pre><h3>Mutant 276</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -362,7 +362,7 @@
+             if self.current_run_id:
+                 screenshot_doc["run_id"] = self.current_run_id
+             if self.current_result_id:
+-                screenshot_doc["result_id"] = self.current_result_id
++                screenshot_doc["XXresult_idXX"] = self.current_result_id
+             
+             # Store binary data
+             if file_data:
+</pre><h3>Mutant 277</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -362,7 +362,7 @@
+             if self.current_run_id:
+                 screenshot_doc["run_id"] = self.current_run_id
+             if self.current_result_id:
+-                screenshot_doc["result_id"] = self.current_result_id
++                screenshot_doc["result_id"] = None
+             
+             # Store binary data
+             if file_data:
+</pre><h3>Mutant 278</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -366,7 +366,7 @@
+             
+             # Store binary data
+             if file_data:
+-                screenshot_doc["file_data"] = file_data
++                screenshot_doc["XXfile_dataXX"] = file_data
+ 
+             # Prevent duplicate inserts caused by repeated directory scans across parallel executions.
+             # This upsert is atomic: same screenshot key will be inserted once and reused on retries.
+</pre><h3>Mutant 279</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -366,7 +366,7 @@
+             
+             # Store binary data
+             if file_data:
+-                screenshot_doc["file_data"] = file_data
++                screenshot_doc["file_data"] = None
+ 
+             # Prevent duplicate inserts caused by repeated directory scans across parallel executions.
+             # This upsert is atomic: same screenshot key will be inserted once and reused on retries.
+</pre><h3>Mutant 280</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -371,7 +371,7 @@
+             # Prevent duplicate inserts caused by repeated directory scans across parallel executions.
+             # This upsert is atomic: same screenshot key will be inserted once and reused on retries.
+             dedupe_filter = {
+-                "run_id_string": run_id_string,
++                "XXrun_id_stringXX": run_id_string,
+                 "test_name": test_name,
+                 "browser": browser,
+                 "name": name,
+</pre><h3>Mutant 281</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -372,7 +372,7 @@
+             # This upsert is atomic: same screenshot key will be inserted once and reused on retries.
+             dedupe_filter = {
+                 "run_id_string": run_id_string,
+-                "test_name": test_name,
++                "XXtest_nameXX": test_name,
+                 "browser": browser,
+                 "name": name,
+                 "step": step,
+</pre><h3>Mutant 282</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -373,7 +373,7 @@
+             dedupe_filter = {
+                 "run_id_string": run_id_string,
+                 "test_name": test_name,
+-                "browser": browser,
++                "XXbrowserXX": browser,
+                 "name": name,
+                 "step": step,
+             }
+</pre><h3>Mutant 283</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -374,7 +374,7 @@
+                 "run_id_string": run_id_string,
+                 "test_name": test_name,
+                 "browser": browser,
+-                "name": name,
++                "XXnameXX": name,
+                 "step": step,
+             }
+             if self.current_run_id:
+</pre><h3>Mutant 284</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -375,7 +375,7 @@
+                 "test_name": test_name,
+                 "browser": browser,
+                 "name": name,
+-                "step": step,
++                "XXstepXX": step,
+             }
+             if self.current_run_id:
+                 dedupe_filter["run_id"] = self.current_run_id
+</pre><h3>Mutant 286</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -378,7 +378,7 @@
+                 "step": step,
+             }
+             if self.current_run_id:
+-                dedupe_filter["run_id"] = self.current_run_id
++                dedupe_filter["XXrun_idXX"] = self.current_run_id
+ 
+             result = self.db.screenshots.update_one(
+                 dedupe_filter,
+</pre><h3>Mutant 287</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -378,7 +378,7 @@
+                 "step": step,
+             }
+             if self.current_run_id:
+-                dedupe_filter["run_id"] = self.current_run_id
++                dedupe_filter["run_id"] = None
+ 
+             result = self.db.screenshots.update_one(
+                 dedupe_filter,
+</pre><h3>Mutant 291</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -386,7 +386,7 @@
+                 upsert=True,
+             )
+ 
+-            if result.upserted_id is not None:
++            if result.upserted_id is  None:
+                 logger.info(f"Screenshot saved: {screenshot_doc.get('name')}")
+             else:
+                 logger.debug(f"Screenshot already exists, skipped duplicate: {screenshot_doc.get('name')}")
+</pre><h3>Mutant 292</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -387,7 +387,7 @@
+             )
+ 
+             if result.upserted_id is not None:
+-                logger.info(f"Screenshot saved: {screenshot_doc.get('name')}")
++                logger.info(f"Screenshot saved: {screenshot_doc.get('XXnameXX')}")
+             else:
+                 logger.debug(f"Screenshot already exists, skipped duplicate: {screenshot_doc.get('name')}")
+             return True
+</pre><h3>Mutant 293</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -387,7 +387,7 @@
+             )
+ 
+             if result.upserted_id is not None:
+-                logger.info(f"Screenshot saved: {screenshot_doc.get('name')}")
++                logger.info(f"XXScreenshot saved: {screenshot_doc.get('name')}XX")
+             else:
+                 logger.debug(f"Screenshot already exists, skipped duplicate: {screenshot_doc.get('name')}")
+             return True
+</pre><h3>Mutant 294</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -389,7 +389,7 @@
+             if result.upserted_id is not None:
+                 logger.info(f"Screenshot saved: {screenshot_doc.get('name')}")
+             else:
+-                logger.debug(f"Screenshot already exists, skipped duplicate: {screenshot_doc.get('name')}")
++                logger.debug(f"Screenshot already exists, skipped duplicate: {screenshot_doc.get('XXnameXX')}")
+             return True
+             
+         except Exception as e:
+</pre><h3>Mutant 295</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -389,7 +389,7 @@
+             if result.upserted_id is not None:
+                 logger.info(f"Screenshot saved: {screenshot_doc.get('name')}")
+             else:
+-                logger.debug(f"Screenshot already exists, skipped duplicate: {screenshot_doc.get('name')}")
++                logger.debug(f"XXScreenshot already exists, skipped duplicate: {screenshot_doc.get('name')}XX")
+             return True
+             
+         except Exception as e:
+</pre><h3>Mutant 297</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -393,7 +393,7 @@
+             return True
+             
+         except Exception as e:
+-            logger.error(f"Failed to save screenshot: {e}")
++            logger.error(f"XXFailed to save screenshot: {e}XX")
+             return False
+     
+     def save_log(self, log_data: dict) -> bool:
+</pre><h3>Mutant 298</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -394,7 +394,7 @@
+             
+         except Exception as e:
+             logger.error(f"Failed to save screenshot: {e}")
+-            return False
++            return True
+     
+     def save_log(self, log_data: dict) -> bool:
+         """
+</pre><h3>Mutant 300</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -407,7 +407,7 @@
+             True if successful, False otherwise
+         """
+         if not self.connected:
+-            logger.warning("Database not connected, skipping log save")
++            logger.warning("XXDatabase not connected, skipping log saveXX")
+             return False
+         
+         try:
+</pre><h3>Mutant 302</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -411,7 +411,7 @@
+             return False
+         
+         try:
+-            now = datetime.now()
++            now = None
+             
+             # Build log document matching Go model
+             log_doc = {
+</pre><h3>Mutant 303</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -415,7 +415,7 @@
+             
+             # Build log document matching Go model
+             log_doc = {
+-                "run_id_string": self.current_run_id_string or log_data.get("run_id_string"),
++                "XXrun_id_stringXX": self.current_run_id_string or log_data.get("run_id_string"),
+                 "test_name": log_data.get("test_name"),
+                 "browser": log_data.get("browser", self.current_browser),
+                 "level": log_data.get("level", "info").lower(),
+</pre><h3>Mutant 304</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -415,7 +415,7 @@
+             
+             # Build log document matching Go model
+             log_doc = {
+-                "run_id_string": self.current_run_id_string or log_data.get("run_id_string"),
++                "run_id_string": self.current_run_id_string or log_data.get("XXrun_id_stringXX"),
+                 "test_name": log_data.get("test_name"),
+                 "browser": log_data.get("browser", self.current_browser),
+                 "level": log_data.get("level", "info").lower(),
+</pre><h3>Mutant 305</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -415,7 +415,7 @@
+             
+             # Build log document matching Go model
+             log_doc = {
+-                "run_id_string": self.current_run_id_string or log_data.get("run_id_string"),
++                "run_id_string": self.current_run_id_string and log_data.get("run_id_string"),
+                 "test_name": log_data.get("test_name"),
+                 "browser": log_data.get("browser", self.current_browser),
+                 "level": log_data.get("level", "info").lower(),
+</pre><h3>Mutant 306</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -416,7 +416,7 @@
+             # Build log document matching Go model
+             log_doc = {
+                 "run_id_string": self.current_run_id_string or log_data.get("run_id_string"),
+-                "test_name": log_data.get("test_name"),
++                "XXtest_nameXX": log_data.get("test_name"),
+                 "browser": log_data.get("browser", self.current_browser),
+                 "level": log_data.get("level", "info").lower(),
+                 "message": log_data.get("message"),
+</pre><h3>Mutant 307</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -416,7 +416,7 @@
+             # Build log document matching Go model
+             log_doc = {
+                 "run_id_string": self.current_run_id_string or log_data.get("run_id_string"),
+-                "test_name": log_data.get("test_name"),
++                "test_name": log_data.get("XXtest_nameXX"),
+                 "browser": log_data.get("browser", self.current_browser),
+                 "level": log_data.get("level", "info").lower(),
+                 "message": log_data.get("message"),
+</pre><h3>Mutant 308</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -417,7 +417,7 @@
+             log_doc = {
+                 "run_id_string": self.current_run_id_string or log_data.get("run_id_string"),
+                 "test_name": log_data.get("test_name"),
+-                "browser": log_data.get("browser", self.current_browser),
++                "XXbrowserXX": log_data.get("browser", self.current_browser),
+                 "level": log_data.get("level", "info").lower(),
+                 "message": log_data.get("message"),
+                 "created_at": now
+</pre><h3>Mutant 309</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -417,7 +417,7 @@
+             log_doc = {
+                 "run_id_string": self.current_run_id_string or log_data.get("run_id_string"),
+                 "test_name": log_data.get("test_name"),
+-                "browser": log_data.get("browser", self.current_browser),
++                "browser": log_data.get("XXbrowserXX", self.current_browser),
+                 "level": log_data.get("level", "info").lower(),
+                 "message": log_data.get("message"),
+                 "created_at": now
+</pre><h3>Mutant 310</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -418,7 +418,7 @@
+                 "run_id_string": self.current_run_id_string or log_data.get("run_id_string"),
+                 "test_name": log_data.get("test_name"),
+                 "browser": log_data.get("browser", self.current_browser),
+-                "level": log_data.get("level", "info").lower(),
++                "XXlevelXX": log_data.get("level", "info").lower(),
+                 "message": log_data.get("message"),
+                 "created_at": now
+             }
+</pre><h3>Mutant 311</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -418,7 +418,7 @@
+                 "run_id_string": self.current_run_id_string or log_data.get("run_id_string"),
+                 "test_name": log_data.get("test_name"),
+                 "browser": log_data.get("browser", self.current_browser),
+-                "level": log_data.get("level", "info").lower(),
++                "level": log_data.get("XXlevelXX", "info").lower(),
+                 "message": log_data.get("message"),
+                 "created_at": now
+             }
+</pre><h3>Mutant 312</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -418,7 +418,7 @@
+                 "run_id_string": self.current_run_id_string or log_data.get("run_id_string"),
+                 "test_name": log_data.get("test_name"),
+                 "browser": log_data.get("browser", self.current_browser),
+-                "level": log_data.get("level", "info").lower(),
++                "level": log_data.get("level", "XXinfoXX").lower(),
+                 "message": log_data.get("message"),
+                 "created_at": now
+             }
+</pre><h3>Mutant 313</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -419,7 +419,7 @@
+                 "test_name": log_data.get("test_name"),
+                 "browser": log_data.get("browser", self.current_browser),
+                 "level": log_data.get("level", "info").lower(),
+-                "message": log_data.get("message"),
++                "XXmessageXX": log_data.get("message"),
+                 "created_at": now
+             }
+             
+</pre><h3>Mutant 314</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -419,7 +419,7 @@
+                 "test_name": log_data.get("test_name"),
+                 "browser": log_data.get("browser", self.current_browser),
+                 "level": log_data.get("level", "info").lower(),
+-                "message": log_data.get("message"),
++                "message": log_data.get("XXmessageXX"),
+                 "created_at": now
+             }
+             
+</pre><h3>Mutant 315</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -420,7 +420,7 @@
+                 "browser": log_data.get("browser", self.current_browser),
+                 "level": log_data.get("level", "info").lower(),
+                 "message": log_data.get("message"),
+-                "created_at": now
++                "XXcreated_atXX": now
+             }
+             
+             # Add ObjectID references if available
+</pre><h3>Mutant 317</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -425,7 +425,7 @@
+             
+             # Add ObjectID references if available
+             if self.current_run_id:
+-                log_doc["run_id"] = self.current_run_id
++                log_doc["XXrun_idXX"] = self.current_run_id
+             if self.current_result_id:
+                 log_doc["result_id"] = self.current_result_id
+             
+</pre><h3>Mutant 318</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -425,7 +425,7 @@
+             
+             # Add ObjectID references if available
+             if self.current_run_id:
+-                log_doc["run_id"] = self.current_run_id
++                log_doc["run_id"] = None
+             if self.current_result_id:
+                 log_doc["result_id"] = self.current_result_id
+             
+</pre><h3>Mutant 319</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -427,7 +427,7 @@
+             if self.current_run_id:
+                 log_doc["run_id"] = self.current_run_id
+             if self.current_result_id:
+-                log_doc["result_id"] = self.current_result_id
++                log_doc["XXresult_idXX"] = self.current_result_id
+             
+             # Insert into database
+             self.db.logs.insert_one(log_doc)
+</pre><h3>Mutant 320</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -427,7 +427,7 @@
+             if self.current_run_id:
+                 log_doc["run_id"] = self.current_run_id
+             if self.current_result_id:
+-                log_doc["result_id"] = self.current_result_id
++                log_doc["result_id"] = None
+             
+             # Insert into database
+             self.db.logs.insert_one(log_doc)
+</pre><h3>Mutant 322</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -435,7 +435,7 @@
+             return True
+             
+         except Exception as e:
+-            logger.error(f"Failed to save log: {e}")
++            logger.error(f"XXFailed to save log: {e}XX")
+             return False
+     
+     def update_test_run(self, run_id: ObjectId = None, update_data: dict = None) -> bool:
+</pre><h3>Mutant 323</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -436,7 +436,7 @@
+             
+         except Exception as e:
+             logger.error(f"Failed to save log: {e}")
+-            return False
++            return True
+     
+     def update_test_run(self, run_id: ObjectId = None, update_data: dict = None) -> bool:
+         """
+</pre><h3>Mutant 325</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -450,7 +450,7 @@
+             True if successful, False otherwise
+         """
+         if not self.connected:
+-            logger.warning("Database not connected, skipping test run update")
++            logger.warning("XXDatabase not connected, skipping test run updateXX")
+             return False
+         
+         try:
+</pre><h3>Mutant 330</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -456,7 +456,7 @@
+         try:
+             target_id = run_id or self.current_run_id
+             if not target_id:
+-                logger.warning("No run ID specified for update")
++                logger.warning("XXNo run ID specified for updateXX")
+                 return False
+             
+             update_data = update_data or {}
+</pre><h3>Mutant 331</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -457,7 +457,7 @@
+             target_id = run_id or self.current_run_id
+             if not target_id:
+                 logger.warning("No run ID specified for update")
+-                return False
++                return True
+             
+             update_data = update_data or {}
+             update_data['updated_at'] = datetime.now()
+</pre><h3>Mutant 334</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -460,7 +460,7 @@
+                 return False
+             
+             update_data = update_data or {}
+-            update_data['updated_at'] = datetime.now()
++            update_data['XXupdated_atXX'] = datetime.now()
+             
+             result = self.db.test_runs.update_one(
+                 {"_id": target_id},
+</pre><h3>Mutant 335</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -460,7 +460,7 @@
+                 return False
+             
+             update_data = update_data or {}
+-            update_data['updated_at'] = datetime.now()
++            update_data['updated_at'] = None
+             
+             result = self.db.test_runs.update_one(
+                 {"_id": target_id},
+</pre><h3>Mutant 341</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -468,7 +468,7 @@
+             )
+             
+             if result.modified_count > 0:
+-                logger.info(f"Test run updated: {target_id}")
++                logger.info(f"XXTest run updated: {target_id}XX")
+                 return True
+             else:
+                 logger.warning(f"No test run found with ID: {target_id}")
+</pre><h3>Mutant 343</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -471,7 +471,7 @@
+                 logger.info(f"Test run updated: {target_id}")
+                 return True
+             else:
+-                logger.warning(f"No test run found with ID: {target_id}")
++                logger.warning(f"XXNo test run found with ID: {target_id}XX")
+                 return False
+                 
+         except Exception as e:
+</pre><h3>Mutant 345</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -475,7 +475,7 @@
+                 return False
+                 
+         except Exception as e:
+-            logger.error(f"Failed to update test run: {e}")
++            logger.error(f"XXFailed to update test run: {e}XX")
+             return False
+     
+     def finalize_run(self, total_tests: int, passed: int, failed: int, 
+</pre><h3>Mutant 346</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -476,7 +476,7 @@
+                 
+         except Exception as e:
+             logger.error(f"Failed to update test run: {e}")
+-            return False
++            return True
+     
+     def finalize_run(self, total_tests: int, passed: int, failed: int, 
+                      duration_seconds: float, status: str = "completed") -> bool:
+</pre><h3>Mutant 347</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -479,7 +479,7 @@
+             return False
+     
+     def finalize_run(self, total_tests: int, passed: int, failed: int, 
+-                     duration_seconds: float, status: str = "completed") -> bool:
++                     duration_seconds: float, status: str = "XXcompletedXX") -> bool:
+         """
+         Finalize test run with summary statistics.
+         Uses atomic $inc operations so parallel runners can safely update 
+</pre><h3>Mutant 349</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -496,7 +496,7 @@
+             True if successful, False otherwise
+         """
+         if not self.connected:
+-            logger.warning("Database not connected, skipping test run finalize")
++            logger.warning("XXDatabase not connected, skipping test run finalizeXX")
+             return False
+         
+         try:
+</pre><h3>Mutant 353</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -502,7 +502,7 @@
+         try:
+             target_id = self.current_run_id
+             if not target_id:
+-                logger.warning("No run ID specified for finalize")
++                logger.warning("XXNo run ID specified for finalizeXX")
+                 return False
+             
+             now = datetime.now()
+</pre><h3>Mutant 354</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -503,7 +503,7 @@
+             target_id = self.current_run_id
+             if not target_id:
+                 logger.warning("No run ID specified for finalize")
+-                return False
++                return True
+             
+             now = datetime.now()
+             
+</pre><h3>Mutant 360</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -516,7 +516,7 @@
+                     "$inc": {
+                         "passed": passed,
+                         "failed": failed,
+-                        "skipped": total_tests - passed - failed,
++                        "XXskippedXX": total_tests - passed - failed,
+                     },
+                     "$set": {
+                         "updated_at": now,
+</pre><h3>Mutant 362</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -516,7 +516,7 @@
+                     "$inc": {
+                         "passed": passed,
+                         "failed": failed,
+-                        "skipped": total_tests - passed - failed,
++                        "skipped": total_tests - passed + failed,
+                     },
+                     "$set": {
+                         "updated_at": now,
+</pre><h3>Mutant 364</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -519,7 +519,7 @@
+                         "skipped": total_tests - passed - failed,
+                     },
+                     "$set": {
+-                        "updated_at": now,
++                        "XXupdated_atXX": now,
+                     },
+                     "$max": {
+                         "end_time": now,
+</pre><h3>Mutant 366</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -522,7 +522,7 @@
+                         "updated_at": now,
+                     },
+                     "$max": {
+-                        "end_time": now,
++                        "XXend_timeXX": now,
+                         "duration_seconds": duration_seconds,
+                     }
+                 }
+</pre><h3>Mutant 367</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -523,7 +523,7 @@
+                     },
+                     "$max": {
+                         "end_time": now,
+-                        "duration_seconds": duration_seconds,
++                        "XXduration_secondsXX": duration_seconds,
+                     }
+                 }
+             )
+</pre><h3>Mutant 369</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -528,7 +528,7 @@
+                 }
+             )
+             
+-            if result.modified_count > 0:
++            if result.modified_count >= 0:
+                 # After incrementing, read back and check if ALL runners are done
+                 updated_run = self.db.test_runs.find_one({"_id": target_id})
+                 if updated_run:
+</pre><h3>Mutant 374</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -532,7 +532,7 @@
+                 # After incrementing, read back and check if ALL runners are done
+                 updated_run = self.db.test_runs.find_one({"_id": target_id})
+                 if updated_run:
+-                    expected_total = updated_run.get("total_tests", 0)
++                    expected_total = updated_run.get("total_tests", 1)
+                     p = updated_run.get("passed", 0)
+                     f = updated_run.get("failed", 0)
+                     s = updated_run.get("skipped", 0)
+</pre><h3>Mutant 377</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -533,7 +533,7 @@
+                 updated_run = self.db.test_runs.find_one({"_id": target_id})
+                 if updated_run:
+                     expected_total = updated_run.get("total_tests", 0)
+-                    p = updated_run.get("passed", 0)
++                    p = updated_run.get("passed", 1)
+                     f = updated_run.get("failed", 0)
+                     s = updated_run.get("skipped", 0)
+                     completed_count = p + f + s
+</pre><h3>Mutant 380</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -534,7 +534,7 @@
+                 if updated_run:
+                     expected_total = updated_run.get("total_tests", 0)
+                     p = updated_run.get("passed", 0)
+-                    f = updated_run.get("failed", 0)
++                    f = updated_run.get("failed", 1)
+                     s = updated_run.get("skipped", 0)
+                     completed_count = p + f + s
+                     rate = (p / expected_total * 100) if expected_total > 0 else 0.0
+</pre><h3>Mutant 382</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -535,7 +535,7 @@
+                     expected_total = updated_run.get("total_tests", 0)
+                     p = updated_run.get("passed", 0)
+                     f = updated_run.get("failed", 0)
+-                    s = updated_run.get("skipped", 0)
++                    s = updated_run.get("XXskippedXX", 0)
+                     completed_count = p + f + s
+                     rate = (p / expected_total * 100) if expected_total > 0 else 0.0
+                     
+</pre><h3>Mutant 383</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -535,7 +535,7 @@
+                     expected_total = updated_run.get("total_tests", 0)
+                     p = updated_run.get("passed", 0)
+                     f = updated_run.get("failed", 0)
+-                    s = updated_run.get("skipped", 0)
++                    s = updated_run.get("skipped", 1)
+                     completed_count = p + f + s
+                     rate = (p / expected_total * 100) if expected_total > 0 else 0.0
+                     
+</pre><h3>Mutant 386</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -536,7 +536,7 @@
+                     p = updated_run.get("passed", 0)
+                     f = updated_run.get("failed", 0)
+                     s = updated_run.get("skipped", 0)
+-                    completed_count = p + f + s
++                    completed_count = p + f - s
+                     rate = (p / expected_total * 100) if expected_total > 0 else 0.0
+                     
+                     update_fields = {"success_rate": rate}
+</pre><h3>Mutant 391</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -537,7 +537,7 @@
+                     f = updated_run.get("failed", 0)
+                     s = updated_run.get("skipped", 0)
+                     completed_count = p + f + s
+-                    rate = (p / expected_total * 100) if expected_total > 0 else 0.0
++                    rate = (p / expected_total * 100) if expected_total >= 0 else 0.0
+                     
+                     update_fields = {"success_rate": rate}
+                     
+</pre><h3>Mutant 405</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -545,7 +545,7 @@
+                     if completed_count >= expected_total:
+                         final_status = "completed" if f == 0 else "failed"
+                         update_fields["status"] = final_status
+-                        logger.info(f"All {expected_total} tests done ({p} passed, {f} failed) status={final_status}")
++                        logger.info(f"XXAll {expected_total} tests done ({p} passed, {f} failed) status={final_status}XX")
+                     else:
+                         # Still waiting for other runners — keep status as "running"
+                         update_fields["status"] = "running"
+</pre><h3>Mutant 406</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -548,7 +548,7 @@
+                         logger.info(f"All {expected_total} tests done ({p} passed, {f} failed) status={final_status}")
+                     else:
+                         # Still waiting for other runners — keep status as "running"
+-                        update_fields["status"] = "running"
++                        update_fields["XXstatusXX"] = "running"
+                         logger.info(f" {completed_count}/{expected_total} tests done so far ({p} passed, {f} failed)")
+                     
+                     self.db.test_runs.update_one(
+</pre><h3>Mutant 409</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -549,7 +549,7 @@
+                     else:
+                         # Still waiting for other runners — keep status as "running"
+                         update_fields["status"] = "running"
+-                        logger.info(f" {completed_count}/{expected_total} tests done so far ({p} passed, {f} failed)")
++                        logger.info(f"XX {completed_count}/{expected_total} tests done so far ({p} passed, {f} failed)XX")
+                     
+                     self.db.test_runs.update_one(
+                         {"_id": target_id},
+</pre><h3>Mutant 412</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -556,7 +556,7 @@
+                         {"$set": update_fields}
+                     )
+                 
+-                logger.info(f"Test run updated: {target_id}")
++                logger.info(f"XXTest run updated: {target_id}XX")
+                 return True
+             else:
+                 logger.warning(f"No test run found with ID: {target_id}")
+</pre><h3>Mutant 414</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -559,7 +559,7 @@
+                 logger.info(f"Test run updated: {target_id}")
+                 return True
+             else:
+-                logger.warning(f"No test run found with ID: {target_id}")
++                logger.warning(f"XXNo test run found with ID: {target_id}XX")
+                 return False
+                 
+         except Exception as e:
+</pre><h3>Mutant 415</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -560,7 +560,7 @@
+                 return True
+             else:
+                 logger.warning(f"No test run found with ID: {target_id}")
+-                return False
++                return True
+                 
+         except Exception as e:
+             logger.error(f"Failed to finalize test run: {e}")
+</pre><h3>Mutant 416</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -563,7 +563,7 @@
+                 return False
+                 
+         except Exception as e:
+-            logger.error(f"Failed to finalize test run: {e}")
++            logger.error(f"XXFailed to finalize test run: {e}XX")
+             return False
+     
+     # Legacy compatibility methods
+</pre><h3>Mutant 417</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -564,7 +564,7 @@
+                 
+         except Exception as e:
+             logger.error(f"Failed to finalize test run: {e}")
+-            return False
++            return True
+     
+     # Legacy compatibility methods
+     def create_test_suite(self, suite_data: dict) -> str:
+</pre><h3>Mutant 418</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -572,7 +572,7 @@
+         Legacy: Create test run (for backward compatibility)
+         """
+         run_id = self.create_test_run({
+-            "run_id": suite_data.get("suite_id"),
++            "XXrun_idXX": suite_data.get("suite_id"),
+             "suite_name": suite_data.get("suite_name", "Test Run"),
+             "total_tests": suite_data.get("total_tests", 0),
+             "trigger_type": "manual"
+</pre><h3>Mutant 419</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -572,7 +572,7 @@
+         Legacy: Create test run (for backward compatibility)
+         """
+         run_id = self.create_test_run({
+-            "run_id": suite_data.get("suite_id"),
++            "run_id": suite_data.get("XXsuite_idXX"),
+             "suite_name": suite_data.get("suite_name", "Test Run"),
+             "total_tests": suite_data.get("total_tests", 0),
+             "trigger_type": "manual"
+</pre><h3>Mutant 420</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -573,7 +573,7 @@
+         """
+         run_id = self.create_test_run({
+             "run_id": suite_data.get("suite_id"),
+-            "suite_name": suite_data.get("suite_name", "Test Run"),
++            "XXsuite_nameXX": suite_data.get("suite_name", "Test Run"),
+             "total_tests": suite_data.get("total_tests", 0),
+             "trigger_type": "manual"
+         })
+</pre><h3>Mutant 421</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -573,7 +573,7 @@
+         """
+         run_id = self.create_test_run({
+             "run_id": suite_data.get("suite_id"),
+-            "suite_name": suite_data.get("suite_name", "Test Run"),
++            "suite_name": suite_data.get("XXsuite_nameXX", "Test Run"),
+             "total_tests": suite_data.get("total_tests", 0),
+             "trigger_type": "manual"
+         })
+</pre><h3>Mutant 422</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -573,7 +573,7 @@
+         """
+         run_id = self.create_test_run({
+             "run_id": suite_data.get("suite_id"),
+-            "suite_name": suite_data.get("suite_name", "Test Run"),
++            "suite_name": suite_data.get("suite_name", "XXTest RunXX"),
+             "total_tests": suite_data.get("total_tests", 0),
+             "trigger_type": "manual"
+         })
+</pre><h3>Mutant 423</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -574,7 +574,7 @@
+         run_id = self.create_test_run({
+             "run_id": suite_data.get("suite_id"),
+             "suite_name": suite_data.get("suite_name", "Test Run"),
+-            "total_tests": suite_data.get("total_tests", 0),
++            "XXtotal_testsXX": suite_data.get("total_tests", 0),
+             "trigger_type": "manual"
+         })
+         return suite_data.get("suite_id") if run_id else None
+</pre><h3>Mutant 424</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -574,7 +574,7 @@
+         run_id = self.create_test_run({
+             "run_id": suite_data.get("suite_id"),
+             "suite_name": suite_data.get("suite_name", "Test Run"),
+-            "total_tests": suite_data.get("total_tests", 0),
++            "total_tests": suite_data.get("XXtotal_testsXX", 0),
+             "trigger_type": "manual"
+         })
+         return suite_data.get("suite_id") if run_id else None
+</pre><h3>Mutant 425</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -574,7 +574,7 @@
+         run_id = self.create_test_run({
+             "run_id": suite_data.get("suite_id"),
+             "suite_name": suite_data.get("suite_name", "Test Run"),
+-            "total_tests": suite_data.get("total_tests", 0),
++            "total_tests": suite_data.get("total_tests", 1),
+             "trigger_type": "manual"
+         })
+         return suite_data.get("suite_id") if run_id else None
+</pre><h3>Mutant 426</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -575,7 +575,7 @@
+             "run_id": suite_data.get("suite_id"),
+             "suite_name": suite_data.get("suite_name", "Test Run"),
+             "total_tests": suite_data.get("total_tests", 0),
+-            "trigger_type": "manual"
++            "XXtrigger_typeXX": "manual"
+         })
+         return suite_data.get("suite_id") if run_id else None
+     
+</pre><h3>Mutant 427</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -575,7 +575,7 @@
+             "run_id": suite_data.get("suite_id"),
+             "suite_name": suite_data.get("suite_name", "Test Run"),
+             "total_tests": suite_data.get("total_tests", 0),
+-            "trigger_type": "manual"
++            "trigger_type": "XXmanualXX"
+         })
+         return suite_data.get("suite_id") if run_id else None
+     
+</pre><h3>Mutant 428</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -571,12 +571,7 @@
+         """
+         Legacy: Create test run (for backward compatibility)
+         """
+-        run_id = self.create_test_run({
+-            "run_id": suite_data.get("suite_id"),
+-            "suite_name": suite_data.get("suite_name", "Test Run"),
+-            "total_tests": suite_data.get("total_tests", 0),
+-            "trigger_type": "manual"
+-        })
++        run_id = None
+         return suite_data.get("suite_id") if run_id else None
+     
+     def update_test_suite(self, suite_id: str, update_data: dict) -> bool:
+</pre><h3>Mutant 429</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -577,7 +577,7 @@
+             "total_tests": suite_data.get("total_tests", 0),
+             "trigger_type": "manual"
+         })
+-        return suite_data.get("suite_id") if run_id else None
++        return suite_data.get("XXsuite_idXX") if run_id else None
+     
+     def update_test_suite(self, suite_id: str, update_data: dict) -> bool:
+         """
+</pre><h3>Mutant 430</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -583,7 +583,7 @@
+         """
+         Legacy: Update test run by string ID (for backward compatibility)
+         """
+-        if not self.connected:
++        if  self.connected:
+             return False
+         
+         try:
+</pre><h3>Mutant 431</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -584,7 +584,7 @@
+         Legacy: Update test run by string ID (for backward compatibility)
+         """
+         if not self.connected:
+-            return False
++            return True
+         
+         try:
+             update_data['updated_at'] = datetime.now()
+</pre><h3>Mutant 432</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -587,7 +587,7 @@
+             return False
+         
+         try:
+-            update_data['updated_at'] = datetime.now()
++            update_data['XXupdated_atXX'] = datetime.now()
+             
+             result = self.db.test_runs.update_one(
+                 {"run_id": suite_id},
+</pre><h3>Mutant 433</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -587,7 +587,7 @@
+             return False
+         
+         try:
+-            update_data['updated_at'] = datetime.now()
++            update_data['updated_at'] = None
+             
+             result = self.db.test_runs.update_one(
+                 {"run_id": suite_id},
+</pre><h3>Mutant 434</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -590,7 +590,7 @@
+             update_data['updated_at'] = datetime.now()
+             
+             result = self.db.test_runs.update_one(
+-                {"run_id": suite_id},
++                {"XXrun_idXX": suite_id},
+                 {"$set": update_data}
+             )
+             
+</pre><h3>Mutant 435</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -591,7 +591,7 @@
+             
+             result = self.db.test_runs.update_one(
+                 {"run_id": suite_id},
+-                {"$set": update_data}
++                {"XX$setXX": update_data}
+             )
+             
+             return result.modified_count > 0
+</pre><h3>Mutant 436</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -589,10 +589,7 @@
+         try:
+             update_data['updated_at'] = datetime.now()
+             
+-            result = self.db.test_runs.update_one(
+-                {"run_id": suite_id},
+-                {"$set": update_data}
+-            )
++            result = None
+             
+             return result.modified_count > 0
+             
+</pre><h3>Mutant 437</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -594,7 +594,7 @@
+                 {"$set": update_data}
+             )
+             
+-            return result.modified_count > 0
++            return result.modified_count >= 0
+             
+         except Exception as e:
+             logger.error(f"Failed to update test run: {e}")
+</pre><h3>Mutant 438</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -594,7 +594,7 @@
+                 {"$set": update_data}
+             )
+             
+-            return result.modified_count > 0
++            return result.modified_count > 1
+             
+         except Exception as e:
+             logger.error(f"Failed to update test run: {e}")
+</pre><h3>Mutant 439</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -597,7 +597,7 @@
+             return result.modified_count > 0
+             
+         except Exception as e:
+-            logger.error(f"Failed to update test run: {e}")
++            logger.error(f"XXFailed to update test run: {e}XX")
+             return False
+     
+     def get_user_test_runs(self, email: str = None, limit: int = 10):
+</pre><h3>Mutant 440</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -598,7 +598,7 @@
+             
+         except Exception as e:
+             logger.error(f"Failed to update test run: {e}")
+-            return False
++            return True
+     
+     def get_user_test_runs(self, email: str = None, limit: int = 10):
+         """
+</pre><h3>Mutant 441</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -600,7 +600,7 @@
+             logger.error(f"Failed to update test run: {e}")
+             return False
+     
+-    def get_user_test_runs(self, email: str = None, limit: int = 10):
++    def get_user_test_runs(self, email: str = None, limit: int = 11):
+         """
+         Get test runs for a user
+         
+</pre><h3>Mutant 443</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -612,7 +612,7 @@
+             List of test run documents
+         """
+         if not self.connected:
+-            logger.warning("Database not connected")
++            logger.warning("XXDatabase not connectedXX")
+             return []
+         
+         try:
+</pre><h3>Mutant 447</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -621,7 +621,7 @@
+             runs = list(
+                 self.db.test_runs
+                 .find({"triggered_by": user_email})
+-                .sort("created_at", -1)
++                .sort("XXcreated_atXX", -1)
+                 .limit(limit)
+             )
+             
+</pre><h3>Mutant 448</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -621,7 +621,7 @@
+             runs = list(
+                 self.db.test_runs
+                 .find({"triggered_by": user_email})
+-                .sort("created_at", -1)
++                .sort("created_at", +1)
+                 .limit(limit)
+             )
+             
+</pre><h3>Mutant 449</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -621,7 +621,7 @@
+             runs = list(
+                 self.db.test_runs
+                 .find({"triggered_by": user_email})
+-                .sort("created_at", -1)
++                .sort("created_at", -2)
+                 .limit(limit)
+             )
+             
+</pre><h3>Mutant 451</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -628,7 +628,7 @@
+             return runs
+             
+         except Exception as e:
+-            logger.error(f"Failed to fetch test runs: {e}")
++            logger.error(f"XXFailed to fetch test runs: {e}XX")
+             return []
+     
+     def close(self):
+</pre><h3>Mutant 452</h3><pre>--- src/database_service.py
++++ src/database_service.py
+@@ -635,5 +635,5 @@
+         """Close database connection"""
+         if self.client:
+             self.client.close()
+-            logger.info("Database connection closed")
+-
++            logger.info("XXDatabase connection closedXX")
++
+</pre></body></html>
