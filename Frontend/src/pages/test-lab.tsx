@@ -15,7 +15,6 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { useAuth } from "@/lib/authContext";
-import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { API_ENDPOINTS } from "@/lib/apiConfig";
 
@@ -505,13 +504,13 @@ export default function TestLab() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "passed":
-        return <CheckCircle2 className="w-5 h-5 text-green-500" />;
+        return <CheckCircle2 className="w-5 h-5 text-emerald-500" />;
       case "failed":
         return <XCircle className="w-5 h-5 text-red-500" />;
       case "cancelled":
         return <StopCircle className="w-5 h-5 text-slate-400" />;
       case "running":
-        return <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />;
+        return <Loader2 className="w-5 h-5 text-primary animate-spin" />;
       default:
         return <Clock className="w-5 h-5 text-slate-400" />;
     }
@@ -519,10 +518,10 @@ export default function TestLab() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "passed": return "bg-green-500";
+      case "passed": return "bg-emerald-500";
       case "failed": return "bg-red-500";
       case "cancelled": return "bg-slate-400";
-      case "running": return "bg-blue-500";
+      case "running": return "bg-gradient-to-r from-primary to-accent";
       default: return "bg-slate-400";
     }
   };
@@ -1007,12 +1006,35 @@ export default function TestLab() {
 
               {/* Overall Progress */}
               {isRunning && (
-                <div className="mb-4 sm:mb-6">
-                  <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-                    <span className="text-xs sm:text-sm text-slate-400">Overall Progress</span>
-                    <span className="text-xs sm:text-sm font-mono text-cyan-400">{Math.round(overallProgress)}%</span>
+                <div className="card-3d mb-5 sm:mb-6 rounded-2xl border border-border bg-gradient-to-b from-card to-muted/40 p-4 sm:p-5 dark:to-[hsl(252_30%_7%)]">
+                  <div className="mb-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="relative flex h-2.5 w-2.5">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+                        <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
+                      </span>
+                      <span className="font-display text-sm font-semibold text-foreground">Overall Progress</span>
+                    </div>
+                    <span className="font-mono text-lg font-bold text-gradient">{Math.round(overallProgress)}%</span>
                   </div>
-                  <Progress value={overallProgress} className="h-2" />
+
+                  {/* Gradient progress bar with glow + shimmer */}
+                  <div className="relative h-3 w-full overflow-hidden rounded-full bg-muted dark:bg-slate-800">
+                    <div
+                      className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-primary to-accent shadow-[0_0_14px_hsl(var(--primary)/0.6)] transition-all duration-500 ease-out"
+                      style={{ width: `${overallProgress}%` }}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent animate-shimmer" />
+                    </div>
+                  </div>
+
+                  {/* Live counts */}
+                  <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs">
+                    <span className="text-muted-foreground">{passedCount + failedCount + cancelledCount}/{scriptExecutions.length} done</span>
+                    <span className="flex items-center gap-1 text-primary"><span className="h-1.5 w-1.5 rounded-full bg-primary" />{runningCount} running</span>
+                    <span className="flex items-center gap-1 text-emerald-500"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />{passedCount} passed</span>
+                    <span className="flex items-center gap-1 text-red-500"><span className="h-1.5 w-1.5 rounded-full bg-red-500" />{failedCount} failed</span>
+                  </div>
                 </div>
               )}
 
@@ -1021,7 +1043,7 @@ export default function TestLab() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h4 className="text-sm font-medium text-slate-400 uppercase tracking-wider">
-                      Parallel Test Execution {isRunning && <span className="text-blue-400">(Live)</span>}
+                      Parallel Test Execution {isRunning && <span className="text-primary">(Live)</span>}
                     </h4>
                     {!isRunning && scriptExecutions.length > 0 && (
                       <Button
@@ -1041,10 +1063,10 @@ export default function TestLab() {
                       <div 
                         key={index} 
                         className={`p-2.5 sm:p-3 md:p-4 rounded-lg border transition-all ${
-                          script.status === "running" 
-                            ? "bg-blue-500/10 border-blue-500/30" 
+                          script.status === "running"
+                            ? "bg-primary/10 border-primary/30"
                             : script.status === "passed"
-                            ? "bg-green-500/10 border-green-500/30"
+                            ? "bg-emerald-500/10 border-emerald-500/30"
                             : script.status === "failed"
                             ? "bg-red-500/10 border-red-500/30"
                             : script.status === "cancelled"
@@ -1066,17 +1088,17 @@ export default function TestLab() {
                           <div className="flex items-center gap-2 sm:gap-3 shrink-0 self-end sm:self-auto">
                             {script.duration && (
                               <span className={`text-[10px] sm:text-xs font-mono flex items-center gap-1 ${
-                                script.status === "running" ? "text-blue-400" : "text-slate-400"
+                                script.status === "running" ? "text-primary" : "text-slate-400"
                               }`}>
                                 <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                 {script.duration}
                               </span>
                             )}
                             <span className={`text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full ${
-                              script.status === "passed" ? "bg-green-500/20 text-green-400" :
+                              script.status === "passed" ? "bg-emerald-500/20 text-emerald-400" :
                               script.status === "failed" ? "bg-red-500/20 text-red-400" :
                               script.status === "cancelled" ? "bg-slate-500/20 text-slate-400" :
-                              script.status === "running" ? "bg-blue-500/20 text-blue-400" :
+                              script.status === "running" ? "bg-primary/15 text-primary" :
                               "bg-slate-500/20 text-slate-400"
                             }`}>
                               {script.status.toUpperCase()}
