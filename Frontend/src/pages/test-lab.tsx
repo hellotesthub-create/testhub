@@ -6,11 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Upload, Play, FileCode, X, CheckCircle2, Loader2, Eye,
+  Upload, Play, FileCode, X, CheckCircle2, Loader2, Eye, Mail,
   FlaskConical, Rocket, AlertCircle, Clock, XCircle, Code2, StopCircle, RefreshCw,
   Github, Search, FolderGit2
 } from "lucide-react";
 import { BrandIcon } from "@/lib/brandAssets";
+import { CardSpotlight } from "@/components/ui/card-spotlight";
+import { NumberTicker } from "@/components/ui/number-ticker";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
@@ -908,7 +910,7 @@ export default function TestLab() {
           <GlassCard className="relative overflow-hidden">
             {/* Background gradient when running */}
             {isRunning && (
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-cyan-500/5 to-purple-500/5 animate-pulse" />
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 animate-pulse" />
             )}
             
             <div className="relative">
@@ -948,18 +950,21 @@ export default function TestLab() {
                     </Button>
                   )}
 
-                  <div className="flex items-start gap-2 rounded-lg border border-slate-300 dark:border-white/10 p-2.5 w-full sm:w-auto">
+                  <label className="sheen flex cursor-pointer items-start gap-2.5 rounded-xl border border-border bg-card/50 p-3 w-full transition-all duration-300 hover:border-primary/40 hover:bg-primary/[0.04] sm:w-auto">
                     <Checkbox
                       checked={sendCompletionEmail}
                       onCheckedChange={(checked) => setSendCompletionEmail(checked === true)}
                       disabled={isRunning}
                       className="mt-0.5"
                     />
-                    <div>
-                      <p className="text-xs sm:text-sm font-medium text-slate-900 dark:text-white">Send completion email</p>
-                      <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400">Includes summary, logs and report attachment.</p>
+                    <div className="flex items-start gap-2">
+                      <Mail className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                      <div>
+                        <p className="text-xs sm:text-sm font-medium text-foreground">Send completion email</p>
+                        <p className="text-[11px] sm:text-xs text-muted-foreground">Emails the PDF test report when the run finishes.</p>
+                      </div>
                     </div>
-                  </div>
+                  </label>
                   
                   {!isSuiteReady && (
                     <div className="flex items-center gap-1.5 sm:gap-2 text-amber-500 text-xs sm:text-sm">
@@ -973,19 +978,19 @@ export default function TestLab() {
                 {(isRunning || scriptExecutions.length > 0) && (
                   <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
                     <div className="flex items-center gap-2">
-                      <span className="text-slate-400">Tests:</span>
-                      <span className="font-mono text-white">{uploadedFiles.length * selectedBrowsers.length}</span>
+                      <span className="text-muted-foreground">Tests:</span>
+                      <span className="font-mono font-bold text-foreground">{uploadedFiles.length * selectedBrowsers.length}</span>
                     </div>
                     {runningCount > 0 && (
                       <div className="flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />
-                        <span className="text-blue-400">{runningCount} running</span>
+                        <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                        <span className="text-primary">{runningCount} running</span>
                       </div>
                     )}
                     {passedCount > 0 && (
                       <div className="flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-green-500" />
-                        <span className="text-green-400">{passedCount} passed</span>
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        <span className="text-emerald-500">{passedCount} passed</span>
                       </div>
                     )}
                     {failedCount > 0 && (
@@ -1060,9 +1065,9 @@ export default function TestLab() {
                   
                   <div className="grid gap-2 sm:gap-3">
                     {scriptExecutions.map((script, index) => (
-                      <div 
-                        key={index} 
-                        className={`p-2.5 sm:p-3 md:p-4 rounded-lg border transition-all ${
+                      <CardSpotlight
+                        key={index}
+                        className={`p-2.5 sm:p-3 md:p-4 rounded-xl border transition-all ${
                           script.status === "running"
                             ? "bg-primary/10 border-primary/30"
                             : script.status === "passed"
@@ -1080,7 +1085,10 @@ export default function TestLab() {
                             <div className="min-w-0">
                               <p className="text-xs sm:text-sm md:text-base font-medium text-slate-900 dark:text-white truncate">
                                 {script.name}
-                                <span className="ml-1.5 sm:ml-2 text-[10px] sm:text-xs font-normal px-1.5 sm:px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 capitalize">{script.browser}</span>
+                                <span className="ml-1.5 sm:ml-2 inline-flex items-center gap-1 align-middle text-[10px] sm:text-xs font-normal px-1.5 sm:px-2 py-0.5 rounded-md border border-border bg-card text-muted-foreground capitalize">
+                                  <BrandIcon kind="browser" name={script.browser} className="h-3 w-3" />
+                                  {script.browser}
+                                </span>
                               </p>
                               <p className="text-[10px] sm:text-xs text-slate-500 truncate">{script.message}</p>
                             </div>
@@ -1107,16 +1115,16 @@ export default function TestLab() {
                         </div>
                         
                         {/* Individual Progress Bar */}
-                        <div className="relative h-2 bg-slate-700 rounded-full overflow-hidden">
-                          <div 
+                        <div className="relative h-2 bg-muted dark:bg-slate-800 rounded-full overflow-hidden">
+                          <div
                             className={`absolute inset-y-0 left-0 transition-all duration-500 rounded-full ${getStatusColor(script.status)}`}
                             style={{ width: `${script.progress}%` }}
                           />
                           {script.status === "running" && (
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
                           )}
                         </div>
-                      </div>
+                      </CardSpotlight>
                     ))}
                   </div>
                 </div>
@@ -1137,43 +1145,68 @@ export default function TestLab() {
 
       {/* Success Dialog */}
       <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-        <DialogContent className="max-w-[90vw] sm:max-w-md bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10">
-          <DialogHeader>
-            <div className={`flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full ${
-              cancelledCount > 0 && failedCount === 0 
-                ? "bg-slate-100 dark:bg-slate-800/30" 
-                : "bg-green-100 dark:bg-green-900/30"
-            }`}>
-              {cancelledCount > 0 && failedCount === 0 
-                ? <StopCircle className="w-8 h-8 text-slate-500 dark:text-slate-400" />
-                : <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
-              }
+        <DialogContent className="overflow-hidden max-w-[90vw] sm:max-w-md border-border bg-card">
+          {/* brand glow at the top of the card */}
+          <div className="pointer-events-none absolute inset-x-0 -top-px h-28 bg-gradient-to-b from-primary/15 via-accent/5 to-transparent" />
+
+          <DialogHeader className="relative">
+            <div className="relative mx-auto mb-4">
+              <span className={`absolute inset-0 rounded-full blur-xl ${
+                cancelledCount > 0 && failedCount === 0 ? "bg-slate-400/20" : "bg-emerald-500/30"
+              }`} />
+              <div className={`relative flex items-center justify-center w-20 h-20 rounded-full ring-1 ${
+                cancelledCount > 0 && failedCount === 0
+                  ? "bg-slate-100 dark:bg-slate-800/40 ring-slate-400/30"
+                  : "bg-emerald-500/10 ring-emerald-500/40"
+              }`}>
+                {cancelledCount > 0 && failedCount === 0
+                  ? <StopCircle className="w-9 h-9 text-slate-500 dark:text-slate-400" />
+                  : <CheckCircle2 className="w-10 h-10 text-emerald-500" />
+                }
+              </div>
             </div>
-            <DialogTitle className="text-center text-slate-900 dark:text-white text-xl">
-              {cancelledCount > 0 && failedCount === 0 ? "Test Execution Cancelled" : "Test Execution Completed!"}
+            <DialogTitle className="text-center font-display text-2xl tracking-tight">
+              {cancelledCount > 0 && failedCount === 0
+                ? <span className="text-foreground">Test Execution Cancelled</span>
+                : <>Test Execution <span className="text-gradient">Completed!</span></>
+              }
             </DialogTitle>
-            <DialogDescription className="text-center text-slate-600 dark:text-slate-400">
-              <span className="block mb-2">Suite: "{suiteName}"</span>
-              <span className="flex items-center justify-center gap-4 mt-3">
-                {passedCount > 0 && <span className="text-green-500">{passedCount} passed</span>}
-                {failedCount > 0 && <span className="text-red-500">{failedCount} failed</span>}
-                {cancelledCount > 0 && <span className="text-slate-500">{cancelledCount} cancelled</span>}
-              </span>
+            <DialogDescription className="text-center text-muted-foreground">
+              Suite: <span className="font-medium text-foreground">"{suiteName}"</span>
             </DialogDescription>
           </DialogHeader>
-          
-          <div className="flex flex-col gap-3 mt-6">
-            <Button 
+
+          {/* Animated result chips */}
+          <div className="relative mt-2 flex flex-wrap items-center justify-center gap-2.5">
+            {passedCount > 0 && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /><NumberTicker value={passedCount} /> passed
+              </span>
+            )}
+            {failedCount > 0 && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-sm font-medium text-red-600 dark:text-red-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-red-500" /><NumberTicker value={failedCount} /> failed
+              </span>
+            )}
+            {cancelledCount > 0 && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/50 px-3 py-1 text-sm font-medium text-muted-foreground">
+                <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /><NumberTicker value={cancelledCount} /> cancelled
+              </span>
+            )}
+          </div>
+
+          <div className="relative flex flex-col gap-3 mt-6">
+            <Button
               onClick={handleViewResults}
-              className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white"
+              className="w-full bg-gradient-to-r from-primary to-accent text-primary-foreground transition-all duration-300 hover:shadow-[0_0_24px_hsl(var(--primary)/0.5)] hover:-translate-y-0.5"
             >
               <Eye className="w-4 h-4 mr-2" />
               View Results
             </Button>
-            <Button 
+            <Button
               onClick={handleCreateNew}
               variant="outline"
-              className="w-full border-slate-300 dark:border-white/10"
+              className="w-full border-border hover:border-primary/50 hover:bg-primary/5 hover:text-foreground"
             >
               Create New Test Suite
             </Button>
