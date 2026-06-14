@@ -18,14 +18,15 @@ import { useAuth } from "@/lib/authContext";
 const SidebarItem = ({ href, icon: Icon, label, isActive }: { href: string; icon: any; label: string; isActive: boolean }) => (
   <Link href={href}>
     <div className={cn(
-      "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 cursor-pointer group",
-      isActive 
-        ? "bg-primary/20 text-primary border border-primary/20 shadow-[0_0_10px_rgba(37,99,235,0.2)] dark:shadow-[0_0_10px_rgba(37,99,235,0.2)]" 
-        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5"
+      "relative flex items-center gap-3 px-4 py-3 rounded-xl border transition-all duration-300 cursor-pointer group",
+      isActive
+        ? "border-primary/30 bg-gradient-to-r from-primary/20 to-accent/10 text-primary shadow-[0_0_22px_-8px_hsl(var(--primary)/0.6)]"
+        : "border-transparent text-muted-foreground hover:text-foreground hover:bg-primary/[0.06] hover:translate-x-0.5"
     )}>
-      <Icon className={cn("w-5 h-5 transition-colors", isActive ? "text-primary" : "group-hover:text-slate-900 dark:group-hover:text-white")} />
+      {isActive && <span className="absolute left-0 top-1/2 h-5 -translate-y-1/2 w-1 rounded-r-full bg-gradient-to-b from-primary to-accent" />}
+      <Icon className={cn("w-5 h-5 transition-colors", isActive ? "text-primary" : "group-hover:text-foreground")} />
       <span className="font-medium font-sans">{label}</span>
-      {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_5px_#22d3ee]" />}
+      {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-accent shadow-[0_0_6px_hsl(var(--accent))]" />}
     </div>
   </Link>
 );
@@ -56,9 +57,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex flex-col h-full">
       <div className="p-6">
         <Link href="/">
-          <div className="flex items-center gap-2 mb-8 cursor-pointer">
-            <img src="/logo.png" alt="TESTHUB" className="w-14 h-14 object-contain" />
-            <span className="text-xl font-bold font-display tracking-wider text-slate-900 dark:text-white">
+          <div className="group flex items-center gap-2 mb-8 cursor-pointer">
+            <img src="/logo.png" alt="TESTHUB" className="w-14 h-14 object-contain transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 group-hover:drop-shadow-[0_0_12px_hsl(var(--primary)/0.6)]" />
+            <span className="text-xl font-bold font-display tracking-wider text-gradient">
               TESTHUB
             </span>
           </div>
@@ -85,16 +86,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 className="w-8 h-8 rounded-full object-cover"
               />
             ) : (
-              <div 
-                className="w-8 h-8 rounded-full flex items-center justify-center"
-                style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center ring-2 ring-primary/30"
+                style={{ background: "linear-gradient(135deg, hsl(258 90% 66%), hsl(199 89% 56%))" }}
               >
-                <User className="w-4 h-4 text-white/80" />
+                <User className="w-4 h-4 text-white/90" />
               </div>
             )}
             <div>
-              <p className="text-sm font-medium text-slate-900 dark:text-white">{user?.username || 'Tester'}</p>
-              <p className="text-xs text-slate-600 dark:text-slate-400 capitalize">Tester</p>
+              <p className="text-sm font-medium text-foreground">{user?.username || 'Tester'}</p>
+              <p className="text-xs text-muted-foreground capitalize">Tester</p>
             </div>
           </div>
         </Link>
@@ -121,7 +122,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <Link href="/">
           <div className="flex items-center gap-2 cursor-pointer">
             <img src="/logo.png" alt="TESTHUB" className="w-7 h-7 object-contain" />
-            <span className="font-display font-bold text-lg text-slate-900 dark:text-white">TESTHUB</span>
+            <span className="font-display font-bold text-lg text-gradient">TESTHUB</span>
           </div>
         </Link>
         <div className="flex items-center gap-2">

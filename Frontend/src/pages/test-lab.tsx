@@ -607,12 +607,14 @@ export default function TestLab() {
       {/* Page Header */}
       <div className="flex items-center justify-between mb-4 sm:mb-6 md:mb-8">
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-br from-purple-500/20 to-cyan-500/20 border border-purple-500/30">
-            <FlaskConical className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-purple-400" />
+          <div className="p-1.5 sm:p-2.5 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/30 shadow-[0_0_20px_-6px_hsl(var(--primary)/0.5)]">
+            <FlaskConical className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-primary" />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-slate-900 dark:text-white">Test Lab</h1>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 hidden sm:block">Configure, execute, and monitor your automated tests</p>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-display font-bold tracking-tight">
+              <span className="text-gradient">Test Lab</span>
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Configure, execute, and monitor your automated tests</p>
           </div>
         </div>
       </div>
@@ -621,8 +623,8 @@ export default function TestLab() {
         {/* ==================== SECTION 1: CREATE TEST SUITE ==================== */}
         <div>
           <div className="flex items-center gap-2 mb-3 sm:mb-4">
-            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
-              <span className="text-blue-400 font-bold text-xs sm:text-sm">1</span>
+            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary/15 ring-1 ring-primary/30 flex items-center justify-center">
+              <span className="text-primary font-bold text-xs sm:text-sm">1</span>
             </div>
             <h2 className="text-base sm:text-lg md:text-xl font-semibold text-slate-900 dark:text-white">Create Test Suite</h2>
             {isSuiteReady && (
@@ -686,61 +688,49 @@ export default function TestLab() {
 
             {/* Language Selection */}
             <GlassCard>
-              <h3 className="text-sm sm:text-base md:text-lg font-semibold text-slate-900 dark:text-white mb-3 sm:mb-4">
+              <h3 className="text-sm sm:text-base md:text-lg font-semibold text-foreground mb-3 sm:mb-4">
                 <span className="flex items-center gap-2">
-                  <Code2 className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" />
+                  <Code2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   Language
                 </span>
               </h3>
               <div className="space-y-2">
-                <div 
-                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                    selectedLanguage === "python" 
-                      ? "border-blue-500/50 bg-blue-500/10" 
-                      : "border-slate-300 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5"
-                  }`}
-                  onClick={() => !isRunning && handleLanguageChange("python")}
-                >
-                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                    selectedLanguage === "python" ? "border-blue-500" : "border-slate-400"
-                  }`}>
-                    {selectedLanguage === "python" && <div className="w-2 h-2 rounded-full bg-blue-500" />}
-                  </div>
-                  <span className="text-sm font-medium text-slate-900 dark:text-white">Python</span>
-                  <span className="text-xs text-slate-400 ml-auto">.py</span>
-                </div>
-                <div 
-                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                    selectedLanguage === "java" 
-                      ? "border-orange-500/50 bg-orange-500/10" 
-                      : "border-slate-300 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5"
-                  }`}
-                  onClick={() => !isRunning && handleLanguageChange("java")}
-                >
-                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                    selectedLanguage === "java" ? "border-orange-500" : "border-slate-400"
-                  }`}>
-                    {selectedLanguage === "java" && <div className="w-2 h-2 rounded-full bg-orange-500" />}
-                  </div>
-                  <span className="text-sm font-medium text-slate-900 dark:text-white">Java</span>
-                  <span className="text-xs text-slate-400 ml-auto">.java</span>
-                </div>
-                <div 
-                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                    selectedLanguage === "both" 
-                      ? "border-purple-500/50 bg-purple-500/10" 
-                      : "border-slate-300 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5"
-                  }`}
-                  onClick={() => !isRunning && handleLanguageChange("both")}
-                >
-                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                    selectedLanguage === "both" ? "border-purple-500" : "border-slate-400"
-                  }`}>
-                    {selectedLanguage === "both" && <div className="w-2 h-2 rounded-full bg-purple-500" />}
-                  </div>
-                  <span className="text-sm font-medium text-slate-900 dark:text-white">Both</span>
-                  <span className="text-xs text-slate-400 ml-auto">.py, .java</span>
-                </div>
+                {([
+                  { id: "python", label: "Python", ext: ".py", icons: ["python"] },
+                  { id: "java", label: "Java", ext: ".java", icons: ["java"] },
+                  { id: "both", label: "Both", ext: ".py, .java", icons: ["python", "java"] },
+                ] as const).map((opt) => {
+                  const selected = selectedLanguage === opt.id;
+                  return (
+                    <div
+                      key={opt.id}
+                      className={`group flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-300 ${
+                        selected
+                          ? "border-primary/60 bg-primary/10 shadow-[0_0_18px_-6px_hsl(var(--primary)/0.5)]"
+                          : "border-border hover:border-primary/30 hover:bg-primary/[0.04]"
+                      }`}
+                      onClick={() => !isRunning && handleLanguageChange(opt.id)}
+                    >
+                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${
+                        selected ? "border-primary" : "border-muted-foreground/40 group-hover:border-primary/50"
+                      }`}>
+                        {selected && <div className="w-2 h-2 rounded-full bg-primary" />}
+                      </div>
+                      <div className="flex items-center -space-x-1">
+                        {opt.icons.map((ic) => (
+                          <span
+                            key={ic}
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-card ring-1 ring-border"
+                          >
+                            <BrandIcon kind="language" name={ic} className="h-4 w-4" />
+                          </span>
+                        ))}
+                      </div>
+                      <span className="text-sm font-medium text-foreground">{opt.label}</span>
+                      <span className="text-xs text-muted-foreground ml-auto font-mono">{opt.ext}</span>
+                    </div>
+                  );
+                })}
               </div>
             </GlassCard>
 
@@ -908,8 +898,8 @@ export default function TestLab() {
         {/* ==================== SECTION 2: EXECUTION CENTER ==================== */}
         <div>
           <div className="flex items-center gap-2 mb-3 sm:mb-4">
-            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-cyan-500/20 flex items-center justify-center">
-              <span className="text-cyan-400 font-bold text-xs sm:text-sm">2</span>
+            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-accent/15 ring-1 ring-accent/30 flex items-center justify-center">
+              <span className="text-accent font-bold text-xs sm:text-sm">2</span>
             </div>
             <h2 className="text-base sm:text-lg md:text-xl font-semibold text-slate-900 dark:text-white">Execution Center</h2>
             <Rocket className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400 ml-1" />
