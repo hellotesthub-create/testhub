@@ -10,12 +10,39 @@ import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { API_ENDPOINTS } from "@/lib/apiConfig";
 
 // ── Validation helpers ─────────────────────────────────────────────────
-// Stricter than a naive check: proper local part + domain labels with a TLD,
-// and no consecutive dots anywhere (rejects e.g. "user@example..com").
-const EMAIL_RE = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
-const isValidEmail = (email: string) => {
+// Rigorous, RFC-aware email validation (catches edge cases that naive regexes
+// miss): exactly one @, ASCII-only labels (rejects Unicode/homograph domains
+// like Cyrillic "а"), no consecutive/leading/trailing dots, valid hyphen
+// placement, length limits, and an alphabetic TLD of 2+ chars.
+const LOCAL_RE = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+$/;
+const LABEL_RE = /^[a-zA-Z0-9-]+$/;
+
+const isValidEmail = (email: string): boolean => {
   const e = email.trim();
-  return EMAIL_RE.test(e) && !e.includes("..");
+  if (!e || e.length > 254 || e.includes("..") || e.includes(" ")) return false;
+
+  // Exactly one @.
+  const at = e.indexOf("@");
+  if (at <= 0 || at !== e.lastIndexOf("@")) return false;
+
+  const local = e.slice(0, at);
+  const domain = e.slice(at + 1);
+
+  // Local part: allowed chars, max 64, no leading/trailing dot.
+  if (local.length > 64 || local.startsWith(".") || local.endsWith(".")) return false;
+  if (!LOCAL_RE.test(local)) return false;
+
+  // Domain: at least two labels, ASCII only, no hyphen at label edges,
+  // each label 1–63 chars, and an alphabetic TLD (>= 2 chars).
+  if (domain.length > 253) return false;
+  const labels = domain.split(".");
+  if (labels.length < 2) return false;
+  for (const label of labels) {
+    if (!label || label.length > 63) return false;
+    if (!LABEL_RE.test(label)) return false; // ASCII-only → rejects homograph/Unicode domains
+    if (label.startsWith("-") || label.endsWith("-")) return false;
+  }
+  return /^[a-zA-Z]{2,}$/.test(labels[labels.length - 1]);
 };
 
 const getPasswordChecks = (pw: string) => ({
@@ -630,10 +657,16 @@ export default function AuthPage() {
                         value={resetEmail}
                         onChange={(e) => setResetEmail(e.target.value)}
                         placeholder="user@thex.com"
-                        className="w-full pl-10 pr-4 py-2.5 border border-border rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
+                        className={`w-full pl-10 pr-10 py-2.5 border rounded-xl focus:outline-none focus:ring-2 ${fieldStateClass(resetEmail, isValidEmail(resetEmail))} text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300`}
                         required
                       />
+                      {resetEmail && (isValidEmail(resetEmail)
+                        ? <CheckCircle2 className="absolute right-3 top-3.5 w-5 h-5 text-emerald-500" />
+                        : <XCircle className="absolute right-3 top-3.5 w-5 h-5 text-red-500" />)}
                     </div>
+                    {resetEmail && !isValidEmail(resetEmail) && (
+                      <p className="text-xs text-red-500 mt-1">Please enter a valid email address</p>
+                    )}
                   </div>
 
                   <button
