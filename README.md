@@ -12,86 +12,54 @@ TestHub is a web-based test automation platform that lets you run browser tests 
 
 ## Running Procedure
 
-### 1) Start database microservice
+### 1) Start the Database Microservice
+
+TestHub uses a dedicated MongoDB instance to store test runs, logs, and AI diagnosis results.
 
 ```bash
 cd database-microservice
 ./start-db.sh
+cd ..
 ```
 
-Optional health check:
+*(Optional: You can verify the database is healthy by running `./check-db.sh` from the `database-microservice` directory).*
+
+### 2) Start the TestHub Platform
+
+The entire TestHub platform (Frontend, Backend API, AI Diagnosis Service, Test Runner, and Selenium Grid) is orchestrated via Docker Compose.
 
 ```bash
-cd database-microservice
-./check-db.sh
+docker compose up -d --build
 ```
 
-### 2) Start backend API
+**Services Started:**
+- **Frontend Dashboard:** [http://localhost:3456](http://localhost:3456)
+- **Backend API:** [http://localhost:8090](http://localhost:8090)
+- **AI Diagnosis Service:** [http://localhost:8001](http://localhost:8001)
+- **Selenium Grid Hub:** [http://localhost:4444](http://localhost:4444)
 
-```bash
-cd backend
-./start-backend.sh
-```
+*Note: The `runner` service will start automatically as a background daemon to listen for tests triggered from the frontend.*
 
-### 3) Start Selenium Grid (from repo root)
+### 3) Scale Browsers (Optional)
 
-```bash
-docker compose up -d selenium-hub
-docker compose up -d --scale chrome-node=1 --scale firefox-node=1 chrome-node firefox-node
-```
-
-Scale up when needed:
+If you want to run massive parallel testing, you can scale the Selenium nodes dynamically:
 
 ```bash
 docker compose up -d --scale chrome-node=3 --scale firefox-node=3 chrome-node firefox-node
 ```
 
-### 4) Run tests from frontend (recommended)
+### 4) Stop Services
 
-Open the UI and trigger test execution from there.
-
-### Optional: run tests manually with runner container (debug/admin use)
-
-Single test on Chrome:
+To safely shut down the entire platform:
 
 ```bash
-docker compose run --rm runner python src/runner.py --email user@test.com --username tester --file test_github.py --browser chrome
-```
-
-Run on both browsers in parallel:
-
-```bash
-docker compose run --rm runner python src/runner.py --email user@test.com --username tester --browsers chrome,firefox --parallel 2
-```
-
-### 5) Start frontend (local dev mode)
-
-```bash
-cd Frontend
-npm install
-npm run dev
-```
-
-### 6) Stop services
-
-Stop backend:
-
-```bash
-cd backend
-./stop-backend.sh
-```
-
-Stop Selenium Grid and other root-compose services:
-
-```bash
+# Stop all core TestHub services
 docker compose down
-```
 
-Stop database microservice:
-
-```bash
+# Stop the database microservice
 cd database-microservice
 ./stop-db.sh
+cd ..
 ```
 
 ## Notes

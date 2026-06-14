@@ -1,5 +1,8 @@
 import Layout from "@/components/layout/Layout";
 import { GlassCard } from "@/components/ui/glass-card";
+import { CardSpotlight } from "@/components/ui/card-spotlight";
+import { NumberTicker } from "@/components/ui/number-ticker";
+import { Eyebrow } from "@/components/ui/page-primitives";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Clock, CheckCircle2, XCircle, Zap, PlayCircle, Calendar } from "lucide-react";
@@ -101,8 +104,8 @@ export default function TesterDashboard() {
       <Layout>
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-slate-600 dark:text-slate-400 text-lg">Loading dashboard...</p>
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground text-lg">Loading dashboard...</p>
           </div>
         </div>
       </Layout>
@@ -134,71 +137,42 @@ export default function TesterDashboard() {
   return (
     <Layout>
       <div>
-        <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-1">
-          Dashboard
+        <Eyebrow>Overview</Eyebrow>
+        <h1 className="mt-3 text-3xl sm:text-4xl font-display font-bold tracking-tight text-foreground mb-1">
+          Welcome back, <span className="text-gradient">{user?.username || "Tester"}</span>
         </h1>
-        <p className="text-slate-600 dark:text-slate-400">
-          Welcome back, {user?.username}! Here's your test execution summary
+        <p className="text-muted-foreground">
+          Here's your test execution summary
         </p>
       </div>
 
       {/* KPI Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <GlassCard glow className="relative overflow-hidden">
-          <div className="absolute -right-6 -top-6 w-24 h-24 bg-blue-500/10 dark:bg-blue-500/20 rounded-full blur-xl" />
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <span className="text-slate-600 dark:text-slate-400 font-medium text-sm sm:text-base">Total Runs</span>
-            <Zap className="text-blue-600 dark:text-blue-400 w-4 h-4 sm:w-5 sm:h-5" />
-          </div>
-          <div className="text-3xl sm:text-4xl font-bold font-display text-slate-900 dark:text-white">
-            {loading ? '...' : totalExecutions}
-          </div>
-          <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-2">
-            Test suite executions
-          </div>
-        </GlassCard>
-
-        <GlassCard className="relative overflow-hidden">
-          <div className="absolute -right-6 -top-6 w-24 h-24 bg-green-500/10 dark:bg-green-500/20 rounded-full blur-xl" />
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <span className="text-slate-600 dark:text-slate-400 font-medium text-sm sm:text-base">Pass Rate</span>
-            <CheckCircle2 className="text-green-600 dark:text-green-400 w-4 h-4 sm:w-5 sm:h-5" />
-          </div>
-          <div className="text-3xl sm:text-4xl font-bold font-display text-slate-900 dark:text-white">
-            {loading ? '...' : `${passRate}%`}
-          </div>
-          <div className="text-xs sm:text-sm text-green-600 dark:text-green-400 mt-2">
-            {passedTests} passed / {totalTests} total
-          </div>
-        </GlassCard>
-
-        <GlassCard className="relative overflow-hidden">
-          <div className="absolute -right-6 -top-6 w-24 h-24 bg-red-500/10 dark:bg-red-500/20 rounded-full blur-xl" />
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <span className="text-slate-600 dark:text-slate-400 font-medium text-sm sm:text-base">Failed Tests</span>
-            <XCircle className="text-red-600 dark:text-red-400 w-4 h-4 sm:w-5 sm:h-5" />
-          </div>
-          <div className="text-3xl sm:text-4xl font-bold font-display text-slate-900 dark:text-white">
-            {loading ? '...' : failedTests}
-          </div>
-          <div className="text-xs sm:text-sm text-red-600 dark:text-red-400 mt-2">
-            Across all runs
-          </div>
-        </GlassCard>
-
-        <GlassCard className="relative overflow-hidden">
-          <div className="absolute -right-6 -top-6 w-24 h-24 bg-cyan-500/10 dark:bg-cyan-500/20 rounded-full blur-xl" />
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <span className="text-slate-600 dark:text-slate-400 font-medium text-sm sm:text-base">Avg Duration</span>
-            <Clock className="text-cyan-600 dark:text-cyan-400 w-4 h-4 sm:w-5 sm:h-5" />
-          </div>
-          <div className="text-3xl sm:text-4xl font-bold font-display text-slate-900 dark:text-white">
-            {loading ? '...' : `${avgDuration}s`}
-          </div>
-          <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-2">
-            Per test suite
-          </div>
-        </GlassCard>
+        {[
+          { label: "Total Runs", icon: Zap, glow: "bg-primary/15", iconCls: "text-primary", sub: "Test suite executions", subCls: "text-muted-foreground", value: <NumberTicker value={totalExecutions} /> },
+          { label: "Pass Rate", icon: CheckCircle2, glow: "bg-emerald-500/15", iconCls: "text-emerald-500", sub: `${passedTests} passed / ${totalTests} total`, subCls: "text-emerald-600 dark:text-emerald-400", value: <NumberTicker value={Number(passRate)} decimals={1} suffix="%" /> },
+          { label: "Failed Tests", icon: XCircle, glow: "bg-red-500/15", iconCls: "text-red-500", sub: "Across all runs", subCls: "text-red-600 dark:text-red-400", value: <NumberTicker value={failedTests} /> },
+          { label: "Avg Duration", icon: Clock, glow: "bg-accent/15", iconCls: "text-accent", sub: "Per test suite", subCls: "text-muted-foreground", value: <NumberTicker value={Number(avgDuration)} decimals={1} suffix="s" /> },
+        ].map((kpi, i) => (
+          <CardSpotlight
+            key={i}
+            className="card-3d relative overflow-hidden rounded-2xl border border-border bg-gradient-to-b from-card to-muted/40 p-5 sm:p-6 dark:to-[hsl(252_30%_7%)]"
+          >
+            <div className={`absolute -right-6 -top-6 w-24 h-24 rounded-full blur-2xl ${kpi.glow}`} />
+            <div className="relative flex items-center justify-between mb-3 sm:mb-4">
+              <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">{kpi.label}</span>
+              <span className={`inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 ring-1 ring-primary/20 ${kpi.iconCls}`}>
+                <kpi.icon className="w-4 h-4" />
+              </span>
+            </div>
+            <div className="relative text-3xl sm:text-4xl font-bold font-display text-foreground">
+              {loading ? '...' : kpi.value}
+            </div>
+            <div className={`relative text-xs sm:text-sm mt-2 ${kpi.subCls}`}>
+              {kpi.sub}
+            </div>
+          </CardSpotlight>
+        ))}
       </div>
 
       {/* Recent Test Runs */}
@@ -288,7 +262,7 @@ export default function TesterDashboard() {
                           Cancelled
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs font-medium">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-primary/10 dark:bg-primary/20 text-primary rounded-full text-xs font-medium">
                           <Clock className="w-3 h-3" />
                           Running
                         </span>

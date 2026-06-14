@@ -367,7 +367,7 @@ export default function AuthPage() {
   // Google Password Setup/Verification Screen
   if (showGooglePasswordSetup && googleUserData) {
     return (
-      <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-colors">
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-[hsl(258_100%_98%)] via-white to-[hsl(199_100%_98%)] dark:from-[hsl(252_30%_6%)] dark:via-[hsl(252_28%_8%)] dark:to-[hsl(252_30%_5%)] transition-colors">
         <ParticleBackground />
         
         <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-50">
@@ -376,10 +376,10 @@ export default function AuthPage() {
 
         <div className="relative z-20 w-full max-w-lg px-4 sm:px-6 animate-in zoom-in-95 duration-300">
                   <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-6 sm:p-8 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 pointer-events-none" />
             <div className="text-center mb-5 sm:mb-6">
-              <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-blue-100 dark:bg-blue-500/20 mb-3 sm:mb-4">
-                <Lock className="w-7 h-7 sm:w-8 sm:h-8 text-blue-600 dark:text-blue-400" />
+              <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-primary/10 dark:bg-primary/20 mb-3 sm:mb-4">
+                <Lock className="w-7 h-7 sm:w-8 sm:h-8 text-primary" />
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-2">
                 {isLogin ? "Enter Your Password" : "Set Your Password"}
@@ -431,7 +431,7 @@ export default function AuthPage() {
                     value={googlePassword}
                     onChange={(e) => setGooglePassword(e.target.value)}
                     placeholder={isLogin ? "Enter your password" : "Enter password (min 6 characters)"}
-                    className="w-full pl-10 pr-12 py-2.5 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-blue-500 dark:focus:border-blue-500/80 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white transition-all duration-300"
+                    className="w-full pl-10 pr-12 py-2.5 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white transition-all duration-300"
                     required
                     minLength={6}
                   />
@@ -456,7 +456,7 @@ export default function AuthPage() {
                     value={googleConfirmPassword}
                     onChange={(e) => setGoogleConfirmPassword(e.target.value)}
                     placeholder="Re-enter password"
-                    className="w-full pl-10 pr-12 py-2.5 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-blue-500 dark:focus:border-blue-500/80 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white transition-all duration-300"
+                    className="w-full pl-10 pr-12 py-2.5 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white transition-all duration-300"
                     required
                   />
                   <button
@@ -472,7 +472,7 @@ export default function AuthPage() {
               <button
                 type="submit"
                 disabled={isSignupLoading || isLoginLoading}
-                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_20px_rgba(37,99,235,0.4)] flex items-center justify-center gap-2 mt-6"
+                className="w-full py-2.5 bg-primary hover:bg-primary/90 disabled:bg-primary/50 disabled:cursor-not-allowed text-primary-foreground font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_20px_hsl(var(--primary)/0.45)] flex items-center justify-center gap-2 mt-6"
               >
                 {(isSignupLoading || isLoginLoading) ? (
                   <>
@@ -494,7 +494,7 @@ export default function AuthPage() {
 
   if (signupSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-colors">
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-[hsl(258_100%_98%)] via-white to-[hsl(199_100%_98%)] dark:from-[hsl(252_30%_6%)] dark:via-[hsl(252_28%_8%)] dark:to-[hsl(252_30%_5%)] transition-colors">
         <ParticleBackground />
         
         <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-50">
@@ -503,7 +503,7 @@ export default function AuthPage() {
 
         <div className="relative z-20 w-full max-w-lg px-4 sm:px-6 animate-in zoom-in-95 duration-300">
           <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-6 sm:p-8 text-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-blue-500/5 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-accent/10 pointer-events-none" />
             <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-green-100 dark:bg-green-500/20 mb-5 sm:mb-6">
               <CheckCircle className="w-7 h-7 sm:w-8 sm:h-8 text-green-600 dark:text-green-400" />
             </div>
@@ -517,7 +517,7 @@ export default function AuthPage() {
                 setSignupSuccess(false);
                 setIsLogin(true);
               }}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               Go to Login Page
             </Button>
@@ -528,7 +528,7 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 transition-colors">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-[hsl(258_100%_98%)] via-white to-[hsl(199_100%_98%)] dark:from-[hsl(252_30%_6%)] dark:via-[hsl(252_28%_8%)] dark:to-[hsl(252_30%_5%)] transition-colors">
       <ParticleBackground />
       
       <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-50">
@@ -546,16 +546,16 @@ export default function AuthPage() {
           <img
             src="/logo.png"
             alt="TESTHUB"
-            className="w-20 h-20 object-contain mx-auto mb-4 sm:mb-6 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+            className="w-20 h-20 object-contain mx-auto mb-4 sm:mb-6 drop-shadow-[0_0_18px_hsl(var(--primary)/0.55)]"
           />
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-1 tracking-tight">
-            TESTHUB
+          <h1 className="font-display text-3xl sm:text-4xl font-bold mb-1 tracking-tight">
+            <span className="text-gradient">TESTHUB</span>
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm">Automated Testing Platform</p>
+          <p className="font-mono text-[10px] sm:text-xs uppercase tracking-[0.25em] text-muted-foreground">Automated Testing Platform</p>
         </div>
 
                 <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-6 sm:p-8 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 pointer-events-none" />
           
           {isForgotPassword ? (
             <>
@@ -589,7 +589,7 @@ export default function AuthPage() {
                         value={resetEmail}
                         onChange={(e) => setResetEmail(e.target.value)}
                         placeholder="user@thex.com"
-                        className="w-full pl-10 pr-4 py-2.5 border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-blue-500 dark:focus:border-blue-500/80 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
+                        className="w-full pl-10 pr-4 py-2.5 border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
                         required
                       />
                     </div>
@@ -597,7 +597,7 @@ export default function AuthPage() {
 
                   <button
                     type="submit"
-                    className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_20px_rgba(37,99,235,0.4)] flex items-center justify-center gap-2"
+                    className="w-full py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_20px_hsl(var(--primary)/0.45)] flex items-center justify-center gap-2"
                   >
                     SEND RESET LINK <ArrowRight className="w-4 h-4" />
                   </button>
@@ -605,7 +605,7 @@ export default function AuthPage() {
 
                 <button
                   onClick={() => setIsForgotPassword(false)}
-                  className="w-full text-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium"
+                  className="w-full text-center text-primary hover:text-primary/80 text-sm font-medium"
                 >
                   Back to Login
                 </button>
@@ -618,7 +618,7 @@ export default function AuthPage() {
                   onClick={() => setIsLogin(true)}
                   className={`flex-1 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold rounded-xl transition-all duration-300 ${
                     isLogin 
-                      ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' 
+                      ? 'bg-primary text-primary-foreground shadow-[0_0_15px_hsl(var(--primary)/0.45)]' 
                       : 'bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700/50'
                   }`}
                 >
@@ -628,7 +628,7 @@ export default function AuthPage() {
                   onClick={() => setIsLogin(false)}
                   className={`flex-1 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold rounded-xl transition-all duration-300 ${
                     !isLogin 
-                      ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]' 
+                      ? 'bg-primary text-primary-foreground shadow-[0_0_15px_hsl(var(--primary)/0.45)]' 
                       : 'bg-slate-100 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700/50'
                   }`}
                 >
@@ -653,7 +653,7 @@ export default function AuthPage() {
                         value={loginEmail}
                         onChange={(e) => setLoginEmail(e.target.value)}
                         placeholder="user@thex.com"
-                        className="w-full pl-10 pr-4 py-2.5 border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-blue-500 dark:focus:border-blue-500/80 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
+                        className="w-full pl-10 pr-4 py-2.5 border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
                         required
                       />
                     </div>
@@ -668,7 +668,7 @@ export default function AuthPage() {
                         value={loginPassword}
                         onChange={(e) => setLoginPassword(e.target.value)}
                         placeholder="Enter your password"
-                        className="w-full pl-10 pr-10 py-2.5 border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-blue-500 dark:focus:border-blue-500/80 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
+                        className="w-full pl-10 pr-10 py-2.5 border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
                         required
                       />
                       <button
@@ -694,7 +694,7 @@ export default function AuthPage() {
                     <button
                       type="button"
                       onClick={() => setIsForgotPassword(true)}
-                      className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
+                      className="text-sm text-primary hover:text-primary/80 font-medium"
                     >
                       Forgot Password?
                     </button>
@@ -703,7 +703,7 @@ export default function AuthPage() {
                   <button
                     type="submit"
                     disabled={isLoginLoading}
-                    className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_20px_rgba(37,99,235,0.4)] flex items-center justify-center gap-2 mt-6"
+                    className="w-full py-2.5 bg-primary hover:bg-primary/90 disabled:bg-primary/50 disabled:cursor-not-allowed text-primary-foreground font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_20px_hsl(var(--primary)/0.45)] flex items-center justify-center gap-2 mt-6"
                   >
                     {isLoginLoading ? (
                       <>
@@ -732,7 +732,7 @@ export default function AuthPage() {
                         value={signupName}
                         onChange={(e) => setSignupName(e.target.value)}
                         placeholder="John Doe"
-                        className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-blue-500 dark:focus:border-blue-500/80 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
+                        className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
                         required
                       />
                     </div>
@@ -747,7 +747,7 @@ export default function AuthPage() {
                         value={signupEmail}
                         onChange={(e) => setSignupEmail(e.target.value)}
                         placeholder="john@company.com"
-                        className="w-full pl-10 pr-4 py-2.5 border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-blue-500 dark:focus:border-blue-500/80 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
+                        className="w-full pl-10 pr-4 py-2.5 border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
                         required
                       />
                     </div>
@@ -762,7 +762,7 @@ export default function AuthPage() {
                         value={signupPassword}
                         onChange={(e) => setSignupPassword(e.target.value)}
                         placeholder="Create a password"
-                        className="w-full pl-10 pr-10 py-2.5 border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-blue-500 dark:focus:border-blue-500/80 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
+                        className="w-full pl-10 pr-10 py-2.5 border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
                         required
                       />
                       <button
@@ -784,7 +784,7 @@ export default function AuthPage() {
                         value={signupConfirmPassword}
                         onChange={(e) => setSignupConfirmPassword(e.target.value)}
                         placeholder="Confirm your password"
-                        className="w-full pl-10 pr-10 py-2.5 border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-blue-500 dark:focus:border-blue-500/80 focus:ring-2 focus:ring-blue-500/20 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
+                        className="w-full pl-10 pr-10 py-2.5 border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
                         required
                       />
                       <button
@@ -809,14 +809,14 @@ export default function AuthPage() {
                       required
                     />
                     <span className="text-sm text-slate-700 dark:text-slate-300">
-                      I accept the <a href="#" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">Terms & Conditions</a> and <a href="#" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">Privacy Policy</a>
+                      I accept the <a href="#" className="text-primary hover:text-primary/80 font-medium">Terms & Conditions</a> and <a href="#" className="text-primary hover:text-primary/80 font-medium">Privacy Policy</a>
                     </span>
                   </label>
 
                   <button
                     type="submit"
                     disabled={signupPassword !== signupConfirmPassword || isSignupLoading}
-                    className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_20px_rgba(37,99,235,0.4)] flex items-center justify-center gap-2 mt-6"
+                    className="w-full py-2.5 bg-primary hover:bg-primary/90 disabled:bg-primary/50 disabled:cursor-not-allowed text-primary-foreground font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_20px_hsl(var(--primary)/0.45)] flex items-center justify-center gap-2 mt-6"
                   >
                     {isSignupLoading ? (
                       <>
