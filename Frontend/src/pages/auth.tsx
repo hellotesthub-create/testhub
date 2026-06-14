@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation, Link } from "wouter";
-import { Mail, Lock, Eye, EyeOff, X, ArrowRight, CheckCircle } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, X, ArrowRight, CheckCircle, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ParticleBackground } from "@/components/particle-background";
@@ -8,6 +8,32 @@ import { useUser } from "@/lib/userContext";
 import { useAuth } from "@/lib/authContext";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { API_ENDPOINTS } from "@/lib/apiConfig";
+
+// ── Validation helpers ─────────────────────────────────────────────────
+// Stricter than a naive check: proper local part + domain labels with a TLD,
+// and no consecutive dots anywhere (rejects e.g. "user@example..com").
+const EMAIL_RE = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+const isValidEmail = (email: string) => {
+  const e = email.trim();
+  return EMAIL_RE.test(e) && !e.includes("..");
+};
+
+const getPasswordChecks = (pw: string) => ({
+  length: pw.length >= 8,
+  upper: /[A-Z]/.test(pw),
+  lower: /[a-z]/.test(pw),
+  digit: /\d/.test(pw),
+  special: /[^A-Za-z0-9]/.test(pw),
+});
+const isStrongPassword = (pw: string) => Object.values(getPasswordChecks(pw)).every(Boolean);
+
+// Border + focus-ring classes that reflect a field's validity (neutral when empty).
+const fieldStateClass = (value: string, ok: boolean) =>
+  value.length === 0
+    ? "border-border focus:border-primary focus:ring-primary/25"
+    : ok
+    ? "border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500/30"
+    : "border-red-500 focus:border-red-500 focus:ring-red-500/30";
 
 export default function AuthPage() {
   const [, setLocation] = useLocation();
@@ -43,6 +69,9 @@ export default function AuthPage() {
   const [acceptTerms, setAcceptTerms] = useState(false);
 
   const [resetEmail, setResetEmail] = useState("");
+
+  // Live signup password requirement checks.
+  const signupPwChecks = getPasswordChecks(signupPassword);
 
   /**
    * Handle user login with JWT
@@ -107,12 +136,24 @@ export default function AuthPage() {
     // Reset errors
     setSignupError("");
     
+    // Validate email format
+    if (!isValidEmail(signupEmail)) {
+      setSignupError("Please enter a valid email address");
+      return;
+    }
+
+    // Validate password strength
+    if (!isStrongPassword(signupPassword)) {
+      setSignupError("Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number, and a special character.");
+      return;
+    }
+
     // Validate password match
     if (signupPassword !== signupConfirmPassword) {
       setSignupError("Passwords do not match");
       return;
     }
-    
+
     // Validate terms acceptance
     if (!acceptTerms) {
       setSignupError("Please accept the terms and conditions");
@@ -639,8 +680,9 @@ export default function AuthPage() {
               {isLogin ? (
                 <form onSubmit={handleLogin} className="space-y-4">
                   {loginError && (
-                    <div className="p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg">
-                      <p className="text-sm text-red-600 dark:text-red-400">{loginError}</p>
+                    <div className="flex items-start gap-2.5 p-3 rounded-xl border border-red-300 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 shadow-sm duration-300 animate-in fade-in slide-in-from-top-1">
+                      <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                      <p className="text-sm font-medium">{loginError}</p>
                     </div>
                   )}
                   
@@ -653,10 +695,16 @@ export default function AuthPage() {
                         value={loginEmail}
                         onChange={(e) => setLoginEmail(e.target.value)}
                         placeholder="user@thex.com"
-                        className="w-full pl-10 pr-4 py-2.5 border border-border rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
+                        className={`w-full pl-10 pr-10 py-2.5 border rounded-xl focus:outline-none focus:ring-2 ${fieldStateClass(loginEmail, isValidEmail(loginEmail))} text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300`}
                         required
                       />
+                      {loginEmail && (isValidEmail(loginEmail)
+                        ? <CheckCircle2 className="absolute right-3 top-3.5 w-5 h-5 text-emerald-500" />
+                        : <XCircle className="absolute right-3 top-3.5 w-5 h-5 text-red-500" />)}
                     </div>
+                    {loginEmail && !isValidEmail(loginEmail) && (
+                      <p className="text-xs text-red-500 mt-1">Please enter a valid email address</p>
+                    )}
                   </div>
 
                   <div>
@@ -719,8 +767,9 @@ export default function AuthPage() {
               ) : (
                 <form onSubmit={handleSignup} className="space-y-4">
                   {signupError && (
-                    <div className="p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg">
-                      <p className="text-sm text-red-600 dark:text-red-400">{signupError}</p>
+                    <div className="flex items-start gap-2.5 p-3 rounded-xl border border-red-300 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 shadow-sm duration-300 animate-in fade-in slide-in-from-top-1">
+                      <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                      <p className="text-sm font-medium">{signupError}</p>
                     </div>
                   )}
                   
@@ -747,10 +796,16 @@ export default function AuthPage() {
                         value={signupEmail}
                         onChange={(e) => setSignupEmail(e.target.value)}
                         placeholder="john@company.com"
-                        className="w-full pl-10 pr-4 py-2.5 border border-border rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
+                        className={`w-full pl-10 pr-10 py-2.5 border rounded-xl focus:outline-none focus:ring-2 ${fieldStateClass(signupEmail, isValidEmail(signupEmail))} text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300`}
                         required
                       />
+                      {signupEmail && (isValidEmail(signupEmail)
+                        ? <CheckCircle2 className="absolute right-3 top-3.5 w-5 h-5 text-emerald-500" />
+                        : <XCircle className="absolute right-3 top-3.5 w-5 h-5 text-red-500" />)}
                     </div>
+                    {signupEmail && !isValidEmail(signupEmail) && (
+                      <p className="text-xs text-red-500 mt-1">Please enter a valid email address</p>
+                    )}
                   </div>
 
                   <div>
@@ -762,7 +817,7 @@ export default function AuthPage() {
                         value={signupPassword}
                         onChange={(e) => setSignupPassword(e.target.value)}
                         placeholder="Create a password"
-                        className="w-full pl-10 pr-10 py-2.5 border border-border rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
+                        className={`w-full pl-10 pr-10 py-2.5 border rounded-xl focus:outline-none focus:ring-2 ${fieldStateClass(signupPassword, isStrongPassword(signupPassword))} text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300`}
                         required
                       />
                       <button
@@ -773,6 +828,27 @@ export default function AuthPage() {
                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                       </button>
                     </div>
+                    {signupPassword && (
+                      <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1">
+                        {[
+                          { ok: signupPwChecks.length, label: "At least 8 characters" },
+                          { ok: signupPwChecks.upper, label: "One uppercase letter" },
+                          { ok: signupPwChecks.lower, label: "One lowercase letter" },
+                          { ok: signupPwChecks.digit, label: "One number" },
+                          { ok: signupPwChecks.special, label: "One special character" },
+                        ].map((r) => (
+                          <span
+                            key={r.label}
+                            className={`flex items-center gap-1.5 text-xs transition-colors ${
+                              r.ok ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-slate-500"
+                            }`}
+                          >
+                            {r.ok ? <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> : <X className="w-3.5 h-3.5 shrink-0" />}
+                            {r.label}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <div>
@@ -815,7 +891,7 @@ export default function AuthPage() {
 
                   <button
                     type="submit"
-                    disabled={signupPassword !== signupConfirmPassword || isSignupLoading}
+                    disabled={signupPassword !== signupConfirmPassword || !isStrongPassword(signupPassword) || !isValidEmail(signupEmail) || isSignupLoading}
                     className="w-full py-2.5 bg-primary hover:bg-primary/90 disabled:bg-primary/50 disabled:cursor-not-allowed text-primary-foreground font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_20px_hsl(var(--primary)/0.45)] flex items-center justify-center gap-2 mt-6"
                   >
                     {isSignupLoading ? (

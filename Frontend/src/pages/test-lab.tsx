@@ -1,4 +1,5 @@
 import Layout from "@/components/layout/Layout";
+import { toast } from "sonner";
 import { GlassCard } from "@/components/ui/glass-card";
 import { NeonButton } from "@/components/ui/neon-button";
 import { Input } from "@/components/ui/input";
@@ -488,7 +489,7 @@ export default function TestLab() {
       })));
       setExecutionPhase("idle");
       setIsRunning(false);
-      alert("Failed to execute tests. Please try again.");
+      toast.error("Failed to execute tests. Please try again.");
     }
   };
 

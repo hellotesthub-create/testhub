@@ -7,6 +7,7 @@ import { NumberTicker } from "@/components/ui/number-ticker";
 import { Eyebrow, StatTile } from "@/components/ui/page-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Eye, Clock, BarChart3, Search, Trash2, AlertTriangle, Loader2, CheckCircle2, XCircle, Download } from "lucide-react";
+import { toast } from "sonner";
 import { BrandIcon } from "@/lib/brandAssets";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -244,7 +245,7 @@ export default function Reports() {
       window.URL.revokeObjectURL(objectUrl);
     } catch (err) {
       console.error("Error downloading report:", err);
-      alert("Failed to download report. Please try again.");
+      toast.error("Failed to download report. Please try again.");
     } finally {
       setDownloadingId(null);
     }

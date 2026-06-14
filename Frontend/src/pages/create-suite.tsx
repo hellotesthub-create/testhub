@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Upload, Play, FileCode, X, CheckCircle2, Loader2, Eye } from "lucide-react";
+import { toast } from "sonner";
 import { BrandIcon } from "@/lib/brandAssets";
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
@@ -79,15 +80,15 @@ export default function CreateSuite() {
 
   const executeTests = async () => {
     if (!suiteName.trim()) {
-      alert("Please enter a suite name");
+      toast.error("Please enter a suite name");
       return;
     }
     if (selectedBrowsers.length === 0) {
-      alert("Please select at least one browser");
+      toast.error("Please select at least one browser");
       return;
     }
     if (uploadedFiles.length === 0) {
-      alert("Please upload at least one test script");
+      toast.error("Please upload at least one test script");
       return;
     }
 
@@ -200,7 +201,7 @@ export default function CreateSuite() {
 
     } catch (error) {
       console.error("Test execution error:", error);
-      alert("Failed to execute tests. Please try again.");
+      toast.error("Failed to execute tests. Please try again.");
       setIsRunning(false);
       setProgress(0);
       setProgressMessage("");

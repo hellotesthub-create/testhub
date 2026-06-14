@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { toast } from "sonner";
 import { useLocation, useRoute } from "wouter";
 import Layout from "@/components/layout/Layout";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -103,11 +104,11 @@ export default function TesterTestResults() {
       if (response.ok) {
         setTestResults(prev => prev.map(r => r.id === resultId ? { ...r, has_diagnosis: true } : r));
       } else {
-        alert("Failed to run diagnosis.");
+        toast.error("Failed to run diagnosis.");
       }
     } catch (err) {
       console.error(err);
-      alert("Error running diagnosis.");
+      toast.error("Error running diagnosis.");
     } finally {
       setDiagnosingIds(prev => {
         const next = new Set(prev);
@@ -153,7 +154,7 @@ export default function TesterTestResults() {
       window.URL.revokeObjectURL(objectUrl);
     } catch (downloadError) {
       console.error('Artifact download failed:', downloadError);
-      alert('Download failed. Please try again.');
+      toast.error('Download failed. Please try again.');
     }
   };
 
@@ -518,7 +519,7 @@ export default function TesterTestResults() {
                 {cancelling ? "Cancelling..." : "Cancel Run"}
               </Button>
             )}
-            <NeonButton onClick={() => alert("Downloading all your test artifacts...")} neonColor="blue" className="w-full lg:w-auto text-sm">
+            <NeonButton onClick={() => toast.info("Downloading all your test artifacts...")} neonColor="blue" className="w-full lg:w-auto text-sm">
               <Download className="w-4 h-4 mr-2" /> Download All Artifacts
             </NeonButton>
           </div>
