@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import {
   ArrowLeft, Download, Play, Image as ImageIcon, FileText,
   Video, Clock, Chrome, CheckCircle2, XCircle, AlertCircle,
-  ZoomIn, X, ChevronLeft, ChevronRight, Loader2, Globe, Copy, Check, StopCircle, Zap
+  ZoomIn, X, ChevronLeft, ChevronRight, Loader2, Globe, Copy, Check, StopCircle, Zap, Bot, RefreshCw, Eye, BarChart3, AlertTriangle
 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { API_ENDPOINTS } from "@/lib/apiConfig";
@@ -63,6 +63,7 @@ interface TestSuite {
 interface TestResult {
   id: string;
   suite_id: string;
+  run_id?: string;
   test_name: string;
   browser: string;
   status: string;
@@ -70,6 +71,8 @@ interface TestResult {
   start_time: string;
   end_time: string;
   error_message?: string;
+  error_category?: string;
+  has_diagnosis?: boolean;
 }
 
 export default function TesterTestResults() {
@@ -80,8 +83,35 @@ export default function TesterTestResults() {
   const [selectedImage, setSelectedImage] = useState<Screenshot | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState<"screenshots" | "logs" | "videos">("screenshots");
+  const [activeMainTab, setActiveMainTab] = useState<"all" | "failed">("all");
+  const [diagnosingIds, setDiagnosingIds] = useState<Set<string>>(new Set());
   const [selectedVideo, setSelectedVideo] = useState<VideoRecording | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
+
+  const handleRunDiagnosis = async (resultId: string) => {
+    setDiagnosingIds(prev => new Set(prev).add(resultId));
+    try {
+      const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+      const response = await fetch(API_ENDPOINTS.RESULT_DIAGNOSE(resultId), {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      });
+      if (response.ok) {
+        setTestResults(prev => prev.map(r => r.id === resultId ? { ...r, has_diagnosis: true } : r));
+      } else {
+        alert("Failed to run diagnosis.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error running diagnosis.");
+    } finally {
+      setDiagnosingIds(prev => {
+        const next = new Set(prev);
+        next.delete(resultId);
+        return next;
+      });
+    }
+  };
 
   // Browser tab + script + language filter
   const [selectedBrowser, setSelectedBrowser] = useState<string>("all");
@@ -289,6 +319,25 @@ export default function TesterTestResults() {
     }
   };
 
+  const getCategoryBadgeClass = (category?: string) => {
+    switch (category) {
+      case "LOCATOR_NOT_FOUND":
+        return "bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-500/20";
+      case "TIMEOUT":
+        return "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-500/20";
+      case "ASSERTION_FAILURE":
+        return "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-500/20";
+      case "STALE_ELEMENT":
+        return "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/20";
+      case "FRAME_ERROR":
+        return "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/20";
+      default:
+        return "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700";
+    }
+  };
+
+  const formatCategory = (category?: string) => (category || "UNKNOWN").replace(/_/g, " ");
+
   const handleCopyLogs = async () => {
     try {
       const logText = filteredLogs.map(log => {
@@ -357,6 +406,8 @@ export default function TesterTestResults() {
     if (testSuite.status === 'completed') return testSuite.failed === 0 ? 'passed' : 'failed';
     return testSuite.status;
   };
+
+  const failedScripts = useMemo(() => filteredResults.filter(r => r.status?.toUpperCase() === "FAILED"), [filteredResults]);
 
   if (loading) {
     return (
@@ -601,76 +652,182 @@ export default function TesterTestResults() {
           </div>
         )}
 
-        {/* Results Grid */}
-        {filteredResults.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3">
-            {filteredResults.map((result, i) => (
-              <button
-                key={i}
-                onClick={() => setSelectedScript(result.test_name)}
-                className={`p-3 sm:p-4 rounded-lg border text-left transition-all active:scale-[0.98] ${
-                  selectedScript === result.test_name
-                    ? "bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-500/30 ring-1 ring-blue-400"
-                    : "bg-slate-50 dark:bg-slate-950/50 border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
-                }`}
-              >
-                <div className="flex items-start gap-2 sm:gap-3">
-                  {result.status?.toUpperCase() === "PASSED" ? (
-                    <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                  ) : result.status?.toUpperCase() === "FAILED" ? (
-                    <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 mt-0.5 flex-shrink-0" />
-                  ) : result.status?.toUpperCase() === "CANCELLED" ? (
-                    <StopCircle className="w-4 h-4 sm:w-5 sm:h-5 text-slate-500 mt-0.5 flex-shrink-0" />
-                  ) : (
-                    <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-medium text-slate-900 dark:text-white mb-1 truncate">
-                      {cleanTestName(result.test_name)}
-                    </p>
-                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1">
-                      {result.browser && (
-                        <Badge className={`text-[10px] px-1.5 py-0 border ${
-                          result.browser === 'chrome'
-                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/20'
-                            : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-500/20'
-                        }`}>
-                          {result.browser}
-                        </Badge>
-                      )}
-                      {uniqueLanguages.length > 1 && (
-                        <Badge className={`text-[10px] px-1.5 py-0 border ${
-                          detectLanguage(result.test_name) === 'python'
-                            ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20'
-                            : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/20'
-                        }`}>
-                          {detectLanguage(result.test_name)}
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-[10px] sm:text-xs text-slate-600 dark:text-slate-400">
-                      Duration: {Math.round(result.duration_seconds)}s
-                    </p>
-                    <div className="flex flex-col gap-0.5 mt-1">
-                      <p className="text-[9px] sm:text-[10px] font-mono text-cyan-600 dark:text-cyan-400">
-                        Start: {formatTimePrecise(result.start_time)}
-                      </p>
-                      <p className="text-[9px] sm:text-[10px] font-mono text-amber-600 dark:text-amber-400">
-                        End: {formatTimePrecise(result.end_time)}
-                      </p>
-                    </div>
-                    {result.error_message && (
-                      <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400 mt-1 line-clamp-2">{result.error_message}</p>
+        {/* Main Tabs: All Scripts | Failed Scripts */}
+        <div className="flex border-b border-slate-200 dark:border-white/10 mb-6 gap-2">
+          <button
+            onClick={() => setActiveMainTab("all")}
+            className={`px-4 py-2 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 ${
+              activeMainTab === "all"
+                ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+            }`}
+          >
+            <BarChart3 className="w-4 h-4" /> All Scripts
+          </button>
+          <button
+            onClick={() => setActiveMainTab("failed")}
+            className={`px-4 py-2 border-b-2 font-medium text-sm transition-colors flex items-center gap-2 ${
+              activeMainTab === "failed"
+                ? "border-red-500 text-red-600 dark:text-red-400"
+                : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+            }`}
+          >
+            <AlertTriangle className="w-4 h-4" /> Failed Scripts
+          </button>
+        </div>
+
+        {activeMainTab === "all" ? (
+          /* Results Grid */
+          filteredResults.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-3">
+              {filteredResults.map((result, i) => (
+                <button
+                  key={i}
+                  onClick={() => setSelectedScript(result.test_name)}
+                  className={`p-3 sm:p-4 rounded-lg border text-left transition-all active:scale-[0.98] ${
+                    selectedScript === result.test_name
+                      ? "bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-500/30 ring-1 ring-blue-400"
+                      : "bg-slate-50 dark:bg-slate-950/50 border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10"
+                  }`}
+                >
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    {result.status?.toUpperCase() === "PASSED" ? (
+                      <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    ) : result.status?.toUpperCase() === "FAILED" ? (
+                      <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                    ) : result.status?.toUpperCase() === "CANCELLED" ? (
+                      <StopCircle className="w-4 h-4 sm:w-5 sm:h-5 text-slate-500 mt-0.5 flex-shrink-0" />
+                    ) : (
+                      <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 mt-0.5 flex-shrink-0" />
                     )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm font-medium text-slate-900 dark:text-white mb-1 truncate">
+                        {cleanTestName(result.test_name)}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1">
+                        {result.browser && (
+                          <Badge className={`text-[10px] px-1.5 py-0 border ${
+                            result.browser === 'chrome'
+                              ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/20'
+                              : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-500/20'
+                          }`}>
+                            {result.browser}
+                          </Badge>
+                        )}
+                        {uniqueLanguages.length > 1 && (
+                          <Badge className={`text-[10px] px-1.5 py-0 border ${
+                            detectLanguage(result.test_name) === 'python'
+                              ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20'
+                              : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/20'
+                          }`}>
+                            {detectLanguage(result.test_name)}
+                          </Badge>
+                        )}
+                        {result.status?.toUpperCase() === "FAILED" && (
+                          <Badge className={`text-[10px] px-1.5 py-0 border ${getCategoryBadgeClass(result.error_category)}`}>
+                            {formatCategory(result.error_category)}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-[10px] sm:text-xs text-slate-600 dark:text-slate-400">
+                        Duration: {Math.round(result.duration_seconds)}s
+                      </p>
+                      <div className="flex flex-col gap-0.5 mt-1">
+                        <p className="text-[9px] sm:text-[10px] font-mono text-cyan-600 dark:text-cyan-400">
+                          Start: {formatTimePrecise(result.start_time)}
+                        </p>
+                        <p className="text-[9px] sm:text-[10px] font-mono text-amber-600 dark:text-amber-400">
+                          End: {formatTimePrecise(result.end_time)}
+                        </p>
+                      </div>
+                      {result.error_message && (
+                        <p className="text-[10px] sm:text-xs text-red-600 dark:text-red-400 mt-1 line-clamp-2">{result.error_message}</p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </button>
-            ))}
-          </div>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-slate-600 dark:text-slate-400">
+              <p>No test results match the current filters.</p>
+            </div>
+          )
         ) : (
-          <div className="text-center py-8 text-slate-600 dark:text-slate-400">
-            <p>No test results match the current filters.</p>
-          </div>
+          /* Failed Scripts List */
+          failedScripts.length > 0 ? (
+            <div className="space-y-3 sm:space-y-4 mb-8">
+              {failedScripts.map((script, idx) => {
+                const isDiagnosing = diagnosingIds.has(script.id);
+                return (
+                  <GlassCard key={idx} className="group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors p-4">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <XCircle className="w-5 h-5 text-red-500" />
+                          <h4 className="text-base font-semibold text-slate-900 dark:text-white truncate">
+                            {cleanTestName(script.test_name) || 'Unknown'}
+                          </h4>
+                          {script.browser && (
+                            <Badge variant="secondary" className={`text-xs capitalize ${
+                              script.browser === 'chrome'
+                                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                                : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'
+                            }`}>
+                              {script.browser}
+                            </Badge>
+                          )}
+                          <Badge className={`text-xs px-2 py-0.5 border ${getCategoryBadgeClass(script.error_category)}`}>
+                            {formatCategory(script.error_category)}
+                          </Badge>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
+                          <span>Duration: {Math.round(script.duration_seconds)}s</span>
+                          {script.error_message && (
+                            <>
+                              <span>•</span>
+                              <span className="truncate max-w-[200px] sm:max-w-[300px] text-red-600 dark:text-red-400">{script.error_message}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {script.has_diagnosis ? (
+                          <Button 
+                            variant="outline" 
+                            className="bg-violet-50 text-violet-700 border-violet-200 hover:bg-violet-100 dark:bg-violet-900/20 dark:text-violet-300 dark:border-violet-800/50 dark:hover:bg-violet-900/40"
+                            onClick={() => window.location.href = `/tester/test-results/${testId}/diagnosis/${script.id}`}
+                          >
+                            <Eye className="w-4 h-4 mr-2" /> View Diagnosis
+                          </Button>
+                        ) : (
+                          <Button 
+                            variant="outline" 
+                            onClick={() => handleRunDiagnosis(script.id)}
+                            disabled={isDiagnosing}
+                            className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-800/50 dark:hover:bg-blue-900/20"
+                          >
+                            {isDiagnosing ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Bot className="w-4 h-4 mr-2" />}
+                            {isDiagnosing ? "Diagnosing..." : "Run Diagnosis"}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </GlassCard>
+                );
+              })}
+            </div>
+          ) : (
+            <GlassCard className="text-center py-8 sm:py-12 mb-8">
+              <CheckCircle2 className="w-8 h-8 sm:w-12 sm:h-12 mx-auto text-green-500 mb-3 sm:mb-4" />
+              <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                No Failed Scripts
+              </h3>
+              <p className="text-slate-600 dark:text-slate-400">
+                Great job! There are no failed scripts that match your current filters.
+              </p>
+            </GlassCard>
+          )
         )}
       </GlassCard>
 

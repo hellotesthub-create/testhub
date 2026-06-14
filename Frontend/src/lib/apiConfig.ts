@@ -54,4 +54,8 @@ export const API_ENDPOINTS = {
   ADMIN_TEST_RESULTS_SCREENSHOTS: (testId: string) => `${API_BASE_URL}/api/runs/${testId}/screenshots`,
   ADMIN_TEST_RESULTS_LOGS: (testId: string) => `${API_BASE_URL}/api/runs/${testId}/logs`,
   ADMIN_TEST_RESULTS_VIDEOS: (testId: string) => `${API_BASE_URL}/api/runs/${testId}/videos`,
+
+  // AI Diagnosis
+  RESULT_DIAGNOSE: (resultId: string) => `${API_BASE_URL}/api/results/${resultId}/diagnose`,
+  RESULT_DIAGNOSIS: (resultId: string) => `${API_BASE_URL}/api/results/${resultId}/diagnosis`,
 };

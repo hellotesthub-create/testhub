@@ -45,6 +45,7 @@ class TestResult:
         self.end_time = None
         self.duration = 0
         self.error_message = None
+        self.error_stack = None
         self.screenshot_path = None
     
     def to_dict(self):
@@ -56,6 +57,7 @@ class TestResult:
             "end_time": str(self.end_time) if self.end_time else None,
             "duration_seconds": self.duration,
             "error_message": self.error_message,
+            "error_stack": self.error_stack,
             "screenshot_path": self.screenshot_path
         }
 
@@ -497,6 +499,7 @@ class TestRunner:
                 result.status = "FAILED"
                 stderr_output = '\n'.join(stderr_lines)
                 result.error_message = stderr_output or f"Java test exited with code {process.returncode}"
+                result.error_stack = '\n'.join(stderr_lines + stdout_lines)
                 logger.error(f"{log_prefix} JAVA TEST FAILED")
                 
                 failure_screenshot = self.screenshots_dir / f"{class_name}_{browser_type}_failure.png"
@@ -526,8 +529,9 @@ class TestRunner:
         except Exception as e:
             result.status = "FAILED"
             result.error_message = str(e)
+            result.error_stack = traceback.format_exc()
             logger.error(f"{log_prefix} JAVA TEST FAILED WITH ERROR: {e}")
-            logger.error(traceback.format_exc())
+            logger.error(result.error_stack)
         
         finally:
             result.end_time = datetime.now()
@@ -564,7 +568,8 @@ class TestRunner:
                 "duration_seconds": result.duration,
                 "start_time": result.start_time,
                 "end_time": result.end_time,
-                "error_message": result.error_message
+                "error_message": result.error_message,
+                "error_stack": getattr(result, 'error_stack', None)
             }
             self.db_service.save_test_result(test_result_data)
             
@@ -711,8 +716,9 @@ class TestRunner:
         except Exception as e:
             result.status = "FAILED"
             result.error_message = str(e)
+            result.error_stack = traceback.format_exc()
             logger.error(f"{log_prefix} TEST FAILED WITH ERROR: {e}")
-            logger.error(traceback.format_exc())
+            logger.error(result.error_stack)
             
             # Try to capture failure screenshot
             try:
@@ -767,7 +773,8 @@ class TestRunner:
                 "duration_seconds": result.duration,
                 "start_time": result.start_time,
                 "end_time": result.end_time,
-                "error_message": result.error_message
+                "error_message": result.error_message,
+                "error_stack": getattr(result, 'error_stack', None)
             }
             self.db_service.save_test_result(test_result_data)
             
@@ -868,8 +875,9 @@ class TestRunner:
         except Exception as e:
             result.status = "FAILED"
             result.error_message = str(e)
+            result.error_stack = traceback.format_exc()
             logger.error(f"{log_prefix} TEST FAILED WITH ERROR: {e}")
-            logger.error(traceback.format_exc())
+            logger.error(result.error_stack)
             
             # Try to capture failure screenshot
             try:
@@ -933,7 +941,8 @@ class TestRunner:
                 "duration_seconds": result.duration,
                 "start_time": result.start_time,
                 "end_time": result.end_time,
-                "error_message": result.error_message
+                "error_message": result.error_message,
+                "error_stack": getattr(result, 'error_stack', None)
             }
             self.db_service.save_test_result(test_result_data)
             
@@ -1067,6 +1076,7 @@ class TestRunner:
                 result.status = "FAILED"
                 stderr_output = '\n'.join(stderr_lines)
                 result.error_message = stderr_output or f"Java test exited with code {process.returncode}"
+                result.error_stack = '\n'.join(stderr_lines + stdout_lines)
                 logger.error(f"{log_prefix} PLAYWRIGHT JAVA TEST FAILED")
                 failure_screenshot = self.screenshots_dir / f"{class_name}_{browser_type}_failure.png"
                 if failure_screenshot.exists():
@@ -1088,8 +1098,9 @@ class TestRunner:
         except Exception as e:
             result.status = "FAILED"
             result.error_message = str(e)
+            result.error_stack = traceback.format_exc()
             logger.error(f"{log_prefix} PLAYWRIGHT JAVA TEST FAILED: {e}")
-            logger.error(traceback.format_exc())
+            logger.error(result.error_stack)
         
         finally:
             result.end_time = datetime.now()
@@ -1116,7 +1127,8 @@ class TestRunner:
                 "run_id_string": self.run_id_string, "test_name": test_file.name,
                 "browser": browser_type, "status": result.status,
                 "duration_seconds": result.duration, "start_time": result.start_time,
-                "end_time": result.end_time, "error_message": result.error_message
+                "end_time": result.end_time, "error_message": result.error_message,
+                "error_stack": getattr(result, 'error_stack', None)
             })
             self.db_service.save_log({
                 "run_id_string": self.run_id_string, "test_name": test_file.name,

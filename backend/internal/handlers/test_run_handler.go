@@ -260,6 +260,9 @@ func (h *TestRunHandler) GetRunDetails(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		results = []models.TestResult{}
 	}
+	for i := range results {
+		results[i].ErrorCategory = ClassifyError(results[i].ErrorMessage, results[i].ErrorStack)
+	}
 
 	// Get screenshots
 	screenshots, err := h.screenshotRepo.GetByRunID(r.Context(), run.ID)
@@ -356,6 +359,7 @@ func (h *TestRunHandler) GetResultDetails(w http.ResponseWriter, r *http.Request
 		http.Error(w, "Test result not found", http.StatusNotFound)
 		return
 	}
+	result.ErrorCategory = ClassifyError(result.ErrorMessage, result.ErrorStack)
 
 	// Verify ownership via run
 	run, err := h.testRunRepo.GetByID(r.Context(), result.RunID)

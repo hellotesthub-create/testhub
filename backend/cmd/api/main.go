@@ -110,6 +110,8 @@ func main() {
 	testCaseRepo := repository.NewTestCaseRepository(database)
 	testRunRepo := repository.NewTestRunRepository(database)
 	testResultRepo := repository.NewTestResultRepository(database)
+	diagnosisRepo := repository.NewDiagnosisRepository(database)
+	diagnosisRepo.EnsureIndexes(context.Background())
 
 	// Service Layer
 	userService := services.NewUserService(userRepo)
@@ -124,6 +126,10 @@ func main() {
 	githubHandler := handlers.NewGitHubHandler()
 	artifactsHandler := handlers.NewArtifactsHandler(screenshotRepo, logRepo, videoRepo)
 	testSuiteHandler := handlers.NewTestSuiteHandler(testSuiteRepo, testCaseRepo)
+	diagnosisHandler := handlers.NewDiagnosisHandler(
+		testResultRepo, testRunRepo, testCaseRepo,
+		logRepo, screenshotRepo, diagnosisRepo,
+	)
 	testCaseHandler := handlers.NewTestCaseHandler(testSuiteRepo, testCaseRepo)
 	testRunHandler := handlers.NewTestRunHandler(
 		testSuiteRepo,
@@ -221,6 +227,12 @@ func main() {
 	api.HandleFunc("/runs/{run_id}", authMiddleware.Authenticate(testRunHandler.GetRunDetails)).Methods("GET", "OPTIONS")
 	api.HandleFunc("/runs/{run_id}/cancel", authMiddleware.Authenticate(testRunHandler.CancelRun)).Methods("POST", "OPTIONS")
 	api.HandleFunc("/results/{result_id}", authMiddleware.Authenticate(testRunHandler.GetResultDetails)).Methods("GET", "OPTIONS")
+
+	// ===========================================
+	// AI DIAGNOSIS
+	// ===========================================
+	api.HandleFunc("/results/{result_id}/diagnose", authMiddleware.Authenticate(diagnosisHandler.DiagnoseResult)).Methods("POST", "OPTIONS")
+	api.HandleFunc("/results/{result_id}/diagnosis", authMiddleware.Authenticate(diagnosisHandler.GetDiagnosis)).Methods("GET", "OPTIONS")
 
 	// ===========================================
 	// ARTIFACTS - Screenshots, Videos, Logs by run_id

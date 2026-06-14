@@ -204,6 +204,7 @@ class DatabaseService:
                 "start_time": result_data.get("start_time", now),
                 "end_time": result_data.get("end_time", now),
                 "error_message": result_data.get("error_message"),
+                "error_stack": result_data.get("error_stack"),
                 "created_at": now
             }
             
@@ -230,6 +231,7 @@ class DatabaseService:
                         "start_time": result_data.get("start_time", now),
                         "end_time": result_data.get("end_time", now),
                         "error_message": result_data.get("error_message"),
+                        "error_stack": result_data.get("error_stack"),
                     }}
                 )
                 self.current_result_id = existing_result["_id"]

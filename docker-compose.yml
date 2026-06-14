@@ -41,6 +41,7 @@ services:
       SMTP_USE_STARTTLS: ${SMTP_USE_STARTTLS:-}
       SMTP_USE_TLS: ${SMTP_USE_TLS:-}
       SMTP_INSECURE_SKIP_VERIFY: ${SMTP_INSECURE_SKIP_VERIFY:-}
+      DIAGNOSIS_SERVICE_URL: http://testops-diagnosis-service:8001
     ports:
       - "8090:8080"
     volumes:
@@ -188,6 +189,28 @@ services:
       - "3456:3456"
     networks:
       - testops-network
+    restart: unless-stopped
+
+  # AI Failure Diagnosis Microservice
+  diagnosis-service:
+    build:
+      context: ./diagnosis_service
+      dockerfile: Dockerfile
+    container_name: testops-diagnosis-service
+    environment:
+      DIAGNOSIS_MODEL_PROVIDER: ${DIAGNOSIS_MODEL_PROVIDER:-gemini}
+      AI_MODEL_PRIMARY: ${AI_MODEL_PRIMARY:-gemini-2.5-flash}
+      AI_MODEL_FALLBACK: ${AI_MODEL_FALLBACK:-llama-3.3-70b-versatile}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_KEY_1: ${GEMINI_KEY_1:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_KEY_1: ${GROQ_KEY_1:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    ports:
+      - "8001:8001"
+    networks:
+      - testops-network
+      - testops-db-network
     restart: unless-stopped
 
 networks:

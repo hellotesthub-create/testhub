@@ -18,6 +18,7 @@ import ExecutionMonitor from "@/pages/execution-monitor";
 import Reports from "@/pages/reports";
 import Profile from "@/pages/profile";
 import TesterTestResults from "@/pages/tester-test-results";
+import TesterDiagnosis from "@/pages/tester-diagnosis";
 
 function Router() {
   return (
@@ -36,6 +37,11 @@ function Router() {
       <Route path="/tester/test-results/:id">
         <ProtectedRoute>
           <TesterTestResults />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/tester/test-results/:runId/diagnosis/:resultId">
+        <ProtectedRoute>
+          <TesterDiagnosis />
         </ProtectedRoute>
       </Route>
       <Route path="/test-lab">

@@ -20,7 +20,9 @@ type TestResult struct {
 	DurationSeconds float64            `json:"duration_seconds" bson:"duration_seconds"`
 	ErrorMessage    string             `json:"error_message,omitempty" bson:"error_message,omitempty"`
 	ErrorStack      string             `json:"error_stack,omitempty" bson:"error_stack,omitempty"`
+	ErrorCategory   string             `json:"error_category,omitempty" bson:"-"`
 	RetryCount      int                `json:"retry_count" bson:"retry_count"`
+	HasDiagnosis    bool               `json:"has_diagnosis" bson:"has_diagnosis"`
 	CreatedAt       time.Time          `json:"created_at" bson:"created_at"`
 }
 
@@ -36,7 +38,9 @@ type TestResultResponse struct {
 	EndTime         *time.Time `json:"end_time,omitempty"`
 	DurationSeconds float64    `json:"duration_seconds"`
 	ErrorMessage    string     `json:"error_message,omitempty"`
+	ErrorCategory   string     `json:"error_category,omitempty"`
 	RetryCount      int        `json:"retry_count"`
+	HasDiagnosis    bool       `json:"has_diagnosis"`
 }
 
 // Legacy Result struct for backward compatibility
