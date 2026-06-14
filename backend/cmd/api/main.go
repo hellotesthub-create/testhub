@@ -225,6 +225,7 @@ func main() {
 	api.HandleFunc("/suites/{suite_id}/runs", authMiddleware.Authenticate(testRunHandler.GetSuiteRuns)).Methods("GET", "OPTIONS")
 	api.HandleFunc("/suites/{suite_id}/run", authMiddleware.Authenticate(testRunHandler.TriggerRun)).Methods("POST", "OPTIONS")
 	api.HandleFunc("/runs/{run_id}", authMiddleware.Authenticate(testRunHandler.GetRunDetails)).Methods("GET", "OPTIONS")
+	api.HandleFunc("/runs/{run_id}/report", authMiddleware.Authenticate(testRunHandler.DownloadRunReport)).Methods("GET", "OPTIONS")
 	api.HandleFunc("/runs/{run_id}/cancel", authMiddleware.Authenticate(testRunHandler.CancelRun)).Methods("POST", "OPTIONS")
 	api.HandleFunc("/results/{result_id}", authMiddleware.Authenticate(testRunHandler.GetResultDetails)).Methods("GET", "OPTIONS")
 

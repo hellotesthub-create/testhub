@@ -2,8 +2,12 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import Layout from "@/components/layout/Layout";
 import { GlassCard } from "@/components/ui/glass-card";
+import { CardSpotlight } from "@/components/ui/card-spotlight";
+import { NumberTicker } from "@/components/ui/number-ticker";
+import { Eyebrow, StatTile } from "@/components/ui/page-primitives";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Clock, Chrome, BarChart3, Search, Trash2, AlertTriangle, Loader2, CheckCircle2, XCircle, Globe, Zap } from "lucide-react";
+import { Eye, Clock, BarChart3, Search, Trash2, AlertTriangle, Loader2, CheckCircle2, XCircle, Download } from "lucide-react";
+import { BrandIcon } from "@/lib/brandAssets";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -67,6 +71,7 @@ export default function Reports() {
   const [deleteTestDialogOpen, setDeleteTestDialogOpen] = useState(false);
   const [deleteAllDialogOpen, setDeleteAllDialogOpen] = useState(false);
   const [testToDelete, setTestToDelete] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   // Browser tabs state
   const [selectedBrowserTab, setSelectedBrowserTab] = useState<Record<string, string>>({});
@@ -217,6 +222,34 @@ export default function Reports() {
     }
   };
 
+  // Download the Allure-style PDF report for a run.
+  const handleDownloadReport = async (report: TestRun) => {
+    setDownloadingId(report.id);
+    try {
+      const token = getToken();
+      const response = await fetch(API_ENDPOINTS.RUN_REPORT(report.runId), {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      if (!response.ok) {
+        throw new Error(`Report download failed: ${response.status}`);
+      }
+      const blob = await response.blob();
+      const objectUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = `THEX_Report_${report.runId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(objectUrl);
+    } catch (err) {
+      console.error("Error downloading report:", err);
+      alert("Failed to download report. Please try again.");
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
   const handleDeleteAll = () => {
     setReports([]);
     setDeleteAllDialogOpen(false);
@@ -245,8 +278,11 @@ export default function Reports() {
     <Layout>
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 mb-6 sm:mb-8">
         <div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-slate-900 dark:text-white mb-1">History</h1>
-          <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm md:text-base">View all test execution results and artifacts.</p>
+          <Eyebrow>Execution history</Eyebrow>
+          <h1 className="mt-3 text-xl sm:text-2xl md:text-3xl font-display font-bold tracking-tight text-foreground mb-1">
+            Test <span className="text-gradient">History</span>
+          </h1>
+          <p className="text-muted-foreground text-xs sm:text-sm md:text-base">View all test execution results and artifacts.</p>
         </div>
         {reports.length > 0 && (
           <Button
@@ -259,37 +295,36 @@ export default function Reports() {
         )}
       </div>
 
+      {/* Summary stat tiles */}
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <StatTile label="test runs" value={<NumberTicker value={filteredReports.length} />} />
+        <StatTile label="passed" value={<NumberTicker value={filteredReports.filter(r => r.status === "passed").length} />} accent="emerald" />
+        <StatTile label="failed" value={<NumberTicker value={filteredReports.filter(r => r.status === "failed").length} />} accent="red" />
+        <StatTile
+          label="pass rate"
+          value={<NumberTicker value={filteredReports.length ? Math.round((filteredReports.filter(r => r.status === "passed").length / filteredReports.length) * 100) : 0} suffix="%" />}
+          accent="sky"
+        />
+      </div>
+
       <GlassCard className="mb-6">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <Badge className="bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-500/30 text-xs sm:text-sm">
-              {filteredReports.length} Test Runs
-            </Badge>
-            <Badge className="bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300 border-green-200 dark:border-green-500/30 text-xs sm:text-sm">
-              {filteredReports.filter(r => r.status === "passed").length} Passed
-            </Badge>
-            <Badge className="bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-300 border-red-200 dark:border-red-500/30 text-xs sm:text-sm">
-              {filteredReports.filter(r => r.status === "failed").length} Failed
-            </Badge>
-          </div>
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <Input
-              placeholder="Search by suite, browser, status..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 text-sm sm:text-base bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10"
-            />
-          </div>
+        <div className="relative w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by suite, browser, status..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 text-sm sm:text-base bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 focus-visible:ring-primary"
+          />
         </div>
       </GlassCard>
 
       <div className="space-y-3 sm:space-y-4 md:space-y-6">
         {loading ? (
           <GlassCard className="text-center py-8 sm:py-12">
-            <Loader2 className="w-8 h-8 sm:w-12 sm:h-12 mx-auto text-blue-500 dark:text-blue-400 mb-3 sm:mb-4 animate-spin" />
-            <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white mb-2">Loading Test History</h3>
-            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">Fetching your test execution records...</p>
+            <Loader2 className="w-8 h-8 sm:w-12 sm:h-12 mx-auto text-primary mb-3 sm:mb-4 animate-spin" />
+            <h3 className="text-base sm:text-lg font-semibold text-foreground mb-2">Loading Test History</h3>
+            <p className="text-sm sm:text-base text-muted-foreground">Fetching your test execution records...</p>
           </GlassCard>
         ) : error ? (
           <GlassCard className="text-center py-8 sm:py-12">
@@ -312,12 +347,12 @@ export default function Reports() {
 
             return (
               <div key={report.id} ref={(el) => { if (el) reportRefs.current[report.id] = el; }}>
-                <GlassCard className="group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">
+                <CardSpotlight className="card-3d group rounded-2xl border border-border bg-gradient-to-b from-card to-muted/40 p-5 sm:p-6 dark:to-[hsl(252_30%_7%)]">
                   {/* Header */}
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-4 md:mb-5 pb-3 sm:pb-4 md:pb-5 border-b border-slate-200 dark:border-white/5">
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3 mb-2">
-                        <h3 className="text-base sm:text-lg md:text-xl font-semibold text-slate-900 dark:text-white break-words min-w-0">{report.suite}</h3>
+                        <h3 className="text-base sm:text-lg md:text-xl font-semibold text-foreground break-words min-w-0 transition-colors group-hover:text-primary">{report.suite}</h3>
                         <Badge className={`${
                           report.status === "passed"
                             ? "bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400 border-green-200 dark:border-green-500/20"
@@ -334,7 +369,7 @@ export default function Reports() {
                             ? "bg-violet-100 dark:bg-violet-500/10 text-violet-700 dark:text-violet-400 border-violet-200 dark:border-violet-500/20"
                             : "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20"
                         }`}>
-                          {report.framework === "playwright" ? <Zap className="w-3 h-3 mr-1 inline" /> : <Globe className="w-3 h-3 mr-1 inline" />}
+                          <BrandIcon kind="framework" name={report.framework === "playwright" ? "playwright" : "selenium"} className="w-3.5 h-3.5 mr-1 inline" />
                           {report.framework === "playwright" ? "Playwright" : "Selenium"}
                         </Badge>
                       </div>
@@ -379,6 +414,19 @@ export default function Reports() {
                       </Button>
                       <Button
                         variant="ghost" size="sm"
+                        disabled={downloadingId === report.id}
+                        className="border border-primary/40 text-primary hover:bg-primary/10 text-[10px] sm:text-xs md:text-sm flex-1 sm:flex-none disabled:opacity-60"
+                        onClick={() => handleDownloadReport(report)}
+                      >
+                        {downloadingId === report.id ? (
+                          <Loader2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 mr-1 sm:mr-1.5 md:mr-2 animate-spin" />
+                        ) : (
+                          <Download className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 mr-1 sm:mr-1.5 md:mr-2" />
+                        )}
+                        <span className="hidden sm:inline">Download Report</span><span className="sm:hidden">Report</span>
+                      </Button>
+                      <Button
+                        variant="ghost" size="sm"
                         className="border border-red-300 dark:border-red-500/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 text-[10px] sm:text-xs md:text-sm flex-1 sm:flex-none"
                         onClick={() => openDeleteTestDialog(report.id)}
                       >
@@ -394,7 +442,7 @@ export default function Reports() {
                         onClick={() => setSelectedBrowserTab(prev => ({ ...prev, [report.id]: "all" }))}
                         className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                           currentTab === "all"
-                            ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                            ? "border-primary text-primary"
                             : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
                         }`}
                       >
@@ -417,12 +465,12 @@ export default function Reports() {
                             className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                               currentTab === browser
                                 ? browser === 'chrome'
-                                  ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                                  ? "border-primary text-primary"
                                   : "border-orange-500 text-orange-600 dark:text-orange-400"
                                 : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
                             }`}
                           >
-                            {browser === 'chrome' ? <Chrome className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> : <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5" />}
+                            <BrandIcon kind="browser" name={browser} className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                             <span className="capitalize">{browser}</span>
                             {hasDetails && (
                               <Badge variant="secondary" className={`ml-1 text-[10px] sm:text-xs px-1 sm:px-1.5 py-0 h-4 sm:h-5 ${
@@ -442,8 +490,8 @@ export default function Reports() {
                   {/* Loading spinner for details */}
                   {isLoadingDetails && currentTab !== "all" && (
                     <div className="flex items-center justify-center py-4">
-                      <Loader2 className="w-5 h-5 animate-spin text-blue-500 mr-2" />
-                      <span className="text-sm text-slate-500">Loading browser details...</span>
+                      <Loader2 className="w-5 h-5 animate-spin text-primary mr-2" />
+                      <span className="text-sm text-muted-foreground">Loading browser details...</span>
                     </div>
                   )}
 
@@ -485,11 +533,12 @@ export default function Reports() {
                                 {result.test_name?.replace(/_\d{8}_\d{6}$/, '') || 'Unknown'}
                               </span>
                               {currentTab === "all" && result.browser && (
-                                <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 capitalize ${
+                                <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 capitalize gap-1 ${
                                   result.browser === 'chrome'
                                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
                                     : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'
                                 }`}>
+                                  <BrandIcon kind="browser" name={result.browser} className="w-3 h-3" />
                                   {result.browser}
                                 </Badge>
                               )}
@@ -525,7 +574,7 @@ export default function Reports() {
                       <span>{report.duration}</span>
                     </div>
                   </div>
-                </GlassCard>
+                </CardSpotlight>
               </div>
             );
           })

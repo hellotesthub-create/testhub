@@ -1,7 +1,9 @@
 import Layout from "@/components/layout/Layout";
-import { GlassCard } from "@/components/ui/glass-card";
 import { Badge } from "@/components/ui/badge";
-import { Play, Pause, RotateCcw, Terminal, Check, X, Clock } from "lucide-react";
+import { CardSpotlight } from "@/components/ui/card-spotlight";
+import { NumberTicker } from "@/components/ui/number-ticker";
+import { Eyebrow, WindowChrome, StatTile } from "@/components/ui/page-primitives";
+import { Pause, RotateCcw, Terminal } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function ExecutionMonitor() {
@@ -22,101 +24,117 @@ export default function ExecutionMonitor() {
     { time: "10:42:05", level: "INFO", msg: "Found selector #email-input" },
   ];
 
+  const completed = steps.filter((s) => s.status === "completed").length;
+
   return (
     <Layout>
-      <div className="flex items-center justify-between mb-6">
+      {/* ===================== HEADER ===================== */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-3xl font-display font-bold text-white">Live Execution</h1>
-            <Badge className="bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 border-blue-500/50 animate-pulse">
+          <Eyebrow>Live execution</Eyebrow>
+          <div className="mt-3 flex items-center gap-3">
+            <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              Running <span className="text-gradient">Auth Flow</span>
+            </h1>
+            <Badge className="border-primary/50 bg-primary/15 text-primary hover:bg-primary/20">
+              <span className="live-pulse mr-1.5 inline-block h-2 w-2 rounded-full bg-emerald-400 align-middle" />
               RUNNING
             </Badge>
           </div>
-          <p className="text-slate-400">Session ID: #EXE-8829-XJ</p>
+          <p className="mt-1 font-mono text-sm text-muted-foreground">Session ID: #EXE-8829-XJ</p>
         </div>
         <div className="flex gap-2">
-          <button className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors">
-            <Pause className="w-5 h-5" />
+          <button className="sheen rounded-xl border border-border bg-card p-2.5 text-muted-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/50 hover:text-primary">
+            <Pause className="h-5 w-5" />
           </button>
-          <button className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors">
-            <RotateCcw className="w-5 h-5" />
+          <button className="sheen rounded-xl border border-border bg-card p-2.5 text-muted-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/50 hover:text-primary">
+            <RotateCcw className="h-5 w-5" />
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
-        {/* Main Viewport (Browser Preview) */}
-        <div className="lg:col-span-2 flex flex-col gap-6">
-          <GlassCard className="flex-1 p-0 overflow-hidden flex flex-col bg-black border-slate-800">
-            <div className="h-10 bg-slate-900 border-b border-white/5 flex items-center px-4 gap-2">
-              <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-red-500/50" />
-                <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
-                <div className="w-3 h-3 rounded-full bg-green-500/50" />
-              </div>
-              <div className="flex-1 mx-4 bg-slate-950 rounded h-6 flex items-center px-3 text-xs text-slate-500 font-mono">
-                https://staging.app.com/login
-              </div>
-            </div>
-            <div className="flex-1 relative bg-slate-900/50 flex items-center justify-center">
-              {/* Placeholder for browser stream */}
-              <div className="text-center">
-                <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4 opacity-50"></div>
-                <p className="text-slate-500 font-mono">Live Stream Active</p>
-              </div>
-            </div>
-          </GlassCard>
+      {/* ===================== LIVE STATS ===================== */}
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <StatTile label="steps done" value={<><NumberTicker value={completed} /> / {steps.length}</>} accent="emerald" />
+        <StatTile label="elapsed" value={<NumberTicker value={2.5} decimals={1} suffix="s" />} />
+        <StatTile label="pass rate" value={<NumberTicker value={100} suffix="%" />} accent="emerald" />
+        <StatTile label="browsers" value={<NumberTicker value={2} />} accent="sky" />
+      </div>
 
-          <GlassCard className="h-64 flex flex-col">
-             <div className="flex items-center gap-2 mb-4 text-sm font-semibold text-slate-300">
-               <Terminal className="w-4 h-4 text-cyan-400" /> Console Output
-             </div>
-             <ScrollArea className="flex-1 font-mono text-xs">
-               <div className="space-y-1">
-                 {logs.map((log, i) => (
-                   <div key={i} className="flex gap-3 hover:bg-white/5 px-2 py-1 rounded">
-                     <span className="text-slate-500">{log.time}</span>
-                     <span className={
-                       log.level === 'INFO' ? 'text-blue-400' : 
-                       log.level === 'DEBUG' ? 'text-slate-400' : 'text-red-400'
-                     }>{log.level}</span>
-                     <span className="text-slate-300">{log.msg}</span>
-                   </div>
-                 ))}
-                 <div className="flex gap-3 px-2 py-1 animate-pulse">
-                   <span className="text-slate-600">10:42:06</span>
-                   <span className="text-blue-400">INFO</span>
-                   <span className="text-slate-300">Typing into input[name="password"]...</span>
-                 </div>
-               </div>
-             </ScrollArea>
-          </GlassCard>
+      {/* ===================== MAIN GRID ===================== */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {/* Main Viewport (Browser Preview) */}
+        <div className="flex flex-col gap-6 lg:col-span-2">
+          <WindowChrome title="live-stream · staging.app.com/login" className="flex min-h-[24rem] flex-1 flex-col">
+            <div className="relative flex flex-1 items-center justify-center bg-[hsl(252_30%_5%)]">
+              <div className="text-center">
+                <div className="mx-auto mb-4 h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent opacity-70" />
+                <p className="font-mono text-sm text-white/50">Live Stream Active</p>
+              </div>
+            </div>
+          </WindowChrome>
+
+          <WindowChrome title="console.log" className="h-64">
+            <div className="flex items-center gap-2 border-b border-white/5 px-5 py-3 font-mono text-xs font-semibold uppercase tracking-wider text-white/50">
+              <Terminal className="h-4 w-4 text-accent" /> Console Output
+            </div>
+            <ScrollArea className="h-[calc(100%-3rem)] px-3 py-3 font-mono text-xs">
+              <div className="space-y-1">
+                {logs.map((log, i) => (
+                  <div key={i} className="flex gap-3 rounded px-2 py-1 hover:bg-white/5">
+                    <span className="text-white/35">{log.time}</span>
+                    <span
+                      className={
+                        log.level === "INFO"
+                          ? "text-sky-300"
+                          : log.level === "DEBUG"
+                          ? "text-white/40"
+                          : "text-red-400"
+                      }
+                    >
+                      {log.level}
+                    </span>
+                    <span className="text-white/75">{log.msg}</span>
+                  </div>
+                ))}
+                <div className="flex animate-pulse gap-3 px-2 py-1">
+                  <span className="text-white/30">10:42:06</span>
+                  <span className="text-sky-300">INFO</span>
+                  <span className="text-white/75">Typing into input[name="password"]…</span>
+                </div>
+              </div>
+            </ScrollArea>
+          </WindowChrome>
         </div>
 
         {/* Timeline Sidebar */}
-        <GlassCard className="flex flex-col h-full">
-          <h3 className="text-lg font-semibold text-white mb-4">Execution Timeline</h3>
-          <div className="relative pl-4 border-l border-white/10 space-y-8">
+        <CardSpotlight className="card-3d flex h-full flex-col rounded-2xl bg-gradient-to-b from-card to-muted/40 p-7 dark:to-[hsl(252_30%_7%)]">
+          <h3 className="mb-6 font-display text-lg font-bold text-foreground">Execution Timeline</h3>
+          <div className="relative space-y-8 border-l border-border pl-4">
             {steps.map((step) => (
               <div key={step.id} className="relative">
-                <div className={`absolute -left-[21px] top-1 w-3 h-3 rounded-full border-2 ${
-                  step.status === 'completed' ? 'bg-green-500 border-green-500 shadow-[0_0_10px_#22c55e]' :
-                  step.status === 'running' ? 'bg-blue-500 border-blue-500 animate-pulse shadow-[0_0_10px_#3b82f6]' :
-                  'bg-slate-900 border-slate-600'
-                }`} />
-                <div className="flex justify-between items-start">
+                <div
+                  className={`absolute -left-[21px] top-1 h-3 w-3 rounded-full border-2 ${
+                    step.status === "completed"
+                      ? "border-emerald-500 bg-emerald-500 shadow-[0_0_10px_#22c55e]"
+                      : step.status === "running"
+                      ? "animate-pulse border-primary bg-primary shadow-[0_0_10px_hsl(var(--primary))]"
+                      : "border-border bg-card"
+                  }`}
+                />
+                <div className="flex items-start justify-between">
                   <div>
-                    <p className={`text-sm font-medium ${
-                      step.status === 'pending' ? 'text-slate-500' : 'text-white'
-                    }`}>{step.name}</p>
-                    <p className="text-xs text-slate-500">{step.status}</p>
+                    <p className={`text-sm font-medium ${step.status === "pending" ? "text-muted-foreground" : "text-foreground"}`}>
+                      {step.name}
+                    </p>
+                    <p className="text-xs capitalize text-muted-foreground">{step.status}</p>
                   </div>
-                  <span className="text-xs font-mono text-slate-600">{step.time}</span>
+                  <span className="font-mono text-xs text-muted-foreground">{step.time}</span>
                 </div>
               </div>
             ))}
           </div>
-        </GlassCard>
+        </CardSpotlight>
       </div>
     </Layout>
   );

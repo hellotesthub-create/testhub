@@ -205,6 +205,17 @@ func (w *EmailReportWorker) sendForRun(ctx context.Context, run *models.TestRun)
 		{Filename: fmt.Sprintf("thex_run_%s_logs.txt", run.RunID), ContentType: "text/plain; charset=utf-8", Data: []byte(logsText)},
 	}
 
+	// Allure-style PDF report (best-effort: never block the email on PDF errors).
+	if pdf, perr := GenerateRunReportPDF(run, results, screenshots, logsList); perr == nil && len(pdf) > 0 {
+		attachments = append(attachments, EmailAttachment{
+			Filename:    fmt.Sprintf("THEX_Report_%s.pdf", run.RunID),
+			ContentType: "application/pdf",
+			Data:        pdf,
+		})
+	} else if perr != nil {
+		log.Printf("[email-worker] failed to generate PDF report for run %s: %v", run.RunID, perr)
+	}
+
 	return w.emailService.Send(run.TriggeredBy, subject, body, attachments)
 }
 

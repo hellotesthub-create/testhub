@@ -2,7 +2,8 @@ import Layout from "@/components/layout/Layout";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, CheckCircle2, XCircle, Zap, PlayCircle, Calendar, Chrome, Globe } from "lucide-react";
+import { Clock, CheckCircle2, XCircle, Zap, PlayCircle, Calendar } from "lucide-react";
+import { BrandIcon } from "@/lib/brandAssets";
 import { useAuth } from "@/lib/authContext";
 import { getUserRuns, TestRun } from "@/lib/testSuiteApi";
 import { useState, useEffect } from "react";
@@ -306,7 +307,7 @@ export default function TesterDashboard() {
                                 : 'bg-slate-100 dark:bg-slate-900/30 text-slate-700 dark:text-slate-400 border-slate-200 dark:border-slate-500/20'
                             } border`}
                           >
-                            {browser === 'chrome' ? <Chrome className="w-3 h-3 mr-1" /> : <Globe className="w-3 h-3 mr-1" />}
+                            <BrandIcon kind="browser" name={browser} className="w-3.5 h-3.5 mr-1 inline" />
                             {browser}
                           </Badge>
                         ))}

@@ -2,14 +2,18 @@ import { useState, useEffect, useMemo } from "react";
 import { useLocation, useRoute } from "wouter";
 import Layout from "@/components/layout/Layout";
 import { GlassCard } from "@/components/ui/glass-card";
+import { CardSpotlight } from "@/components/ui/card-spotlight";
+import { NumberTicker } from "@/components/ui/number-ticker";
+import { Eyebrow, WindowChrome, StatTile } from "@/components/ui/page-primitives";
 import { NeonButton } from "@/components/ui/neon-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft, Download, Play, Image as ImageIcon, FileText,
-  Video, Clock, Chrome, CheckCircle2, XCircle, AlertCircle,
-  ZoomIn, X, ChevronLeft, ChevronRight, Loader2, Globe, Copy, Check, StopCircle, Zap, Bot, RefreshCw, Eye, BarChart3, AlertTriangle
+  Video, Clock, CheckCircle2, XCircle, AlertCircle,
+  ZoomIn, X, ChevronLeft, ChevronRight, Loader2, Copy, Check, StopCircle, Bot, RefreshCw, Eye, BarChart3, AlertTriangle
 } from "lucide-react";
+import { BrandIcon } from "@/lib/brandAssets";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { API_ENDPOINTS } from "@/lib/apiConfig";
 
@@ -454,9 +458,10 @@ export default function TesterTestResults() {
 
         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
-              <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-display font-bold text-slate-900 dark:text-white break-words">
-                Test Run {testSuite.suite_id || testSuite.run_id}
+            <Eyebrow>Run report</Eyebrow>
+            <div className="mt-3 flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+              <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-display font-bold tracking-tight text-foreground break-words">
+                Test Run <span className="text-gradient">{testSuite.suite_id || testSuite.run_id}</span>
               </h1>
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge className={`${
@@ -475,7 +480,7 @@ export default function TesterTestResults() {
                     ? "bg-violet-100 dark:bg-violet-500/10 text-violet-700 dark:text-violet-400 border-violet-200 dark:border-violet-500/20"
                     : "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20"
                 }`}>
-                  {testSuite.framework === "playwright" ? <Zap className="w-3 h-3 mr-1 inline" /> : <Globe className="w-3 h-3 mr-1 inline" />}
+                  <BrandIcon kind="framework" name={testSuite.framework === "playwright" ? "playwright" : "selenium"} className="w-3.5 h-3.5 mr-1 inline" />
                   {testSuite.framework === "playwright" ? "Playwright" : "Selenium"}
                 </Badge>
               </div>
@@ -487,7 +492,7 @@ export default function TesterTestResults() {
                     ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/20'
                     : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-500/20'
                 }`}>
-                  {b === 'chrome' ? <Chrome className="w-3 h-3 mr-1" /> : <Globe className="w-3 h-3 mr-1" />}
+                  <BrandIcon kind="browser" name={b} className="w-3.5 h-3.5 mr-1" />
                   {b}
                 </Badge>
               ))}
@@ -520,9 +525,17 @@ export default function TesterTestResults() {
         </div>
       </div>
 
+      {/* Summary stat tiles */}
+      <div className="mb-4 grid grid-cols-2 gap-3 sm:mb-6 sm:gap-4 lg:grid-cols-4">
+        <StatTile label="total tests" value={<NumberTicker value={testSuite.total_tests || 0} />} />
+        <StatTile label="passed" value={<NumberTicker value={testSuite.passed || 0} />} accent="emerald" />
+        <StatTile label="failed" value={<NumberTicker value={testSuite.failed || 0} />} accent="red" />
+        <StatTile label="pass rate" value={<NumberTicker value={Math.round(testSuite.success_rate || 0)} suffix="%" />} accent="sky" />
+      </div>
+
       {/* Test Results with Browser Tabs & Script Buttons */}
       <GlassCard className="mb-4 sm:mb-6 p-3 sm:p-4 md:p-6">
-        <h3 className="text-sm sm:text-base md:text-lg font-semibold text-slate-900 dark:text-white mb-3 sm:mb-4">
+        <h3 className="text-sm sm:text-base md:text-lg font-semibold text-foreground mb-3 sm:mb-4">
           Test Results ({filteredResults.length} {filteredResults.length === 1 ? 'test' : 'tests'})
         </h3>
 
@@ -533,7 +546,7 @@ export default function TesterTestResults() {
               onClick={() => { setSelectedBrowser("all"); setSelectedLanguage("all"); setSelectedScript("all"); }}
               className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                 selectedBrowser === "all"
-                  ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                  ? "border-primary text-primary"
                   : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
               }`}
             >
@@ -556,7 +569,7 @@ export default function TesterTestResults() {
                       : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
                   }`}
                 >
-                  {browser === 'chrome' ? <Chrome className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> : <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5" />}
+                  <BrandIcon kind="browser" name={browser} className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span className="capitalize">{browser}</span>
                   <Badge variant="secondary" className={`ml-1 text-[10px] sm:text-xs px-1 sm:px-1.5 py-0 h-4 sm:h-5 ${
                     browser === 'chrome'
@@ -706,20 +719,22 @@ export default function TesterTestResults() {
                       </p>
                       <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1">
                         {result.browser && (
-                          <Badge className={`text-[10px] px-1.5 py-0 border ${
+                          <Badge className={`text-[10px] px-1.5 py-0 border gap-1 ${
                             result.browser === 'chrome'
                               ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/20'
                               : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-500/20'
                           }`}>
+                            <BrandIcon kind="browser" name={result.browser} className="w-3 h-3" />
                             {result.browser}
                           </Badge>
                         )}
                         {uniqueLanguages.length > 1 && (
-                          <Badge className={`text-[10px] px-1.5 py-0 border ${
+                          <Badge className={`text-[10px] px-1.5 py-0 border gap-1 ${
                             detectLanguage(result.test_name) === 'python'
                               ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20'
                               : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/20'
                           }`}>
+                            <BrandIcon kind="language" name={detectLanguage(result.test_name)} className="w-3 h-3" />
                             {detectLanguage(result.test_name)}
                           </Badge>
                         )}
@@ -760,7 +775,7 @@ export default function TesterTestResults() {
               {failedScripts.map((script, idx) => {
                 const isDiagnosing = diagnosingIds.has(script.id);
                 return (
-                  <GlassCard key={idx} className="group hover:bg-slate-100 dark:hover:bg-white/5 transition-colors p-4">
+                  <CardSpotlight key={idx} className="card-3d group rounded-2xl border border-border bg-gradient-to-b from-card to-muted/40 p-4 dark:to-[hsl(252_30%_7%)]">
                     <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-2">
@@ -769,11 +784,12 @@ export default function TesterTestResults() {
                             {cleanTestName(script.test_name) || 'Unknown'}
                           </h4>
                           {script.browser && (
-                            <Badge variant="secondary" className={`text-xs capitalize ${
+                            <Badge variant="secondary" className={`text-xs capitalize gap-1 ${
                               script.browser === 'chrome'
                                 ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
                                 : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400'
                             }`}>
+                              <BrandIcon kind="browser" name={script.browser} className="w-3 h-3" />
                               {script.browser}
                             </Badge>
                           )}
@@ -805,7 +821,7 @@ export default function TesterTestResults() {
                             variant="outline" 
                             onClick={() => handleRunDiagnosis(script.id)}
                             disabled={isDiagnosing}
-                            className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-800/50 dark:hover:bg-blue-900/20"
+                            className="text-primary border-primary/30 hover:bg-primary/10"
                           >
                             {isDiagnosing ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Bot className="w-4 h-4 mr-2" />}
                             {isDiagnosing ? "Diagnosing..." : "Run Diagnosis"}
@@ -813,7 +829,7 @@ export default function TesterTestResults() {
                         )}
                       </div>
                     </div>
-                  </GlassCard>
+                  </CardSpotlight>
                 );
               })}
             </div>
@@ -836,35 +852,35 @@ export default function TesterTestResults() {
         <button
           onClick={() => setActiveTab("screenshots")}
           className={`px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-colors relative whitespace-nowrap ${
-            activeTab === "screenshots" ? "text-blue-600 dark:text-blue-400" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            activeTab === "screenshots" ? "text-primary" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
           }`}
         >
           <div className="flex items-center gap-1.5 sm:gap-2">
             <ImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> <span className="hidden xs:inline">Screenshots</span><span className="xs:hidden">Shots</span> ({filteredScreenshots.length})
           </div>
-          {activeTab === "screenshots" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400" />}
+          {activeTab === "screenshots" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
         </button>
         <button
           onClick={() => setActiveTab("logs")}
           className={`px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-colors relative whitespace-nowrap ${
-            activeTab === "logs" ? "text-blue-600 dark:text-blue-400" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            activeTab === "logs" ? "text-primary" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
           }`}
         >
           <div className="flex items-center gap-1.5 sm:gap-2">
             <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Logs ({filteredLogs.length})
           </div>
-          {activeTab === "logs" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400" />}
+          {activeTab === "logs" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
         </button>
         <button
           onClick={() => setActiveTab("videos")}
           className={`px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition-colors relative whitespace-nowrap ${
-            activeTab === "videos" ? "text-blue-600 dark:text-blue-400" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            activeTab === "videos" ? "text-primary" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
           }`}
         >
           <div className="flex items-center gap-1.5 sm:gap-2">
             <Video className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Videos ({filteredVideos.length})
           </div>
-          {activeTab === "videos" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400" />}
+          {activeTab === "videos" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
         </button>
       </div>
 
@@ -972,10 +988,10 @@ export default function TesterTestResults() {
             </p>
           </GlassCard>
         ) : (
-          <GlassCard className="p-3 sm:p-4 md:p-6">
+          <div>
             <div className="mb-3 sm:mb-4 flex justify-end gap-1.5 sm:gap-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={handleCopyLogs}
                 className={`text-xs sm:text-sm ${copySuccess ? "border-green-500 text-green-600 dark:text-green-400" : ""}`}
@@ -988,21 +1004,23 @@ export default function TesterTestResults() {
               </Button>
               <Button variant="outline" size="sm" className="text-xs sm:text-sm"><Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" /> <span className="hidden sm:inline">Download Logs</span><span className="sm:hidden">Save</span></Button>
             </div>
-            <div className="bg-slate-900 dark:bg-black rounded-lg p-2 sm:p-3 md:p-4 font-mono text-[10px] sm:text-xs md:text-sm max-h-[350px] sm:max-h-[450px] md:max-h-[600px] overflow-y-auto overflow-x-auto">
-              {filteredLogs.map((log, index) => (
-                <div key={index} className="flex items-start gap-1.5 sm:gap-2 md:gap-3 py-0.5 sm:py-1 hover:bg-white/5 min-w-0">
-                  <span className="text-slate-500 text-[9px] sm:text-[10px] md:text-xs shrink-0 w-14 sm:w-16 md:w-20 truncate">{log.timestamp}</span>
-                  {log.browser && (
-                    <span className={`text-[9px] sm:text-[10px] md:text-xs shrink-0 px-0.5 sm:px-1 rounded ${
-                      log.browser === 'chrome' ? 'text-blue-400 bg-blue-950/50' : 'text-orange-400 bg-orange-950/50'
-                    }`}>{log.browser}</span>
-                  )}
-                  <span className={`shrink-0 [&>svg]:w-3 [&>svg]:h-3 sm:[&>svg]:w-3.5 sm:[&>svg]:h-3.5 md:[&>svg]:w-4 md:[&>svg]:h-4 ${getLevelColor(log.level)}`}>{getLevelIcon(log.level)}</span>
-                  <span className={`${getLevelColor(log.level)} flex-1 break-all sm:break-normal`}>{log.message}</span>
-                </div>
-              ))}
-            </div>
-          </GlassCard>
+            <WindowChrome title="run-logs.txt">
+              <div className="p-2 sm:p-3 md:p-4 font-mono text-[10px] sm:text-xs md:text-sm max-h-[350px] sm:max-h-[450px] md:max-h-[600px] overflow-y-auto overflow-x-auto">
+                {filteredLogs.map((log, index) => (
+                  <div key={index} className="flex items-start gap-1.5 sm:gap-2 md:gap-3 py-0.5 sm:py-1 hover:bg-white/5 min-w-0">
+                    <span className="text-white/35 text-[9px] sm:text-[10px] md:text-xs shrink-0 w-14 sm:w-16 md:w-20 truncate">{log.timestamp}</span>
+                    {log.browser && (
+                      <span className={`text-[9px] sm:text-[10px] md:text-xs shrink-0 px-0.5 sm:px-1 rounded ${
+                        log.browser === 'chrome' ? 'text-sky-300 bg-sky-950/50' : 'text-orange-400 bg-orange-950/50'
+                      }`}>{log.browser}</span>
+                    )}
+                    <span className={`shrink-0 [&>svg]:w-3 [&>svg]:h-3 sm:[&>svg]:w-3.5 sm:[&>svg]:h-3.5 md:[&>svg]:w-4 md:[&>svg]:h-4 ${getLevelColor(log.level)}`}>{getLevelIcon(log.level)}</span>
+                    <span className={`${getLevelColor(log.level)} flex-1 break-all sm:break-normal`}>{log.message}</span>
+                  </div>
+                ))}
+              </div>
+            </WindowChrome>
+          </div>
         )
       )}
 

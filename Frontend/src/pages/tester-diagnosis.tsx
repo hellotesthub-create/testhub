@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useRoute } from "wouter";
 import Layout from "@/components/layout/Layout";
 import { GlassCard } from "@/components/ui/glass-card";
+import { Eyebrow, WindowChrome } from "@/components/ui/page-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -82,10 +83,11 @@ export default function TesterDiagnosis() {
         >
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to History
         </Button>
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-slate-900 dark:text-white mb-1 flex items-center gap-2">
-          <Bot className="w-6 h-6 md:w-8 md:h-8 text-violet-500" /> AI Diagnosis
+        <Eyebrow>AI failure analysis</Eyebrow>
+        <h1 className="mt-3 text-xl sm:text-2xl md:text-3xl font-display font-bold tracking-tight text-foreground mb-1 flex items-center gap-2">
+          <Bot className="w-6 h-6 md:w-8 md:h-8 text-primary" /> AI <span className="text-gradient">Diagnosis</span>
         </h1>
-        <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm md:text-base">
+        <p className="text-muted-foreground text-xs sm:text-sm md:text-base">
           Detailed breakdown of the script failure.
         </p>
       </div>
@@ -99,15 +101,15 @@ export default function TesterDiagnosis() {
       ) : error || !diagnosis ? (
         <GlassCard className="text-center py-12">
           <AlertTriangle className="w-12 h-12 mx-auto text-red-500 mb-4" />
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">Diagnosis Unavailable</h3>
-          <p className="text-slate-600 dark:text-slate-400 mb-4">{error}</p>
+          <h3 className="text-lg font-semibold text-foreground mb-2">Diagnosis Unavailable</h3>
+          <p className="text-muted-foreground mb-4">{error}</p>
         </GlassCard>
       ) : (
         <div className="space-y-6">
-          <GlassCard className="p-6 bg-gradient-to-br from-white to-violet-50 dark:from-slate-900/80 dark:to-violet-950/30 border-violet-200 dark:border-violet-500/20">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200 dark:border-white/10">
+          <div className="border-beam card-3d rounded-2xl border border-border bg-gradient-to-br from-card to-muted/40 p-6 dark:to-[hsl(252_30%_7%)]">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-border">
               <div className="flex flex-col gap-2">
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-violet-300">Analysis Results</h2>
+                <h2 className="text-lg font-semibold text-foreground">Analysis Results</h2>
                 <div className="flex flex-wrap gap-2">
                   {diagnosis.error_category && diagnosis.error_category !== "UNKNOWN" && (
                     <Badge className={`text-xs px-2 py-0.5 border ${getCategoryColor(diagnosis.error_category)}`}>
@@ -150,28 +152,28 @@ export default function TesterDiagnosis() {
 
               {diagnosis.failing_line_number && diagnosis.failing_code_snippet && (
                 <div className="flex items-start gap-3">
-                  <div className="mt-1 bg-blue-100 dark:bg-blue-500/20 p-2 rounded-lg">
-                    <Code2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <div className="mt-1 bg-primary/15 p-2 rounded-lg">
+                    <Code2 className="w-5 h-5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-semibold text-slate-900 dark:text-blue-300 mb-2">
+                    <h3 className="text-sm font-semibold text-foreground mb-2">
                       Failing Code (Line {diagnosis.failing_line_number})
                     </h3>
-                    <div className="bg-slate-50 dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 p-4 overflow-x-auto shadow-sm">
-                      <pre className="text-xs sm:text-sm text-slate-800 dark:text-slate-300 font-mono leading-relaxed m-0 whitespace-pre">
+                    <WindowChrome title={`failing-code · line ${diagnosis.failing_line_number}`}>
+                      <pre className="text-xs sm:text-sm text-white/80 font-mono leading-relaxed m-0 overflow-x-auto whitespace-pre p-4">
                         {diagnosis.failing_code_snippet.trim()}
                       </pre>
-                    </div>
+                    </WindowChrome>
                   </div>
                 </div>
               )}
 
               <div className="flex items-start gap-3">
-                <div className="mt-1 bg-cyan-100 dark:bg-cyan-500/20 p-2 rounded-lg">
-                  <Wrench className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+                <div className="mt-1 bg-accent/15 p-2 rounded-lg">
+                  <Wrench className="w-5 h-5 text-accent" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-sm font-semibold text-slate-900 dark:text-cyan-300 mb-2">Likely Fix & Recommendations</h3>
+                  <h3 className="text-sm font-semibold text-foreground mb-2">Likely Fix & Recommendations</h3>
                   <div className="bg-white dark:bg-slate-950/50 p-4 rounded-lg border border-slate-200 dark:border-white/5">
                     <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
                       {diagnosis.likely_fix}
@@ -181,7 +183,7 @@ export default function TesterDiagnosis() {
               </div>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+            <div className="mt-6 pt-4 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
               <div className="flex items-center gap-4">
                 <span>Model: <span className="font-mono">{diagnosis.model_used}</span></span>
                 <span>Generated: {new Date(diagnosis.generated_at).toLocaleString()}</span>
@@ -190,7 +192,7 @@ export default function TesterDiagnosis() {
                 Go to Run Results
               </Button>
             </div>
-          </GlassCard>
+          </div>
         </div>
       )}
     </Layout>

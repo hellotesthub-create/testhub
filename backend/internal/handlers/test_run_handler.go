@@ -338,6 +338,69 @@ func (h *TestRunHandler) GetRunDetails(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// DownloadRunReport generates and serves an Allure-style PDF report for a run.
+func (h *TestRunHandler) DownloadRunReport(w http.ResponseWriter, r *http.Request) {
+	claims, ok := middleware.GetUserFromContext(r.Context())
+	if !ok || claims.Email == "" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	vars := mux.Vars(r)
+	runIDStr := vars["run_id"]
+
+	// Resolve by ObjectID first, then by human-readable run_id.
+	var run *models.TestRun
+	var err error
+	if runOID, oidErr := primitive.ObjectIDFromHex(runIDStr); oidErr == nil {
+		run, err = h.testRunRepo.GetByID(r.Context(), runOID)
+	}
+	if run == nil {
+		run, err = h.testRunRepo.GetByRunID(r.Context(), runIDStr)
+	}
+	if err != nil || run == nil {
+		http.Error(w, "Test run not found", http.StatusNotFound)
+		return
+	}
+
+	// Verify ownership.
+	if run.TriggeredBy != claims.Email {
+		http.Error(w, "Unauthorized access to this run", http.StatusForbidden)
+		return
+	}
+
+	results, err := h.testResultRepo.GetByRunID(r.Context(), run.ID)
+	if err != nil {
+		results = []models.TestResult{}
+	}
+	for i := range results {
+		results[i].ErrorCategory = ClassifyError(results[i].ErrorMessage, results[i].ErrorStack)
+	}
+
+	screenshots, err := h.screenshotRepo.GetByRunID(r.Context(), run.ID)
+	if err != nil {
+		screenshots = []models.Screenshot{}
+	}
+
+	logs, err := h.logRepo.GetByRunID(r.Context(), run.ID)
+	if err != nil {
+		logs = []models.Log{}
+	}
+
+	pdfBytes, err := services.GenerateRunReportPDF(run, results, screenshots, logs)
+	if err != nil {
+		log.Printf("Failed to generate report PDF for run %s: %v", run.RunID, err)
+		http.Error(w, "Failed to generate report", http.StatusInternalServerError)
+		return
+	}
+
+	filename := fmt.Sprintf("THEX_Report_%s.pdf", run.RunID)
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filename))
+	w.Header().Set("Content-Length", strconv.Itoa(len(pdfBytes)))
+	w.Write(pdfBytes)
+}
+
 // GetResultDetails retrieves details for a specific test result including its artifacts
 func (h *TestRunHandler) GetResultDetails(w http.ResponseWriter, r *http.Request) {
 	claims, ok := middleware.GetUserFromContext(r.Context())

@@ -25,6 +25,7 @@ export const API_ENDPOINTS = {
   // Test Runs (Execution records)
   RUNS: `${API_BASE_URL}/api/runs`,
   RUN_DETAILS: (runId: string) => `${API_BASE_URL}/api/runs/${runId}`,
+  RUN_REPORT: (runId: string) => `${API_BASE_URL}/api/runs/${runId}/report`,
   RUN_RESULTS: (runId: string) => `${API_BASE_URL}/api/runs/${runId}/results`,
   CANCEL_RUN: (runId: string) => `${API_BASE_URL}/api/runs/${runId}/cancel`,
   

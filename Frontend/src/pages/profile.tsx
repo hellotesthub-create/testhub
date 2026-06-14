@@ -1,12 +1,15 @@
 import { useState, useRef, useEffect } from "react";
 import Layout from "@/components/layout/Layout";
-import { GlassCard } from "@/components/ui/glass-card";
 import { NeonButton } from "@/components/ui/neon-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Camera, Check, Eye, EyeOff, Upload, User } from "lucide-react";
+import { Eyebrow } from "@/components/ui/page-primitives";
+import { Camera, Check, Eye, EyeOff, User } from "lucide-react";
 import { useUser, defaultAvatars } from "@/lib/userContext";
+
+const cardCls =
+  "card-3d rounded-2xl border border-border bg-gradient-to-b from-card to-muted/40 p-6 dark:to-[hsl(252_30%_7%)]";
 
 export default function Profile() {
   const { profile, updateProfile } = useUser();
@@ -77,27 +80,31 @@ export default function Profile() {
     <Layout>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-1">Profile Settings</h1>
-          <p className="text-slate-600 dark:text-slate-400">Manage your account information and preferences.</p>
+          <Eyebrow>Account</Eyebrow>
+          <h1 className="mt-3 text-3xl font-display font-bold tracking-tight text-foreground mb-1">
+            Profile <span className="text-gradient">Settings</span>
+          </h1>
+          <p className="text-muted-foreground">Manage your account information and preferences.</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
           {/* Profile Picture */}
-          <GlassCard>
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Profile Picture</h3>
-            
-            <div className="flex flex-col items-center mb-6">
-              <div className="relative mb-4">
+          <div className={`${cardCls} relative overflow-hidden`}>
+            <span className="aurora-blob aurora-blob--primary pointer-events-none left-1/2 top-0 h-48 w-48 -translate-x-1/2 mix-blend-screen" />
+            <h3 className="relative text-lg font-semibold text-foreground mb-6">Profile Picture</h3>
+
+            <div className="relative flex flex-col items-center mb-6">
+              <div className="gradient-ring relative mb-4 rounded-full p-1">
                 {avatar.type === "image" ? (
-                  <img 
-                    src={avatar.value} 
-                    alt="Profile" 
+                  <img
+                    src={avatar.value}
+                    alt="Profile"
                     className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-slate-800 shadow-lg"
                   />
                 ) : (
-                  <div 
+                  <div
                     className="w-24 h-24 rounded-full border-4 border-white dark:border-slate-800 shadow-lg flex items-center justify-center"
                     style={{ background: avatar.value }}
                   >
@@ -119,11 +126,11 @@ export default function Profile() {
                   className="hidden"
                 />
               </div>
-              <p className="text-sm text-slate-600 dark:text-slate-400">{username}</p>
+              <p className="relative text-sm text-muted-foreground">{username}</p>
             </div>
 
-            <div className="space-y-3">
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Choose a default avatar</p>
+            <div className="relative space-y-3">
+              <p className="text-sm font-medium text-foreground">Choose a default avatar</p>
               <div className="flex flex-wrap gap-3 justify-center">
                 {defaultAvatars.map((gradient, index) => (
                   <button
@@ -143,18 +150,18 @@ export default function Profile() {
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-500 text-center mt-2">
+              <p className="text-xs text-muted-foreground text-center mt-2">
                 Or upload your own picture using the camera icon above
               </p>
             </div>
-          </GlassCard>
+          </div>
 
           {/* Basic Information */}
-          <GlassCard>
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Basic Information</h3>
+          <div className={cardCls}>
+            <h3 className="text-lg font-semibold text-foreground mb-6">Basic Information</h3>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="username" className="text-slate-900 dark:text-white">Username</Label>
+                <Label htmlFor="username" className="text-foreground">Username</Label>
                 <Input 
                   id="username"
                   value={username}
@@ -165,7 +172,7 @@ export default function Profile() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-slate-900 dark:text-white">Email Address</Label>
+                <Label htmlFor="email" className="text-foreground">Email Address</Label>
                 <Input 
                   id="email"
                   type="email"
@@ -176,14 +183,14 @@ export default function Profile() {
                 />
               </div>
             </div>
-          </GlassCard>
+          </div>
 
           {/* Change Password */}
-          <GlassCard>
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Change Password</h3>
+          <div className={cardCls}>
+            <h3 className="text-lg font-semibold text-foreground mb-6">Change Password</h3>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="current-password" className="text-slate-900 dark:text-white">Current Password</Label>
+                <Label htmlFor="current-password" className="text-foreground">Current Password</Label>
                 <div className="relative">
                   <Input 
                     id="current-password"
@@ -204,7 +211,7 @@ export default function Profile() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="new-password" className="text-slate-900 dark:text-white">New Password</Label>
+                <Label htmlFor="new-password" className="text-foreground">New Password</Label>
                 <div className="relative">
                   <Input 
                     id="new-password"
@@ -225,7 +232,7 @@ export default function Profile() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirm-password" className="text-slate-900 dark:text-white">Confirm New Password</Label>
+                <Label htmlFor="confirm-password" className="text-foreground">Confirm New Password</Label>
                 <div className="relative">
                   <Input 
                     id="confirm-password"
@@ -245,28 +252,28 @@ export default function Profile() {
                 </div>
               </div>
             </div>
-          </GlassCard>
+          </div>
         </div>
 
         {/* Save Actions Sidebar */}
         <div className="space-y-6">
-          <GlassCard className="sticky top-6">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Account Actions</h3>
-            
+          <div className={`${cardCls} sticky top-6`}>
+            <h3 className="text-lg font-semibold text-foreground mb-6">Account Actions</h3>
+
             <div className="space-y-4 mb-6">
-              <div className="p-3 rounded-lg bg-slate-100 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5">
-                <p className="text-xs text-slate-600 dark:text-slate-500 mb-1">Account Status</p>
-                <p className="text-sm font-mono text-green-600 dark:text-green-400">Active</p>
+              <div className="p-3 rounded-lg bg-muted/40 border border-border">
+                <p className="text-xs text-muted-foreground mb-1">Account Status</p>
+                <p className="text-sm font-mono text-emerald-500">Active</p>
               </div>
 
-              <div className="p-3 rounded-lg bg-slate-100 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5">
-                <p className="text-xs text-slate-600 dark:text-slate-500 mb-1">Member Since</p>
-                <p className="text-sm font-mono text-blue-600 dark:text-blue-400">Nov 2025</p>
+              <div className="p-3 rounded-lg bg-muted/40 border border-border">
+                <p className="text-xs text-muted-foreground mb-1">Member Since</p>
+                <p className="text-sm font-mono text-primary">Nov 2025</p>
               </div>
 
-              <div className="p-3 rounded-lg bg-slate-100 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5">
-                <p className="text-xs text-slate-600 dark:text-slate-500 mb-1">Role</p>
-                <p className="text-sm font-mono text-purple-600 dark:text-purple-400">{profile.role || "Tester"}</p>
+              <div className="p-3 rounded-lg bg-muted/40 border border-border">
+                <p className="text-xs text-muted-foreground mb-1">Role</p>
+                <p className="text-sm font-mono text-accent">{profile.role || "Tester"}</p>
               </div>
             </div>
 
@@ -285,11 +292,11 @@ export default function Profile() {
               >
                 <Check className="w-4 h-4 mr-2" /> Save Changes
               </NeonButton>
-              <Button variant="outline" className="w-full border-slate-300 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5">
+              <Button variant="outline" className="w-full border-border hover:bg-muted/50">
                 Cancel
               </Button>
             </div>
-          </GlassCard>
+          </div>
         </div>
       </div>
     </Layout>

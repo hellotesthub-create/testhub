@@ -4,11 +4,12 @@ import { NeonButton } from "@/components/ui/neon-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { 
-  Upload, Play, Chrome, FileCode, X, CheckCircle2, Loader2, Eye, 
+import {
+  Upload, Play, FileCode, X, CheckCircle2, Loader2, Eye,
   FlaskConical, Rocket, AlertCircle, Clock, XCircle, Code2, StopCircle, RefreshCw,
-  Github, Search, FolderGit2, Zap, Globe
+  Github, Search, FolderGit2
 } from "lucide-react";
+import { BrandIcon } from "@/lib/brandAssets";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
@@ -642,7 +643,7 @@ export default function TestLab() {
                       : "text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 border-r border-slate-300 dark:border-white/10"
                   } ${isRunning ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
-                  <Globe className="w-4 h-4" />
+                  <BrandIcon kind="framework" name="selenium" className="w-4 h-4" />
                   Selenium
                 </button>
                 <button
@@ -654,7 +655,7 @@ export default function TestLab() {
                       : "text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5"
                   } ${isRunning ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
-                  <Zap className="w-4 h-4" />
+                  <BrandIcon kind="framework" name="playwright" className="w-4 h-4" />
                   Playwright
                 </button>
               </div>
@@ -752,7 +753,7 @@ export default function TestLab() {
                   onClick={() => !isRunning && toggleBrowser("chrome")}
                 >
                   <Checkbox checked={selectedBrowsers.includes("chrome")} disabled={isRunning} />
-                  <Chrome className="w-5 h-5 text-blue-500" />
+                  <BrandIcon kind="browser" name="chrome" className="w-6 h-6" />
                   <span className="text-sm text-slate-900 dark:text-white">Chrome</span>
                 </div>
                 <div 
@@ -760,7 +761,7 @@ export default function TestLab() {
                   onClick={() => !isRunning && toggleBrowser("firefox")}
                 >
                   <Checkbox checked={selectedBrowsers.includes("firefox")} disabled={isRunning} />
-                  <Chrome className="w-5 h-5 text-orange-500" />
+                  <BrandIcon kind="browser" name="firefox" className="w-6 h-6" />
                   <span className="text-sm text-slate-900 dark:text-white">Firefox</span>
                 </div>
               </div>

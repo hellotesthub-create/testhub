@@ -4,7 +4,8 @@ import { NeonButton } from "@/components/ui/neon-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Upload, Play, Chrome, FileCode, X, CheckCircle2, Loader2, Eye } from "lucide-react";
+import { Upload, Play, FileCode, X, CheckCircle2, Loader2, Eye } from "lucide-react";
+import { BrandIcon } from "@/lib/brandAssets";
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
@@ -277,7 +278,7 @@ export default function CreateSuite() {
                   className="cursor-pointer"
                 />
                 <div className="flex items-center gap-2 flex-1">
-                  <Chrome className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <BrandIcon kind="browser" name="chrome" className="w-6 h-6" />
                   <div>
                     <p className="text-sm font-medium text-slate-900 dark:text-white">Chrome</p>
                     <p className="text-xs text-slate-600 dark:text-slate-500">Latest version</p>
@@ -294,7 +295,7 @@ export default function CreateSuite() {
                   className="cursor-pointer"
                 />
                 <div className="flex items-center gap-2 flex-1">
-                  <Chrome className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                  <BrandIcon kind="browser" name="firefox" className="w-6 h-6" />
                   <div>
                     <p className="text-sm font-medium text-slate-900 dark:text-white">Firefox</p>
                     <p className="text-xs text-slate-600 dark:text-slate-500">Latest version</p>
