@@ -14,6 +14,9 @@ export const API_ENDPOINTS = {
   GOOGLE_AUTH: `${API_BASE_URL}/api/auth/google`,
   GOOGLE_VERIFY_PASSWORD: `${API_BASE_URL}/api/auth/google/verify-password`,
   SET_PASSWORD: `${API_BASE_URL}/api/users/set-password`,
+  FORGOT_PASSWORD: `${API_BASE_URL}/api/auth/forgot-password`,
+  RESET_PASSWORD: `${API_BASE_URL}/api/auth/reset-password`,
+  VALIDATE_RESET_TOKEN: (token: string) => `${API_BASE_URL}/api/auth/reset-token?token=${encodeURIComponent(token)}`,
   ME: `${API_BASE_URL}/api/auth/me`,
   
   // Test Suites (Suite Definitions - templates for test collections)

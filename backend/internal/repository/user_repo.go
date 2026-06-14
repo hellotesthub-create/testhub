@@ -98,6 +98,44 @@ func (r *UserRepository) UpdateUserPassword(ctx context.Context, email, password
 	return err
 }
 
+// SetResetToken stores a hashed password-reset token and its expiry for a user.
+func (r *UserRepository) SetResetToken(ctx context.Context, email, tokenHash string, expiresAt time.Time) error {
+	filter := bson.M{"email": email}
+	update := bson.M{
+		"$set": bson.M{
+			"reset_token_hash":       tokenHash,
+			"reset_token_expires_at": expiresAt,
+			"updated_at":             time.Now(),
+		},
+	}
+	_, err := r.collection.UpdateOne(ctx, filter, update)
+	return err
+}
+
+// GetUserByResetTokenHash finds a user by their reset-token hash (expiry checked by caller).
+func (r *UserRepository) GetUserByResetTokenHash(ctx context.Context, tokenHash string) (*models.User, error) {
+	filter := bson.M{"reset_token_hash": tokenHash}
+	var user models.User
+	if err := r.collection.FindOne(ctx, filter).Decode(&user); err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+// ClearResetToken removes the reset token fields for a user (single-use enforcement).
+func (r *UserRepository) ClearResetToken(ctx context.Context, email string) error {
+	filter := bson.M{"email": email}
+	update := bson.M{
+		"$unset": bson.M{
+			"reset_token_hash":       "",
+			"reset_token_expires_at": "",
+		},
+		"$set": bson.M{"updated_at": time.Now()},
+	}
+	_, err := r.collection.UpdateOne(ctx, filter, update)
+	return err
+}
+
 // MigratePasswordToHash migrates a legacy plain text password to bcrypt hash
 func (r *UserRepository) MigratePasswordToHash(ctx context.Context, email, passwordHash string) error {
 	filter := bson.M{"email": email}

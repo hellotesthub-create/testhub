@@ -21,6 +21,10 @@ type User struct {
 	IsActive       bool               `json:"is_active" bson:"is_active"`
 	CreatedAt      time.Time          `json:"created_at" bson:"created_at"`
 	UpdatedAt      time.Time          `json:"updated_at" bson:"updated_at"`
+
+	// Password reset (single-use, time-limited). Only a hash of the token is stored.
+	ResetTokenHash      string     `json:"-" bson:"reset_token_hash,omitempty"`
+	ResetTokenExpiresAt *time.Time `json:"-" bson:"reset_token_expires_at,omitempty"`
 }
 
 // UserCreateRequest is used for creating new users

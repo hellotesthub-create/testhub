@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation, Link } from "wouter";
-import { Mail, Lock, Eye, EyeOff, X, ArrowRight, CheckCircle, CheckCircle2, XCircle } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, X, ArrowRight, CheckCircle, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ParticleBackground } from "@/components/particle-background";
@@ -8,59 +8,8 @@ import { useUser } from "@/lib/userContext";
 import { useAuth } from "@/lib/authContext";
 import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { API_ENDPOINTS } from "@/lib/apiConfig";
-
-// ── Validation helpers ─────────────────────────────────────────────────
-// Rigorous, RFC-aware email validation (catches edge cases that naive regexes
-// miss): exactly one @, ASCII-only labels (rejects Unicode/homograph domains
-// like Cyrillic "а"), no consecutive/leading/trailing dots, valid hyphen
-// placement, length limits, and an alphabetic TLD of 2+ chars.
-const LOCAL_RE = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+$/;
-const LABEL_RE = /^[a-zA-Z0-9-]+$/;
-
-const isValidEmail = (email: string): boolean => {
-  const e = email.trim();
-  if (!e || e.length > 254 || e.includes("..") || e.includes(" ")) return false;
-
-  // Exactly one @.
-  const at = e.indexOf("@");
-  if (at <= 0 || at !== e.lastIndexOf("@")) return false;
-
-  const local = e.slice(0, at);
-  const domain = e.slice(at + 1);
-
-  // Local part: allowed chars, max 64, no leading/trailing dot.
-  if (local.length > 64 || local.startsWith(".") || local.endsWith(".")) return false;
-  if (!LOCAL_RE.test(local)) return false;
-
-  // Domain: at least two labels, ASCII only, no hyphen at label edges,
-  // each label 1–63 chars, and an alphabetic TLD (>= 2 chars).
-  if (domain.length > 253) return false;
-  const labels = domain.split(".");
-  if (labels.length < 2) return false;
-  for (const label of labels) {
-    if (!label || label.length > 63) return false;
-    if (!LABEL_RE.test(label)) return false; // ASCII-only → rejects homograph/Unicode domains
-    if (label.startsWith("-") || label.endsWith("-")) return false;
-  }
-  return /^[a-zA-Z]{2,}$/.test(labels[labels.length - 1]);
-};
-
-const getPasswordChecks = (pw: string) => ({
-  length: pw.length >= 8,
-  upper: /[A-Z]/.test(pw),
-  lower: /[a-z]/.test(pw),
-  digit: /\d/.test(pw),
-  special: /[^A-Za-z0-9]/.test(pw),
-});
-const isStrongPassword = (pw: string) => Object.values(getPasswordChecks(pw)).every(Boolean);
-
-// Border + focus-ring classes that reflect a field's validity (neutral when empty).
-const fieldStateClass = (value: string, ok: boolean) =>
-  value.length === 0
-    ? "border-border focus:border-primary focus:ring-primary/25"
-    : ok
-    ? "border-emerald-500 focus:border-emerald-500 focus:ring-emerald-500/30"
-    : "border-red-500 focus:border-red-500 focus:ring-red-500/30";
+import { isValidEmail, getPasswordChecks, isStrongPassword, fieldStateClass } from "@/lib/validation";
+import { toast } from "sonner";
 
 export default function AuthPage() {
   const [, setLocation] = useLocation();
@@ -77,6 +26,7 @@ export default function AuthPage() {
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [isSignupLoading, setIsSignupLoading] = useState(false);
   const [isLoginLoading, setIsLoginLoading] = useState(false);
+  const [isResetLoading, setIsResetLoading] = useState(false);
 
   // Google OAuth password setup flow
   const [showGooglePasswordSetup, setShowGooglePasswordSetup] = useState(false);
@@ -244,9 +194,31 @@ export default function AuthPage() {
     }
   };
 
-  const handleResetPassword = (e: React.FormEvent) => {
+  const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsForgotPassword(false);
+    if (!isValidEmail(resetEmail)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    setIsResetLoading(true);
+    try {
+      // Fire-and-forget: the backend always responds generically, so we show the
+      // same message regardless (never reveal whether the account exists).
+      await fetch(API_ENDPOINTS.FORGOT_PASSWORD, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: resetEmail.trim() }),
+      });
+      toast.success("If an account exists for this email, a password reset link has been sent.", {
+        description: "Check your inbox — the link is valid for 5 minutes.",
+      });
+      setResetEmail("");
+      setIsForgotPassword(false);
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsResetLoading(false);
+    }
   };
 
   // Unified Google OAuth handler - works for both new and existing users
@@ -642,9 +614,16 @@ export default function AuthPage() {
               </div>
 
               <div className="space-y-5 sm:space-y-6">
-                <div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-2">Reset Password</h2>
-                  <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm">Enter your email address and we'll send you a reset link</p>
+                <div className="text-center">
+                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/15 to-accent/10 ring-1 ring-primary/20 mb-3">
+                    <Mail className="w-7 h-7 text-primary" />
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-display font-bold mb-2">
+                    Forgot your <span className="text-gradient">password?</span>
+                  </h2>
+                  <p className="text-muted-foreground text-xs sm:text-sm">
+                    Enter your email and we'll send you a secure reset link, valid for 5 minutes.
+                  </p>
                 </div>
 
                 <form onSubmit={handleResetPassword} className="space-y-4">
@@ -671,9 +650,14 @@ export default function AuthPage() {
 
                   <button
                     type="submit"
-                    className="w-full py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_20px_hsl(var(--primary)/0.45)] flex items-center justify-center gap-2"
+                    disabled={isResetLoading || !isValidEmail(resetEmail)}
+                    className="w-full py-2.5 bg-primary hover:bg-primary/90 disabled:bg-primary/50 disabled:cursor-not-allowed text-primary-foreground font-semibold rounded-xl transition-all duration-300 hover:shadow-[0_0_20px_hsl(var(--primary)/0.45)] flex items-center justify-center gap-2"
                   >
-                    SEND RESET LINK <ArrowRight className="w-4 h-4" />
+                    {isResetLoading ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /> SENDING…</>
+                    ) : (
+                      <>SEND RESET LINK <ArrowRight className="w-4 h-4" /></>
+                    )}
                   </button>
                 </form>
 

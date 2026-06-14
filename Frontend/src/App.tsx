@@ -13,6 +13,7 @@ import NotFound from "@/pages/not-found";
 
 import LandingPage from "@/pages/landing";
 import AuthPage from "@/pages/auth";
+import ResetPasswordPage from "@/pages/reset-password";
 import TesterDashboard from "@/pages/tester-dashboard";
 import TestLab from "@/pages/test-lab";
 import ExecutionMonitor from "@/pages/execution-monitor";
@@ -30,6 +31,7 @@ function Router() {
           <AuthPage />
         </PublicRoute>
       </Route>
+      <Route path="/reset-password" component={ResetPasswordPage} />
       <Route path="/dashboard">
         <ProtectedRoute>
           <TesterDashboard />

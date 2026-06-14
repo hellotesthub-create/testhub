@@ -188,6 +188,9 @@ func main() {
 	api.HandleFunc("/users/signup", userHandler.Signup).Methods("POST", "OPTIONS")
 	api.HandleFunc("/users/set-password", userHandler.SetPassword).Methods("POST", "OPTIONS")
 	api.HandleFunc("/auth/login", userHandler.Login).Methods("POST", "OPTIONS")
+	api.HandleFunc("/auth/forgot-password", userHandler.ForgotPassword).Methods("POST", "OPTIONS")
+	api.HandleFunc("/auth/reset-password", userHandler.ResetPassword).Methods("POST", "OPTIONS")
+	api.HandleFunc("/auth/reset-token", userHandler.ValidateResetToken).Methods("GET", "OPTIONS")
 	api.HandleFunc("/auth/google", googleAuthHandler.GoogleAuth).Methods("POST", "OPTIONS")
 	api.HandleFunc("/auth/google/verify-password", googleAuthHandler.GoogleLoginVerifyPassword).Methods("POST", "OPTIONS")
 

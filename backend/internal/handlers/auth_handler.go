@@ -17,7 +17,12 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
+	"os"
+	"strings"
+	"time"
 
 	"backend/internal/middleware"
 	"backend/internal/services"
@@ -260,5 +265,104 @@ func (h *UserHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
 			"username": claims.Username,
 			"role":     claims.Role,
 		},
+	})
+}
+
+// ForgotPasswordRequest is the body for requesting a password reset link.
+type ForgotPasswordRequest struct {
+	Email string `json:"email"`
+}
+
+// ResetPasswordRequest is the body for completing a password reset.
+type ResetPasswordRequest struct {
+	Token    string `json:"token"`
+	Password string `json:"password"`
+}
+
+// ForgotPassword issues a reset link by email. Always returns the same generic
+// message so it never reveals whether an account exists (anti-enumeration).
+// Endpoint: POST /api/auth/forgot-password
+func (h *UserHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
+	var req ForgotPasswordRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request format", http.StatusBadRequest)
+		return
+	}
+
+	token, _, exists, err := h.userService.CreatePasswordResetToken(r.Context(), req.Email)
+	if err != nil {
+		log.Printf("[forgot-password] token creation error: %v", err)
+	} else if exists && token != "" {
+		// Send asynchronously so the response time doesn't leak whether the
+		// account exists (and isn't blocked on SMTP latency).
+		go h.sendResetEmail(strings.TrimSpace(req.Email), token)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(Response{
+		Success: true,
+		Message: "If an account exists for this email, a password reset link has been sent.",
+	})
+}
+
+// sendResetEmail builds and sends the password-reset email via the existing SMTP config.
+func (h *UserHandler) sendResetEmail(email, token string) {
+	emailSvc, err := services.NewEmailServiceFromEnv()
+	if err != nil {
+		log.Printf("[forgot-password] email service unavailable: %v", err)
+		return
+	}
+	base := strings.TrimRight(os.Getenv("FRONTEND_BASE_URL"), "/")
+	if base == "" {
+		base = "http://localhost:3456"
+	}
+	link := fmt.Sprintf("%s/reset-password?token=%s", base, token)
+	subject := "Reset your TESTHUB password"
+	body := fmt.Sprintf(
+		"Hi,\n\nWe received a request to reset your TESTHUB password.\n\n"+
+			"Click the link below to choose a new password. For your security, this link is valid for 5 minutes only:\n\n%s\n\n"+
+			"If you didn't request a password reset, you can safely ignore this email — your password will not change.\n\n— TESTHUB",
+		link,
+	)
+	if err := emailSvc.Send(email, subject, body, nil); err != nil {
+		log.Printf("[forgot-password] failed to send reset email to %s: %v", email, err)
+	}
+}
+
+// ValidateResetToken reports whether a reset token is valid and, if so, its expiry
+// (so the UI can show a countdown). Endpoint: GET /api/auth/reset-token?token=...
+func (h *UserHandler) ValidateResetToken(w http.ResponseWriter, r *http.Request) {
+	token := r.URL.Query().Get("token")
+	w.Header().Set("Content-Type", "application/json")
+	expiresAt, err := h.userService.ValidateResetToken(r.Context(), token)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]any{"valid": false})
+		return
+	}
+	json.NewEncoder(w).Encode(map[string]any{
+		"valid":      true,
+		"expires_at": expiresAt.UTC().Format(time.RFC3339),
+	})
+}
+
+// ResetPassword completes a password reset using a valid token.
+// Endpoint: POST /api/auth/reset-password
+func (h *UserHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
+	var req ResetPasswordRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request format", http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := h.userService.ResetPasswordWithToken(r.Context(), req.Token, req.Password); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(Response{Success: false, Message: err.Error()})
+		return
+	}
+
+	json.NewEncoder(w).Encode(Response{
+		Success: true,
+		Message: "Your password has been successfully updated.",
 	})
 }
