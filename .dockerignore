@@ -1,0 +1,11 @@
+# Keep the Selenium node build context (context: .) small and fast.
+.git
+.github
+**/node_modules
+Frontend/dist
+Frontend/build
+runner/output
+runner/logs
+**/__pycache__
+*.log
+.env
