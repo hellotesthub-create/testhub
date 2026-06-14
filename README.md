@@ -21,7 +21,10 @@ The whole project runs in Docker — you do **not** need Go, Node, Python, or Ja
 # 1. Start the database first (also creates the shared network)
 cd database-microservice && ./start-db.sh && cd ..
 
-# 2. Build & start everything else
+# 2. Ensure output folders exist & are writable (for video recording)
+./prepare-dirs.sh
+
+# 3. Build & start everything else
 docker compose up -d --build
 
 # 3. Open the dashboard
@@ -32,6 +35,7 @@ On later runs (images already built):
 
 ```bash
 cd database-microservice && ./start-db.sh && cd ..
+./prepare-dirs.sh
 docker compose up -d        # no --build needed
 ```
 
@@ -96,8 +100,14 @@ This starts:
 The rest of the platform (Frontend, Backend API, AI Diagnosis Service, Test Runner, and Selenium Grid) is orchestrated via Docker Compose. Use `--build` the first time and whenever code changes:
 
 ```bash
+# Ensure output directories exist and are writable (needed so the Selenium
+# nodes can record videos). Idempotent — safe to run every time.
+./prepare-dirs.sh
+
 docker compose up -d --build
 ```
+
+> **Why `prepare-dirs.sh`?** The Selenium node containers run as a non-root user and write test recordings into `runner/output/videos`. If that folder is missing or not writable, video capture silently fails. The script creates the output folders only if they don't already exist and makes them writable.
 
 **Services started:**
 - **Frontend Dashboard:** [http://localhost:3456](http://localhost:3456)
