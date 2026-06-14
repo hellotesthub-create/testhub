@@ -98,7 +98,7 @@ export function PageShell({
   return (
     <div
       className={cn(
-        "relative min-h-screen overflow-x-hidden bg-background font-sans text-foreground",
+        "lm-borders relative min-h-screen overflow-x-hidden bg-background font-sans text-foreground",
         glow === "cyan" ? "section-glow-cyan" : "section-glow",
         className
       )}

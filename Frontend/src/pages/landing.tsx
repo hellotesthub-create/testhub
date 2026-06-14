@@ -157,7 +157,7 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-background font-sans text-foreground transition-colors">
+    <div className="lm-borders min-h-screen overflow-x-hidden bg-background font-sans text-foreground transition-colors">
       {/* ===================== HEADER (sticky) ===================== */}
       <header
         className={`sticky top-0 z-50 transition-all duration-300 ${

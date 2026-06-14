@@ -148,6 +148,63 @@
   --sidebar-ring: 258 92% 72%;
 }
 
+/* Stronger, darker outlines in LIGHT mode for better definition.
+   Opt-in per page via the `lm-borders` class. Dark mode keeps its
+   original (subtle) border tokens, so only light mode is affected. */
+.lm-borders {
+  --border: 250 35% 12%;
+  --input: 250 35% 14%;
+  --ring: 258 88% 50%;
+}
+.dark .lm-borders {
+  --border: 252 14% 18%;
+  --input: 252 14% 16%;
+  --ring: 258 92% 72%;
+}
+
+/* ── Light-mode-only richer effects on `lm-borders` pages ───────────────
+   Dark mode is untouched (these only match when <html> has no .dark).
+   NOTE: we do NOT force-darken every `.border`. Token-based borders
+   (`border-border`, the default `*` border, `.card-3d`, `.glass-card`)
+   inherit the dark `--border` token automatically, while intentionally
+   light/colored borders (the dark hero's border-white/border-primary/
+   border-transparent on buttons & header) are left untouched. */
+
+/* Cards: thick crisp outline + deep layered shadow; strong primary lift. */
+html:not(.dark) .lm-borders .card-3d {
+  border-width: 2px;
+  border-color: hsl(var(--border));
+  box-shadow:
+    0 2px 0 0 hsl(250 40% 10% / 0.10),
+    0 18px 38px -14px hsl(258 50% 25% / 0.32);
+}
+html:not(.dark) .lm-borders .card-3d:hover {
+  border-color: hsl(var(--primary));
+  box-shadow:
+    0 0 0 2px hsl(var(--primary) / 0.5),
+    0 30px 64px -16px hsl(258 70% 40% / 0.48);
+}
+
+/* Glass cards (app pages) get a crisp dark outline instead of white/10. */
+html:not(.dark) .lm-borders .glass-card {
+  border-color: hsl(var(--border));
+}
+
+/* Window/preview chrome floats with a soft violet shadow (border kept subtle). */
+html:not(.dark) .lm-borders .gradient-ring {
+  box-shadow: 0 22px 46px -18px hsl(258 55% 24% / 0.42);
+}
+
+/* Buttons/chips lift more on hover for a livelier feel. */
+html:not(.dark) .lm-borders .sheen:hover {
+  box-shadow: 0 14px 28px -12px hsl(258 60% 35% / 0.40);
+}
+
+/* Texture/glow stronger so sections feel layered in light mode. */
+html:not(.dark) .lm-borders .dot-pattern {
+  background-image: radial-gradient(hsl(258 45% 30% / 0.22) 1px, transparent 1px);
+}
+
 @layer base {
   * {
     @apply border-border;

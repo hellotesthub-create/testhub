@@ -367,7 +367,7 @@ export default function AuthPage() {
   // Google Password Setup/Verification Screen
   if (showGooglePasswordSetup && googleUserData) {
     return (
-      <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-[hsl(258_100%_98%)] via-white to-[hsl(199_100%_98%)] dark:from-[hsl(252_30%_6%)] dark:via-[hsl(252_28%_8%)] dark:to-[hsl(252_30%_5%)] transition-colors">
+      <div className="lm-borders min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-[hsl(258_100%_98%)] via-white to-[hsl(199_100%_98%)] dark:from-[hsl(252_30%_6%)] dark:via-[hsl(252_28%_8%)] dark:to-[hsl(252_30%_5%)] transition-colors">
         <ParticleBackground />
         
         <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-50">
@@ -494,7 +494,7 @@ export default function AuthPage() {
 
   if (signupSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-[hsl(258_100%_98%)] via-white to-[hsl(199_100%_98%)] dark:from-[hsl(252_30%_6%)] dark:via-[hsl(252_28%_8%)] dark:to-[hsl(252_30%_5%)] transition-colors">
+      <div className="lm-borders min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-[hsl(258_100%_98%)] via-white to-[hsl(199_100%_98%)] dark:from-[hsl(252_30%_6%)] dark:via-[hsl(252_28%_8%)] dark:to-[hsl(252_30%_5%)] transition-colors">
         <ParticleBackground />
         
         <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-50">
@@ -528,7 +528,7 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-[hsl(258_100%_98%)] via-white to-[hsl(199_100%_98%)] dark:from-[hsl(252_30%_6%)] dark:via-[hsl(252_28%_8%)] dark:to-[hsl(252_30%_5%)] transition-colors">
+    <div className="lm-borders min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-[hsl(258_100%_98%)] via-white to-[hsl(199_100%_98%)] dark:from-[hsl(252_30%_6%)] dark:via-[hsl(252_28%_8%)] dark:to-[hsl(252_30%_5%)] transition-colors">
       <ParticleBackground />
       
       <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-50">

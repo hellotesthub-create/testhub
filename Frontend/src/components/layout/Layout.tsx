@@ -112,7 +112,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white flex overflow-hidden relative transition-colors">
+    <div className="lm-borders min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white flex overflow-hidden relative transition-colors">
       <ParticleBackground />
       <aside className="hidden md:block w-64 border-r border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-xl fixed inset-y-0 left-0 z-20 transition-colors">
         <SidebarContent />
