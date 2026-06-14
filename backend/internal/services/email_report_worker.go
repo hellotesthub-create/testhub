@@ -4,7 +4,6 @@ import (
 	"backend/internal/models"
 	"backend/internal/repository"
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -177,21 +176,8 @@ func (w *EmailReportWorker) sendForRun(ctx context.Context, run *models.TestRun)
 		videos = []models.Video{}
 	}
 
-	details := map[string]any{
-		"run":         run,
-		"status":      run.Status,
-		"results":     results,
-		"screenshots": screenshots,
-		"videos":      videos,
-		"logs":        logsList,
-	}
-
-	reportJSON, err := json.MarshalIndent(details, "", "  ")
-	if err != nil {
-		return fmt.Errorf("build report json: %w", err)
-	}
-
-	logsText, truncated := formatLogsAsText(logsList, w.cfg.MaxLogBytes)
+	// truncated flag is still used in the email body text.
+	_, truncated := formatLogsAsText(logsList, w.cfg.MaxLogBytes)
 
 	statusWord := strings.ToUpper(run.Status)
 	subject := fmt.Sprintf("THEX Run %s — %s", run.RunID, statusWord)
@@ -200,12 +186,8 @@ func (w *EmailReportWorker) sendForRun(ctx context.Context, run *models.TestRun)
 
 	body := buildEmailBody(run, resultsURL, results, len(screenshots), len(videos), len(logsList), truncated)
 
-	attachments := []EmailAttachment{
-		{Filename: fmt.Sprintf("thex_run_%s_report.json", run.RunID), ContentType: "application/json", Data: reportJSON},
-		{Filename: fmt.Sprintf("thex_run_%s_logs.txt", run.RunID), ContentType: "text/plain; charset=utf-8", Data: []byte(logsText)},
-	}
-
-	// Allure-style PDF report (best-effort: never block the email on PDF errors).
+	// Only the Allure-style PDF report is attached to the completion email.
+	var attachments []EmailAttachment
 	if pdf, perr := GenerateRunReportPDF(run, results, screenshots, logsList); perr == nil && len(pdf) > 0 {
 		attachments = append(attachments, EmailAttachment{
 			Filename:    fmt.Sprintf("THEX_Report_%s.pdf", run.RunID),

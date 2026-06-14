@@ -375,7 +375,7 @@ export default function AuthPage() {
         </div>
 
         <div className="relative z-20 w-full max-w-lg px-4 sm:px-6 animate-in zoom-in-95 duration-300">
-                  <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-6 sm:p-8 relative overflow-hidden">
+                  <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-border rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-6 sm:p-8 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 pointer-events-none" />
             <div className="text-center mb-5 sm:mb-6">
               <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-primary/10 dark:bg-primary/20 mb-3 sm:mb-4">
@@ -415,7 +415,7 @@ export default function AuthPage() {
                     type="email"
                     value={googleUserData.email}
                     disabled
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-sm border border-slate-200 dark:border-slate-700/50 rounded-xl text-slate-500 dark:text-slate-400 cursor-not-allowed opacity-70"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-sm border border-border rounded-xl text-slate-500 dark:text-slate-400 cursor-not-allowed opacity-70"
                   />
                 </div>
               </div>
@@ -431,7 +431,7 @@ export default function AuthPage() {
                     value={googlePassword}
                     onChange={(e) => setGooglePassword(e.target.value)}
                     placeholder={isLogin ? "Enter your password" : "Enter password (min 6 characters)"}
-                    className="w-full pl-10 pr-12 py-2.5 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white transition-all duration-300"
+                    className="w-full pl-10 pr-12 py-2.5 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm border border-border rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white transition-all duration-300"
                     required
                     minLength={6}
                   />
@@ -456,7 +456,7 @@ export default function AuthPage() {
                     value={googleConfirmPassword}
                     onChange={(e) => setGoogleConfirmPassword(e.target.value)}
                     placeholder="Re-enter password"
-                    className="w-full pl-10 pr-12 py-2.5 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white transition-all duration-300"
+                    className="w-full pl-10 pr-12 py-2.5 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm border border-border rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white transition-all duration-300"
                     required
                   />
                   <button
@@ -502,7 +502,7 @@ export default function AuthPage() {
         </div>
 
         <div className="relative z-20 w-full max-w-lg px-4 sm:px-6 animate-in zoom-in-95 duration-300">
-          <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-6 sm:p-8 text-center relative overflow-hidden">
+          <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-border rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-6 sm:p-8 text-center relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-accent/10 pointer-events-none" />
             <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-green-100 dark:bg-green-500/20 mb-5 sm:mb-6">
               <CheckCircle className="w-7 h-7 sm:w-8 sm:h-8 text-green-600 dark:text-green-400" />
@@ -554,7 +554,7 @@ export default function AuthPage() {
           <p className="font-mono text-[10px] sm:text-xs uppercase tracking-[0.25em] text-muted-foreground">Automated Testing Platform</p>
         </div>
 
-                <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-6 sm:p-8 relative overflow-hidden">
+                <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-border rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-6 sm:p-8 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 pointer-events-none" />
           
           {isForgotPassword ? (
@@ -589,7 +589,7 @@ export default function AuthPage() {
                         value={resetEmail}
                         onChange={(e) => setResetEmail(e.target.value)}
                         placeholder="user@thex.com"
-                        className="w-full pl-10 pr-4 py-2.5 border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
+                        className="w-full pl-10 pr-4 py-2.5 border border-border rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
                         required
                       />
                     </div>
@@ -653,7 +653,7 @@ export default function AuthPage() {
                         value={loginEmail}
                         onChange={(e) => setLoginEmail(e.target.value)}
                         placeholder="user@thex.com"
-                        className="w-full pl-10 pr-4 py-2.5 border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
+                        className="w-full pl-10 pr-4 py-2.5 border border-border rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
                         required
                       />
                     </div>
@@ -668,7 +668,7 @@ export default function AuthPage() {
                         value={loginPassword}
                         onChange={(e) => setLoginPassword(e.target.value)}
                         placeholder="Enter your password"
-                        className="w-full pl-10 pr-10 py-2.5 border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
+                        className="w-full pl-10 pr-10 py-2.5 border border-border rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
                         required
                       />
                       <button
@@ -687,7 +687,7 @@ export default function AuthPage() {
                         type="checkbox"
                         checked={rememberMe}
                         onChange={(e) => setRememberMe(e.target.checked)}
-                        className="w-4 h-4 border border-slate-300 dark:border-slate-600 rounded cursor-pointer dark:bg-slate-800"
+                        className="w-4 h-4 border border-border rounded cursor-pointer dark:bg-slate-800"
                       />
                       <span className="text-sm text-slate-700 dark:text-slate-300">Remember Me</span>
                     </label>
@@ -732,7 +732,7 @@ export default function AuthPage() {
                         value={signupName}
                         onChange={(e) => setSignupName(e.target.value)}
                         placeholder="John Doe"
-                        className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
+                        className="w-full px-4 py-2.5 border border-border rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
                         required
                       />
                     </div>
@@ -747,7 +747,7 @@ export default function AuthPage() {
                         value={signupEmail}
                         onChange={(e) => setSignupEmail(e.target.value)}
                         placeholder="john@company.com"
-                        className="w-full pl-10 pr-4 py-2.5 border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
+                        className="w-full pl-10 pr-4 py-2.5 border border-border rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
                         required
                       />
                     </div>
@@ -762,7 +762,7 @@ export default function AuthPage() {
                         value={signupPassword}
                         onChange={(e) => setSignupPassword(e.target.value)}
                         placeholder="Create a password"
-                        className="w-full pl-10 pr-10 py-2.5 border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
+                        className="w-full pl-10 pr-10 py-2.5 border border-border rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
                         required
                       />
                       <button
@@ -784,7 +784,7 @@ export default function AuthPage() {
                         value={signupConfirmPassword}
                         onChange={(e) => setSignupConfirmPassword(e.target.value)}
                         placeholder="Confirm your password"
-                        className="w-full pl-10 pr-10 py-2.5 border border-slate-200 dark:border-slate-700/60 rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
+                        className="w-full pl-10 pr-10 py-2.5 border border-border rounded-xl focus:outline-none focus:border-primary dark:focus:border-primary focus:ring-2 focus:ring-primary/25 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-slate-50 dark:bg-slate-900/50 backdrop-blur-sm transition-all duration-300"
                         required
                       />
                       <button
@@ -805,7 +805,7 @@ export default function AuthPage() {
                       type="checkbox"
                       checked={acceptTerms}
                       onChange={(e) => setAcceptTerms(e.target.checked)}
-                      className="w-4 h-4 border border-slate-300 dark:border-slate-600 rounded cursor-pointer mt-1 dark:bg-slate-800"
+                      className="w-4 h-4 border border-border rounded cursor-pointer mt-1 dark:bg-slate-800"
                       required
                     />
                     <span className="text-sm text-slate-700 dark:text-slate-300">
