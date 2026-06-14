@@ -56,3 +56,8 @@ Desktop.ini
 *~
 .directory
 .Trash-*
+
+node_modules/
+runner/output/
+__pycache__/
+*.pyc

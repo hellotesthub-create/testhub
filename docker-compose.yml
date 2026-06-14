@@ -169,8 +169,9 @@ services:
     depends_on:
       selenium-hub:
         condition: service_healthy
-    # Run once and exit
-    restart: "no"
+    # Run continuously as a persistent daemon (keeps container alive for on-demand test execution)
+    command: tail -f /dev/null
+    restart: unless-stopped
     # Enable for Chrome to work properly
     shm_size: '2gb'
 
