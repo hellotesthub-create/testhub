@@ -5,7 +5,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle, Wrench, Bot, ArrowLeft, CheckCircle2, Search, Code2, RotateCcw, RefreshCw } from "lucide-react";
+import { AlertTriangle, Wrench, Bot, ArrowLeft, CheckCircle2, Search, Code2, RotateCcw, RefreshCw, Image as ImageIcon, Copy, Check, Globe, Monitor, ListChecks } from "lucide-react";
 import { API_ENDPOINTS } from "@/lib/apiConfig";
 
 interface DiagnosisResult {
@@ -20,6 +20,14 @@ interface DiagnosisResult {
   failing_locator?: string;
   failing_line_number?: number;
   failing_code_snippet?: string;
+  corrected_code?: string;
+  error_trace?: string;
+  execution_logs?: string;
+  target_url?: string;
+  browser?: string;
+  framework?: string;
+  failure_screenshot_id?: string;
+  total_steps_captured?: number;
 }
 
 export default function TesterDiagnosis() {
@@ -32,6 +40,18 @@ export default function TesterDiagnosis() {
   const [loading, setLoading] = useState(true);
   const [rediagnosing, setRediagnosing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const copyCorrectedCode = async () => {
+    if (!diagnosis?.corrected_code) return;
+    try {
+      await navigator.clipboard.writeText(diagnosis.corrected_code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard unavailable */
+    }
+  };
 
   const fetchDiagnosis = async () => {
     if (!resultId) return;
@@ -158,9 +178,29 @@ export default function TesterDiagnosis() {
                       <CheckCircle2 className="w-3.5 h-3.5" /> Last step: {diagnosis.last_successful_step}
                     </Badge>
                   )}
+                  {typeof diagnosis.total_steps_captured === "number" && diagnosis.total_steps_captured > 0 && (
+                    <Badge className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 px-2 py-0.5 flex items-center gap-1">
+                      <ListChecks className="w-3.5 h-3.5" /> {diagnosis.total_steps_captured} steps captured
+                    </Badge>
+                  )}
                   {diagnosis.failing_locator && (
                     <Badge className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 px-2 py-0.5 flex items-center gap-1">
                       <Search className="w-3.5 h-3.5 shrink-0" /> {diagnosis.failing_locator}
+                    </Badge>
+                  )}
+                  {diagnosis.browser && (
+                    <Badge className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 px-2 py-0.5 flex items-center gap-1 capitalize">
+                      <Monitor className="w-3.5 h-3.5" /> {diagnosis.browser}
+                    </Badge>
+                  )}
+                  {diagnosis.framework && (
+                    <Badge className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 px-2 py-0.5 flex items-center gap-1 capitalize">
+                      <Code2 className="w-3.5 h-3.5" /> {diagnosis.framework}
+                    </Badge>
+                  )}
+                  {diagnosis.target_url && diagnosis.target_url !== "unknown" && (
+                    <Badge className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 px-2 py-0.5 flex items-center gap-1 max-w-[260px] truncate">
+                      <Globe className="w-3.5 h-3.5 shrink-0" /> {diagnosis.target_url}
                     </Badge>
                   )}
                 </div>
@@ -218,7 +258,86 @@ export default function TesterDiagnosis() {
                   </div>
                 </div>
               </div>
+
+              {/* Corrected Code — the concrete, copy-pasteable change the AI proposes */}
+              {diagnosis.corrected_code && (
+                <div className="flex items-start gap-3">
+                  <div className="mt-1 bg-emerald-100 dark:bg-emerald-500/20 p-2 rounded-lg">
+                    <Wrench className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-sm font-semibold text-slate-900 dark:text-emerald-300">Suggested Corrected Code</h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={copyCorrectedCode}
+                        className="h-7 px-2 text-xs text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
+                      >
+                        {copied ? <Check className="w-3.5 h-3.5 mr-1" /> : <Copy className="w-3.5 h-3.5 mr-1" />}
+                        {copied ? "Copied" : "Copy"}
+                      </Button>
+                    </div>
+                    <div className="bg-slate-50 dark:bg-slate-950 rounded-lg border border-emerald-200 dark:border-emerald-500/20 p-4 overflow-x-auto shadow-sm">
+                      <pre className="text-xs sm:text-sm text-emerald-800 dark:text-emerald-300 font-mono leading-relaxed m-0 whitespace-pre">
+                        {diagnosis.corrected_code.trim()}
+                      </pre>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Failure Screenshot — the visual evidence the AI analyzed */}
+              {diagnosis.failure_screenshot_id && (
+                <div className="flex items-start gap-3">
+                  <div className="mt-1 bg-violet-100 dark:bg-violet-500/20 p-2 rounded-lg">
+                    <ImageIcon className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-slate-900 dark:text-violet-300 mb-2">Failure Screenshot</h3>
+                    <a
+                      href={API_ENDPOINTS.SCREENSHOT_IMAGE(diagnosis.failure_screenshot_id)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block rounded-lg border border-slate-200 dark:border-white/10 overflow-hidden bg-slate-950 hover:border-violet-400 transition-colors"
+                    >
+                      <img
+                        src={API_ENDPOINTS.SCREENSHOT_IMAGE(diagnosis.failure_screenshot_id)}
+                        alt="Screenshot at point of failure"
+                        className="w-full max-h-[420px] object-contain"
+                      />
+                    </a>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Captured at the point of failure · click to open full size</p>
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* Raw evidence — collapsible so the AI's verdict can be audited against ground truth */}
+            {(diagnosis.error_trace || diagnosis.execution_logs) && (
+              <div className="mt-6 space-y-2">
+                {diagnosis.error_trace && (
+                  <details className="group rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-950/40">
+                    <summary className="cursor-pointer select-none px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 text-amber-500" /> Full error trace
+                    </summary>
+                    <pre className="px-4 pb-4 text-xs text-slate-600 dark:text-slate-400 font-mono whitespace-pre-wrap overflow-x-auto max-h-72 overflow-y-auto">
+                      {diagnosis.error_trace.trim()}
+                    </pre>
+                  </details>
+                )}
+                {diagnosis.execution_logs && (
+                  <details className="group rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-950/40">
+                    <summary className="cursor-pointer select-none px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                      <Code2 className="w-4 h-4 text-blue-500" /> Execution logs
+                    </summary>
+                    <pre className="px-4 pb-4 text-xs text-slate-600 dark:text-slate-400 font-mono whitespace-pre-wrap overflow-x-auto max-h-72 overflow-y-auto">
+                      {diagnosis.execution_logs.trim()}
+                    </pre>
+                  </details>
+                )}
+              </div>
+            )}
 
             <div className="mt-6 pt-4 border-t border-slate-200 dark:border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
               <div className="flex flex-wrap items-center gap-4">

@@ -54,6 +54,7 @@ class DiagnosisResult(BaseModel):
     confidence: str
     model_used: str
     raw_output: str
+    corrected_code: str = ""
 
 
 # ──────────────────────── Prompt Template ────────────────────────
@@ -65,6 +66,8 @@ commentary before or after:
 ROOT CAUSE: [one sentence explaining what most likely went wrong]
 LIKELY FIX: [one to two sentences suggesting how to fix the code, locator, or test]
 CONFIDENCE: [High | Medium | Low]
+CORRECTED CODE:
+[only the corrected version of the failing line(s), ready to paste, matching the Framework/Language above; or N/A if the fix is not a code change]
 
 Context:
 - Framework: {framework}
@@ -85,6 +88,7 @@ Rules:
 - If the error is a TIMEOUT, consider if an explicit wait is needed or if a previous action (like a click) failed to trigger a page load.
 - If the error is an ASSERTION_FAILURE, review the Code Snippet to see what was expected versus what was received.
 - Use the Code Snippet to suggest precise code changes in your LIKELY FIX.
+- In CORRECTED CODE, output ONLY the minimal corrected code line(s) (no explanation, no line numbers); use the correct API for the Framework/Language. Use N/A when the fix is environmental or not a code change.
 - Do not invent details not present in the provided context.
 - If the provided information is insufficient to form a reasonable hypothesis, respond with:
   ROOT CAUSE: Insufficient data for diagnosis.
@@ -135,7 +139,12 @@ def parse_diagnosis(text: str) -> dict:
         conf_upper = conf.strip().title()
         if conf_upper not in ("High", "Medium", "Low"):
             conf_upper = "Low"
-        return {"root_cause": root.strip(), "likely_fix": fix.strip(), "confidence": conf_upper}
+        return {
+            "root_cause": root.strip(),
+            "likely_fix": fix.strip(),
+            "confidence": conf_upper,
+            "corrected_code": _extract_corrected_code(text),
+        }
     return None
 
 
@@ -145,6 +154,20 @@ def _extract_field(text: str, field: str) -> Optional[str]:
     return m.group(1).strip() if m else None
 
 
+def _extract_corrected_code(text: str) -> str:
+    """Capture the (possibly multi-line) CORRECTED CODE block. Optional field."""
+    m = re.search(r"(?is)^\s*CORRECTED\s+CODE\s*:\s*(.*)\Z", text, re.MULTILINE)
+    if not m:
+        return ""
+    code = m.group(1).strip()
+    # Strip surrounding markdown code fences if present
+    code = re.sub(r"^```[a-zA-Z0-9_+-]*\n?", "", code)
+    code = re.sub(r"\n?```\s*$", "", code).strip()
+    if code.upper() in ("N/A", "NA", "NONE", ""):
+        return ""
+    return code
+
+
 def fallback_diagnosis(raw_output: str = "") -> DiagnosisResult:
     return DiagnosisResult(
         root_cause=FALLBACK_ROOT_CAUSE,
@@ -152,6 +175,7 @@ def fallback_diagnosis(raw_output: str = "") -> DiagnosisResult:
         confidence="Low",
         model_used=FALLBACK_MODEL,
         raw_output=raw_output,
+        corrected_code="",
     )
 
 
@@ -368,6 +392,7 @@ async def diagnose(payload: DiagnosisPayload):
             confidence=parsed["confidence"],
             model_used=model_used,
             raw_output=raw_output,
+            corrected_code=parsed.get("corrected_code", ""),
         )
 
     # Fallback: keep provider details in raw_output, not user-facing fields.

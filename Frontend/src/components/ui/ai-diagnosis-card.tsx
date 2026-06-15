@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertTriangle, Wrench, Bot, RefreshCw, RotateCcw, CheckCircle2, Search, Code2 } from "lucide-react";
+import { AlertTriangle, Wrench, Bot, RefreshCw, RotateCcw, CheckCircle2, Search, Code2, ListChecks, Monitor, Copy, Check } from "lucide-react";
 import { API_ENDPOINTS } from "@/lib/apiConfig";
 
 // ─── Types ──────────────────────────────────────────────────────
@@ -21,6 +21,10 @@ interface DiagnosisResult {
   failing_locator?: string;
   failing_line_number?: number;
   failing_code_snippet?: string;
+  corrected_code?: string;
+  browser?: string;
+  framework?: string;
+  total_steps_captured?: number;
 }
 
 interface AIDiagnosisCardProps {
@@ -39,6 +43,18 @@ export function AIDiagnosisCard({
   const [diagnosis, setDiagnosis] = useState<DiagnosisResult | null>(initialDiagnosis);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const copyCorrectedCode = async () => {
+    if (!diagnosis?.corrected_code) return;
+    try {
+      await navigator.clipboard.writeText(diagnosis.corrected_code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard unavailable */
+    }
+  };
 
   // Only render on FAILED results
   if (!status || status.toUpperCase() !== "FAILED") {
@@ -196,6 +212,21 @@ export function AIDiagnosisCard({
               <Search className="w-3 h-3 shrink-0" /> {diagnosis.failing_locator}
             </Badge>
           )}
+          {typeof diagnosis.total_steps_captured === "number" && diagnosis.total_steps_captured > 0 && (
+            <Badge className="text-[10px] bg-slate-800 text-slate-300 border-slate-700 px-1.5 py-0 flex items-center gap-1">
+              <ListChecks className="w-3 h-3" /> {diagnosis.total_steps_captured} steps
+            </Badge>
+          )}
+          {diagnosis.browser && (
+            <Badge className="text-[10px] bg-slate-800 text-slate-300 border-slate-700 px-1.5 py-0 flex items-center gap-1 capitalize">
+              <Monitor className="w-3 h-3" /> {diagnosis.browser}
+            </Badge>
+          )}
+          {diagnosis.framework && (
+            <Badge className="text-[10px] bg-slate-800 text-slate-300 border-slate-700 px-1.5 py-0 flex items-center gap-1 capitalize">
+              <Code2 className="w-3 h-3" /> {diagnosis.framework}
+            </Badge>
+          )}
         </div>
 
         {/* Root Cause */}
@@ -232,6 +263,31 @@ export function AIDiagnosisCard({
             <p className="text-[10px] sm:text-xs text-slate-300 leading-relaxed">{diagnosis.likely_fix}</p>
           </div>
         </div>
+
+        {/* Corrected Code */}
+        {diagnosis.corrected_code && (
+          <div className="flex items-start gap-2">
+            <Wrench className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" />
+            <div className="min-w-0 w-full">
+              <div className="flex items-center justify-between mb-0.5">
+                <p className="text-[10px] sm:text-xs font-semibold text-emerald-300">Suggested Corrected Code</p>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); copyCorrectedCode(); }}
+                  className="flex items-center gap-1 text-[9px] text-emerald-400 hover:text-emerald-300"
+                >
+                  {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                  {copied ? "Copied" : "Copy"}
+                </button>
+              </div>
+              <div className="bg-slate-950 rounded border border-emerald-500/20 p-2 overflow-x-auto">
+                <pre className="text-[9px] sm:text-[10px] text-emerald-300 font-mono leading-relaxed m-0 whitespace-pre">
+                  {diagnosis.corrected_code.trim()}
+                </pre>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Footer: Confidence + Model + Timestamp + Re-diagnose */}
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-1 border-t border-white/5">

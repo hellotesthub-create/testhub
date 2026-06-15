@@ -110,7 +110,11 @@ func ClassifyError(errorMessage, errorStack string) string {
 
 	case strings.Contains(combined, "staleelement") ||
 		strings.Contains(combined, "stale element") ||
-		strings.Contains(combined, "element is stale"):
+		strings.Contains(combined, "element is stale") ||
+		// Playwright's equivalent of a stale element (detached ElementHandle).
+		// Safe to check before the FRAME case: frame errors say "frame was
+		// detached", never "not attached to the dom".
+		strings.Contains(combined, "not attached to the dom"):
 		return ErrCatStale
 
 	case strings.Contains(combined, "nosuchelement") ||
@@ -734,8 +738,10 @@ func (h *DiagnosisHandler) DiagnoseResult(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// 30-second timeout for the LLM call
-	client := &http.Client{Timeout: 30 * time.Second}
+	// 60-second timeout for the LLM call. Gemini occasionally takes ~30s+,
+	// especially now that the prompt requests a corrected-code block; 30s was
+	// borderline and caused intermittent "diagnosis_unavailable" errors.
+	client := &http.Client{Timeout: 60 * time.Second}
 	resp, err := client.Post(diagnosisURL+"/diagnose", "application/json", bytes.NewReader(payloadJSON))
 	if err != nil {
 		log.Printf("Diagnosis service call failed: %v", err)
@@ -754,11 +760,12 @@ func (h *DiagnosisHandler) DiagnoseResult(w http.ResponseWriter, r *http.Request
 
 	// Parse response from microservice
 	var diagResp struct {
-		RootCause  string `json:"root_cause"`
-		LikelyFix  string `json:"likely_fix"`
-		Confidence string `json:"confidence"`
-		ModelUsed  string `json:"model_used"`
-		RawOutput  string `json:"raw_output"`
+		RootCause     string `json:"root_cause"`
+		LikelyFix     string `json:"likely_fix"`
+		Confidence    string `json:"confidence"`
+		ModelUsed     string `json:"model_used"`
+		RawOutput     string `json:"raw_output"`
+		CorrectedCode string `json:"corrected_code"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&diagResp); err != nil {
 		log.Printf("Failed to parse diagnosis response: %v", err)
@@ -767,21 +774,31 @@ func (h *DiagnosisHandler) DiagnoseResult(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	// Resolve the failure screenshot so the panel can show the evidence the AI saw.
+	failureScreenshotID := resolveFailureScreenshotID(r.Context(), h.screenshotRepo, resultID, result)
+
 	// Store in MongoDB
 	diagnosis := models.Diagnosis{
-		ExecutionID:        resultID.Hex(),
-		RootCause:          diagResp.RootCause,
-		LikelyFix:          diagResp.LikelyFix,
-		Confidence:         diagResp.Confidence,
-		ModelUsed:          diagResp.ModelUsed,
-		RawResponse:        diagResp.RawOutput,
-		GeneratedAt:        time.Now(),
-		ErrorCategory:      payload.ErrorCategory,
-		FailingLineNumber:  payload.FailingLineNumber,
-		FailingCodeSnippet: payload.FailingCodeSnippet,
-		FailingLocator:     payload.FailingLocator,
-		LastSuccessfulStep: payload.LastSuccessfulStep,
-		TotalStepsCaptured: payload.TotalStepsCaptured,
+		ExecutionID:         resultID.Hex(),
+		RootCause:           diagResp.RootCause,
+		LikelyFix:           diagResp.LikelyFix,
+		Confidence:          diagResp.Confidence,
+		ModelUsed:           diagResp.ModelUsed,
+		RawResponse:         diagResp.RawOutput,
+		GeneratedAt:         time.Now(),
+		ErrorCategory:       payload.ErrorCategory,
+		FailingLineNumber:   payload.FailingLineNumber,
+		FailingCodeSnippet:  payload.FailingCodeSnippet,
+		FailingLocator:      payload.FailingLocator,
+		LastSuccessfulStep:  payload.LastSuccessfulStep,
+		TotalStepsCaptured:  payload.TotalStepsCaptured,
+		CorrectedCode:       diagResp.CorrectedCode,
+		ErrorTrace:          payload.ErrorTrace,
+		ExecutionLogs:       payload.LastLogs,
+		TargetURL:           payload.TargetURL,
+		Browser:             payload.Browser,
+		Framework:           payload.Framework,
+		FailureScreenshotID: failureScreenshotID,
 	}
 
 	if err := h.diagnosisRepo.InsertDiagnosis(r.Context(), &diagnosis); err != nil {
@@ -796,23 +813,8 @@ func (h *DiagnosisHandler) DiagnoseResult(w http.ResponseWriter, r *http.Request
 	}
 
 	// Return to frontend
-	response := models.DiagnosisResponse{
-		ExecutionID:        diagnosis.ExecutionID,
-		RootCause:          diagnosis.RootCause,
-		LikelyFix:          diagnosis.LikelyFix,
-		Confidence:         diagnosis.Confidence,
-		ModelUsed:          diagnosis.ModelUsed,
-		GeneratedAt:        diagnosis.GeneratedAt,
-		ErrorCategory:      diagnosis.ErrorCategory,
-		FailingLineNumber:  diagnosis.FailingLineNumber,
-		FailingCodeSnippet: diagnosis.FailingCodeSnippet,
-		FailingLocator:     diagnosis.FailingLocator,
-		LastSuccessfulStep: diagnosis.LastSuccessfulStep,
-		TotalStepsCaptured: diagnosis.TotalStepsCaptured,
-	}
-
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(buildDiagnosisResponse(&diagnosis))
 }
 
 // GetDiagnosis retrieves the latest cached diagnosis for a test result.
@@ -860,23 +862,54 @@ func (h *DiagnosisHandler) GetDiagnosis(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	response := models.DiagnosisResponse{
-		ExecutionID:        diagnosis.ExecutionID,
-		RootCause:          diagnosis.RootCause,
-		LikelyFix:          diagnosis.LikelyFix,
-		Confidence:         diagnosis.Confidence,
-		ModelUsed:          diagnosis.ModelUsed,
-		GeneratedAt:        diagnosis.GeneratedAt,
-		ErrorCategory:      diagnosis.ErrorCategory,
-		FailingLineNumber:  diagnosis.FailingLineNumber,
-		FailingCodeSnippet: diagnosis.FailingCodeSnippet,
-		FailingLocator:     diagnosis.FailingLocator,
-		LastSuccessfulStep: diagnosis.LastSuccessfulStep,
-		TotalStepsCaptured: diagnosis.TotalStepsCaptured,
-	}
-
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(buildDiagnosisResponse(diagnosis))
+}
+
+// buildDiagnosisResponse maps a stored Diagnosis to the API response shape.
+// Used by both DiagnoseResult (POST) and GetDiagnosis (GET) so the panel renders
+// identical data whether freshly generated or read from cache.
+func buildDiagnosisResponse(d *models.Diagnosis) models.DiagnosisResponse {
+	return models.DiagnosisResponse{
+		ExecutionID:         d.ExecutionID,
+		RootCause:           d.RootCause,
+		LikelyFix:           d.LikelyFix,
+		Confidence:          d.Confidence,
+		ModelUsed:           d.ModelUsed,
+		GeneratedAt:         d.GeneratedAt,
+		ErrorCategory:       d.ErrorCategory,
+		FailingLineNumber:   d.FailingLineNumber,
+		FailingCodeSnippet:  d.FailingCodeSnippet,
+		FailingLocator:      d.FailingLocator,
+		LastSuccessfulStep:  d.LastSuccessfulStep,
+		TotalStepsCaptured:  d.TotalStepsCaptured,
+		CorrectedCode:       d.CorrectedCode,
+		ErrorTrace:          d.ErrorTrace,
+		ExecutionLogs:       d.ExecutionLogs,
+		TargetURL:           d.TargetURL,
+		Browser:             d.Browser,
+		Framework:           d.Framework,
+		FailureScreenshotID: d.FailureScreenshotID,
+	}
+}
+
+// resolveFailureScreenshotID returns the hex ID of the most recent screenshot for
+// a result (the failure frame), or "" if none. Lets the panel display the exact
+// image the AI analyzed so its conclusion can be visually verified.
+func resolveFailureScreenshotID(
+	ctx context.Context,
+	screenshotRepo *repository.ScreenshotRepository,
+	resultID primitive.ObjectID,
+	result *models.TestResult,
+) string {
+	shots := resolveScreenshotsForDiagnosis(ctx, resultID, result, screenshotRepo)
+	if len(shots) == 0 {
+		return ""
+	}
+	sort.Slice(shots, func(i, j int) bool {
+		return shots[i].CreatedAt.After(shots[j].CreatedAt)
+	})
+	return shots[0].ID.Hex()
 }
 
 // writeJSONError writes a structured JSON error response (never crashes the server).

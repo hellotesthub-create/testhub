@@ -51,6 +51,9 @@ services:
       - ./docker-compose.yml:/app/docker-compose.yml
       - ./:/app/project
       - ./baselines:/app/baselines
+      # Shared scratch for Visual Regression: backend writes current_<id>.png here
+      # and the VR service reads it back by path. Must be the SAME volume in both.
+      - vr_tmp:/tmp/vr
     networks:
       - testops-network
       - testops-db-network
@@ -228,7 +231,7 @@ services:
       - "8002:8002"
     volumes:
       - ./baselines:/app/baselines
-      - /tmp/vr:/tmp/vr
+      - vr_tmp:/tmp/vr
     networks:
       - testops-network
       - testops-db-network
@@ -243,3 +246,4 @@ networks:
 volumes:
   mongo_data:
   frontend_node_modules:
+  vr_tmp:

@@ -26,6 +26,12 @@ func TestClassifyErrorPhaseOneCategories(t *testing.T) {
 			want:    ErrCatStale,
 		},
 		{
+			name:    "playwright detached element (stale equivalent)",
+			message: `elementHandle.click: Element is not attached to the DOM`,
+			stack:   `File "/app/testscripts/test_exception_demo_stale_element.py", line 23`,
+			want:    ErrCatStale,
+		},
+		{
 			name:    "frame error",
 			message: `TimeoutError: locator("#iframeResult h1").click: Timeout 30000ms exceeded`,
 			stack:   `File "/app/testscripts/test_exception_demo_iframe.py", line 19`,

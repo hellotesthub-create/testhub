@@ -41,6 +41,16 @@ type Diagnosis struct {
 	FailingLocator     string             `bson:"failing_locator" json:"failing_locator,omitempty"`
 	LastSuccessfulStep string             `bson:"last_successful_step" json:"last_successful_step,omitempty"`
 	TotalStepsCaptured int                `bson:"total_steps_captured" json:"total_steps_captured"`
+	// AI-suggested corrected code (minimal failing line(s), ready to paste)
+	CorrectedCode string `bson:"corrected_code,omitempty" json:"corrected_code,omitempty"`
+	// Observability context snapshot captured at diagnosis time (lets the panel
+	// show the evidence the AI reasoned over, so its conclusion is verifiable).
+	ErrorTrace          string `bson:"error_trace,omitempty" json:"error_trace,omitempty"`
+	ExecutionLogs       string `bson:"execution_logs,omitempty" json:"execution_logs,omitempty"`
+	TargetURL           string `bson:"target_url,omitempty" json:"target_url,omitempty"`
+	Browser             string `bson:"browser,omitempty" json:"browser,omitempty"`
+	Framework           string `bson:"framework,omitempty" json:"framework,omitempty"`
+	FailureScreenshotID string `bson:"failure_screenshot_id,omitempty" json:"failure_screenshot_id,omitempty"`
 }
 
 // DiagnosisResponse is returned to the frontend
@@ -57,4 +67,12 @@ type DiagnosisResponse struct {
 	FailingLocator     string    `json:"failing_locator,omitempty"`
 	LastSuccessfulStep string    `json:"last_successful_step,omitempty"`
 	TotalStepsCaptured int       `json:"total_steps_captured"`
+	// AI-suggested corrected code + observability context (see Diagnosis above)
+	CorrectedCode       string `json:"corrected_code,omitempty"`
+	ErrorTrace          string `json:"error_trace,omitempty"`
+	ExecutionLogs       string `json:"execution_logs,omitempty"`
+	TargetURL           string `json:"target_url,omitempty"`
+	Browser             string `json:"browser,omitempty"`
+	Framework           string `json:"framework,omitempty"`
+	FailureScreenshotID string `json:"failure_screenshot_id,omitempty"`
 }
