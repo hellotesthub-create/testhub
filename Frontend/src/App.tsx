@@ -21,6 +21,7 @@ import Reports from "@/pages/reports";
 import Profile from "@/pages/profile";
 import TesterTestResults from "@/pages/tester-test-results";
 import TesterDiagnosis from "@/pages/tester-diagnosis";
+import VisualRegressionHistory from "@/pages/visual-regression-history";
 
 function Router() {
   return (
@@ -55,6 +56,11 @@ function Router() {
       <Route path="/monitor">
         <ProtectedRoute>
           <ExecutionMonitor />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/visual-regression">
+        <ProtectedRoute>
+          <VisualRegressionHistory />
         </ProtectedRoute>
       </Route>
       <Route path="/history">

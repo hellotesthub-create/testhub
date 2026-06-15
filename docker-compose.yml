@@ -42,6 +42,7 @@ services:
       SMTP_USE_TLS: ${SMTP_USE_TLS:-}
       SMTP_INSECURE_SKIP_VERIFY: ${SMTP_INSECURE_SKIP_VERIFY:-}
       DIAGNOSIS_SERVICE_URL: http://testops-diagnosis-service:8001
+      VISUAL_REGRESSION_SERVICE_URL: ${VISUAL_REGRESSION_SERVICE_URL:-http://visual-regression-service:8002}
     ports:
       - "8090:8080"
     volumes:
@@ -49,6 +50,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./docker-compose.yml:/app/docker-compose.yml
       - ./:/app/project
+      - ./baselines:/app/baselines
     networks:
       - testops-network
       - testops-db-network
@@ -209,6 +211,24 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     ports:
       - "8001:8001"
+    networks:
+      - testops-network
+      - testops-db-network
+    restart: unless-stopped
+
+  # ============================
+  # Python Visual Regression Microservice
+  # ============================
+  visual-regression-service:
+    build:
+      context: ./visual_regression
+      dockerfile: Dockerfile
+    container_name: visual-regression-service
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./baselines:/app/baselines
+      - /tmp/vr:/tmp/vr
     networks:
       - testops-network
       - testops-db-network

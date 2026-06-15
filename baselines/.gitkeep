@@ -1,0 +1,2 @@
+# Visual Regression baselines are generated/approved at runtime.
+# This file keeps the directory present as a docker-compose mount target.

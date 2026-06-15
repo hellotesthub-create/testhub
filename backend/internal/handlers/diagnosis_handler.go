@@ -113,13 +113,6 @@ func ClassifyError(errorMessage, errorStack string) string {
 		strings.Contains(combined, "element is stale"):
 		return ErrCatStale
 
-	case strings.Contains(combined, "framelocator") ||
-		strings.Contains(combined, "frame locator") ||
-		strings.Contains(combined, "frame was detached") ||
-		strings.Contains(combined, "frame has been detached") ||
-		strings.Contains(combined, "iframe"):
-		return ErrCatFrame
-
 	case strings.Contains(combined, "nosuchelement") ||
 		strings.Contains(combined, "no such element") ||
 		strings.Contains(combined, "unable to locate") ||
@@ -132,7 +125,15 @@ func ClassifyError(errorMessage, errorStack string) string {
 				strings.Contains(combined, "locator.press"))):
 		return ErrCatLocator
 
+	case strings.Contains(combined, "framelocator") ||
+		strings.Contains(combined, "frame locator") ||
+		strings.Contains(combined, "frame was detached") ||
+		strings.Contains(combined, "frame has been detached") ||
+		strings.Contains(combined, "iframe"):
+		return ErrCatFrame
+
 	case strings.Contains(combined, "timeout") ||
+		strings.Contains(combined, "timeouterror") ||
 		strings.Contains(combined, "timed out") ||
 		strings.Contains(combined, "time out") ||
 		strings.Contains(combined, "waiting for") ||
@@ -144,6 +145,66 @@ func ClassifyError(errorMessage, errorStack string) string {
 	}
 }
 
+var (
+	runnerArtifactStepRe  = regexp.MustCompile(`(?i)^(Failure|Success)\s*-`)
+	runnerOutcomeStepRe   = regexp.MustCompile(`(?i)\b(chrome|firefox)\s+(failure|success)$`)
+	scriptTimestampSuffix = regexp.MustCompile(`_\d{8}_\d{6}$`)
+)
+
+func extractScriptStem(testName string) string {
+	base := strings.TrimSuffix(testName, filepath.Ext(testName))
+	return scriptTimestampSuffix.ReplaceAllString(base, "")
+}
+
+func isRunnerOutcomeScreenshot(s models.Screenshot) bool {
+	name := strings.ToLower(s.Name)
+	if strings.Contains(name, "_failure") || strings.Contains(name, "_success") {
+		return true
+	}
+	step := strings.TrimSpace(s.Step)
+	if runnerArtifactStepRe.MatchString(step) {
+		return true
+	}
+	return runnerOutcomeStepRe.MatchString(step)
+}
+
+func isGenericStepCapture(filename, testStem string) bool {
+	_ = testStem
+	base := strings.ToLower(strings.TrimSuffix(filename, filepath.Ext(filename)))
+	switch base {
+	case "page_loaded", "form_loaded", "before_navigation":
+		return true
+	default:
+		return false
+	}
+}
+
+func screenshotFilenameMatchesTest(filename, testName string) bool {
+	if filename == "" || testName == "" {
+		return true
+	}
+	stem := extractScriptStem(testName)
+	lowerName := strings.ToLower(filename)
+	// Runner outcome PNGs embed the originating script stem in the filename.
+	if strings.Contains(lowerName, "_failure") || strings.Contains(lowerName, "_success") {
+		return strings.Contains(lowerName, strings.ToLower(stem))
+	}
+	return true
+}
+
+func screenshotMatchesResult(s models.Screenshot, testName, browser string) bool {
+	if testName != "" && s.TestName != "" && s.TestName != testName {
+		return false
+	}
+	if browser != "" && s.Browser != "" && !strings.EqualFold(s.Browser, browser) {
+		return false
+	}
+	if !screenshotFilenameMatchesTest(s.Name, testName) {
+		return false
+	}
+	return true
+}
+
 func GetLastSuccessfulStep(screenshots []models.Screenshot) (string, int) {
 	total := len(screenshots)
 
@@ -151,26 +212,136 @@ func GetLastSuccessfulStep(screenshots []models.Screenshot) (string, int) {
 		return "", 0
 	}
 
+	testStem := ""
+	if len(screenshots) > 0 && screenshots[0].TestName != "" {
+		testStem = extractScriptStem(screenshots[0].TestName)
+	}
+
 	ordered := append([]models.Screenshot(nil), screenshots...)
 	sort.Slice(ordered, func(i, j int) bool {
 		return ordered[i].CreatedAt.Before(ordered[j].CreatedAt)
 	})
 
-	lastShot := ordered[total-1]
-	stepName := strings.TrimSpace(lastShot.Step)
-
-	if stepName == "" {
-		if total == 1 {
-			return "initial page load", total
+	var candidates []models.Screenshot
+	for _, s := range ordered {
+		stepName := strings.TrimSpace(s.Step)
+		if stepName == "" || isRunnerOutcomeScreenshot(s) {
+			continue
 		}
-		return fmt.Sprintf("step %d", total), total
+		candidates = append(candidates, s)
 	}
 
+	if len(candidates) == 0 {
+		lastShot := ordered[total-1]
+		stepName := strings.TrimSpace(lastShot.Step)
+		if stepName == "" {
+			return "initial page load", total
+		}
+		return normalizeStepName(stepName), total
+	}
+
+	lastShot := candidates[len(candidates)-1]
+	// Shared generic captures (e.g. page_loaded.png) can be tagged to the wrong test in parallel runs.
+	if testStem != "" && isGenericStepCapture(lastShot.Name, testStem) {
+		for i := len(candidates) - 2; i >= 0; i-- {
+			if !isGenericStepCapture(candidates[i].Name, testStem) {
+				lastShot = candidates[i]
+				break
+			}
+		}
+	}
+
+	return normalizeStepName(lastShot.Step), total
+}
+
+func normalizeStepName(stepName string) string {
 	stepName = strings.ReplaceAll(stepName, "_", " ")
 	stepName = strings.TrimPrefix(stepName, "step ")
-	stepName = strings.TrimSpace(stepName)
+	return strings.TrimSpace(stepName)
+}
 
-	return stepName, total
+func resolveScreenshotsForDiagnosis(
+	ctx context.Context,
+	resultID primitive.ObjectID,
+	result *models.TestResult,
+	screenshotRepo *repository.ScreenshotRepository,
+) []models.Screenshot {
+	var screenshots []models.Screenshot
+
+	// Prefer run + test + browser — result_id is often wrong in parallel suite runs.
+	if result.RunIDString != "" {
+		allShots, err := screenshotRepo.GetByRunIDString(ctx, result.RunIDString)
+		if err == nil {
+			for _, s := range allShots {
+				if screenshotMatchesResult(s, result.TestName, result.Browser) {
+					screenshots = append(screenshots, s)
+				}
+			}
+		}
+	}
+
+	// Fallback to result_id only when run-level lookup found nothing.
+	if len(screenshots) == 0 {
+		byResult, err := screenshotRepo.GetByResultID(ctx, resultID)
+		if err == nil {
+			for _, s := range byResult {
+				if screenshotMatchesResult(s, result.TestName, result.Browser) {
+					screenshots = append(screenshots, s)
+				}
+			}
+		}
+	}
+
+	return screenshots
+}
+
+func isInternalPythonTraceFile(filePath string) bool {
+	lower := strings.ToLower(filePath)
+	return strings.Contains(lower, "/runner.py") ||
+		strings.Contains(lower, "/site-packages/") ||
+		strings.Contains(lower, "importlib") ||
+		strings.Contains(lower, "<frozen")
+}
+
+func extractPythonFailingLine(errorStack string) int {
+	// 1) Prefer user script frames under testscripts/
+	reTestscripts := regexp.MustCompile(`(?i)File\s+"([^"]*testscripts[^"]*)",\s+line\s+(\d+)`)
+	matches := reTestscripts.FindAllStringSubmatch(errorStack, -1)
+	if len(matches) > 0 {
+		last := matches[len(matches)-1]
+		if len(last) > 2 {
+			if n, err := strconv.Atoi(last[2]); err == nil {
+				return n
+			}
+		}
+	}
+
+	// 2) Any user script frame outside runner/stdlib
+	reFrame := regexp.MustCompile(`(?i)File\s+"([^"]+)",\s+line\s+(\d+)`)
+	lastUserLine := 0
+	for _, match := range reFrame.FindAllStringSubmatch(errorStack, -1) {
+		if len(match) <= 2 || isInternalPythonTraceFile(match[1]) {
+			continue
+		}
+		if n, err := strconv.Atoi(match[2]); err == nil {
+			lastUserLine = n
+		}
+	}
+	if lastUserLine > 0 {
+		return lastUserLine
+	}
+
+	// 3) Syntax errors: File "path", line N (no "in func")
+	reSyntax := regexp.MustCompile(`(?m)^\s*File\s+"([^"]+)",\s+line\s+(\d+)\s*$`)
+	for _, match := range reSyntax.FindAllStringSubmatch(errorStack, -1) {
+		if len(match) <= 2 || isInternalPythonTraceFile(match[1]) {
+			continue
+		}
+		if n, err := strconv.Atoi(match[2]); err == nil {
+			lastUserLine = n
+		}
+	}
+	return lastUserLine
 }
 
 type FailingLineResult struct {
@@ -190,20 +361,7 @@ func ExtractFailingLine(errorStack, scriptContentBase64, language string) Failin
 
 	switch strings.ToLower(language) {
 	case "python":
-		// Prioritize matches from testscripts to avoid capturing runner/library traceback lines
-		re := regexp.MustCompile(`(?i)File\s+"[^"]*testscripts[^"]*",\s+line\s+(\d+)`)
-		matches := re.FindAllStringSubmatch(errorStack, -1)
-		if len(matches) == 0 {
-			// Fallback to any line number if no testscripts match is found
-			re = regexp.MustCompile(`(?i)line\s+(\d+)`)
-			matches = re.FindAllStringSubmatch(errorStack, -1)
-		}
-		if len(matches) > 0 {
-			last := matches[len(matches)-1]
-			if len(last) > 1 {
-				lineNum, _ = strconv.Atoi(last[1])
-			}
-		}
+		lineNum = extractPythonFailingLine(errorStack)
 
 	case "java":
 		re := regexp.MustCompile(`([A-Za-z0-9_$]+\.java):(\d+)\)`)
@@ -416,8 +574,8 @@ func CollectDiagnosisPayload(
 
 	// 5. Get latest screenshot — sort by created_at desc, take first
 	var screenshotB64 string
-	screenshots, err := screenshotRepo.GetByResultID(ctx, resultID)
-	if err == nil && len(screenshots) > 0 {
+	screenshots := resolveScreenshotsForDiagnosis(ctx, resultID, result, screenshotRepo)
+	if len(screenshots) > 0 {
 		// Sort by created_at descending
 		sort.Slice(screenshots, func(i, j int) bool {
 			return screenshots[i].CreatedAt.After(screenshots[j].CreatedAt)
@@ -444,12 +602,15 @@ func CollectDiagnosisPayload(
 	errorCategory := ClassifyError(result.ErrorMessage, result.ErrorStack)
 
 	// GetLastSuccessfulStep requires ascending sort
-	if err == nil && len(screenshots) > 0 {
+	if len(screenshots) > 0 {
 		sort.Slice(screenshots, func(i, j int) bool {
 			return screenshots[i].CreatedAt.Before(screenshots[j].CreatedAt)
 		})
 	}
 	lastStep, totalSteps := GetLastSuccessfulStep(screenshots)
+	if totalSteps == 0 && (strings.Contains(errorTrace, "SyntaxError") || strings.Contains(result.ErrorStack, "source_to_code")) {
+		lastStep = "script failed during load (before test execution)"
+	}
 
 	lineResult := FailingLineResult{}
 	if !result.TestCaseID.IsZero() {

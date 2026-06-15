@@ -6,6 +6,11 @@
 // In production: Your backend URL
 const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8080';
 
+// Base config (used by features that build URLs dynamically, e.g. Visual Regression)
+export const apiConfig = {
+  baseUrl: `${API_BASE_URL}/api`,
+};
+
 // API Endpoints
 export const API_ENDPOINTS = {
   // Authentication
@@ -62,4 +67,9 @@ export const API_ENDPOINTS = {
   // AI Diagnosis
   RESULT_DIAGNOSE: (resultId: string) => `${API_BASE_URL}/api/results/${resultId}/diagnose`,
   RESULT_DIAGNOSIS: (resultId: string) => `${API_BASE_URL}/api/results/${resultId}/diagnosis`,
+
+  // Visual Regression
+  VISUAL_REGRESSION_COMPARE: `${API_BASE_URL}/api/visual-regression/compare`,
+  VISUAL_REGRESSION_COMPARISON: (resultId: string) => `${API_BASE_URL}/api/visual-regression/comparison/${resultId}`,
+  VISUAL_REGRESSION_IMAGE: (path: string) => `${API_BASE_URL}/api/visual-regression/image?path=${encodeURIComponent(path)}`,
 };

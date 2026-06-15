@@ -75,6 +75,80 @@ func TestGetLastSuccessfulStepSortsAndNormalizes(t *testing.T) {
 	}
 }
 
+func TestGetLastSuccessfulStepSkipsRunnerArtifacts(t *testing.T) {
+	base := time.Date(2026, 6, 14, 10, 0, 0, 0, time.UTC)
+	screenshots := []models.Screenshot{
+		{Step: "page_loaded", Name: "page_loaded.png", TestName: "test_exception_demo_assertion.py", CreatedAt: base},
+		{Step: "Success - test_exception_demo_assertion.py", Name: "test_exception_demo_assertion_chrome_success.png", TestName: "test_exception_demo_assertion.py", CreatedAt: base.Add(2 * time.Minute)},
+	}
+
+	step, total := GetLastSuccessfulStep(screenshots)
+	if total != 2 {
+		t.Fatalf("total = %d, want 2", total)
+	}
+	if step != "page loaded" {
+		t.Fatalf("step = %q, want %q", step, "page loaded")
+	}
+}
+
+func TestGetLastSuccessfulStepIframeScenario(t *testing.T) {
+	base := time.Date(2026, 6, 14, 17, 38, 43, 0, time.UTC)
+	testName := "test_exception_demo_iframe_20260614_173742.py"
+	screenshots := []models.Screenshot{
+		{Step: "Iframe Page Loaded", Name: "iframe_page_loaded.png", TestName: testName, CreatedAt: base},
+		{Step: "Test Exception Demo Assertion Chrome Failure", Name: "test_exception_demo_assertion_20260614_173742_chrome_failure.png", TestName: testName, CreatedAt: base.Add(38 * time.Millisecond)},
+		{Step: "Page Loaded", Name: "page_loaded.png", TestName: testName, CreatedAt: base.Add(42 * time.Millisecond)},
+		{Step: "Test Exception Demo Iframe Chrome Failure", Name: "test_exception_demo_iframe_20260614_173742_chrome_failure.png", TestName: testName, CreatedAt: base.Add(47 * time.Millisecond)},
+	}
+
+	step, _ := GetLastSuccessfulStep(screenshots)
+	if step != "Iframe Page Loaded" {
+		t.Fatalf("step = %q, want %q", step, "Iframe Page Loaded")
+	}
+}
+
+func TestScreenshotFilenameMatchesTest(t *testing.T) {
+	testName := "test_exception_demo_iframe_20260614_173742.py"
+	assertionFailure := "test_exception_demo_assertion_20260614_173742_chrome_failure.png"
+	iframeFailure := "test_exception_demo_iframe_20260614_173742_chrome_failure.png"
+
+	if screenshotFilenameMatchesTest(assertionFailure, testName) {
+		t.Fatal("assertion failure PNG should not match iframe test")
+	}
+	if !screenshotFilenameMatchesTest(iframeFailure, testName) {
+		t.Fatal("iframe failure PNG should match iframe test")
+	}
+	if !screenshotFilenameMatchesTest("iframe_page_loaded.png", testName) {
+		t.Fatal("step capture should match iframe test")
+	}
+}
+
+func TestScreenshotMatchesResult(t *testing.T) {
+	shot := models.Screenshot{TestName: "test_a.py", Browser: "chrome"}
+	if !screenshotMatchesResult(shot, "test_a.py", "chrome") {
+		t.Fatal("expected match for same test and browser")
+	}
+	if screenshotMatchesResult(shot, "test_b.py", "chrome") {
+		t.Fatal("expected mismatch for different test name")
+	}
+	if screenshotMatchesResult(shot, "test_a.py", "firefox") {
+		t.Fatal("expected mismatch for different browser")
+	}
+}
+
+func TestExtractPythonFailingLineSkipsRunnerFrames(t *testing.T) {
+	stack := `Traceback (most recent call last):
+  File "/app/src/runner.py", line 664, in execute_test
+    test_passed = module.run_test(driver)
+  File "/app/testscripts/test_example.py", line 7, in run_test
+    driver.find_element("id", "missing")
+selenium.common.exceptions.NoSuchElementException: no such element`
+
+	if got := extractPythonFailingLine(stack); got != 7 {
+		t.Fatalf("line = %d, want 7", got)
+	}
+}
+
 func TestGetLastSuccessfulStepBlankFallback(t *testing.T) {
 	base := time.Date(2026, 6, 14, 10, 0, 0, 0, time.UTC)
 	screenshots := []models.Screenshot{
@@ -86,8 +160,8 @@ func TestGetLastSuccessfulStepBlankFallback(t *testing.T) {
 	if total != 2 {
 		t.Fatalf("total = %d, want 2", total)
 	}
-	if step != "step 2" {
-		t.Fatalf("step = %q, want %q", step, "step 2")
+	if step != "page loaded" {
+		t.Fatalf("step = %q, want %q", step, "page loaded")
 	}
 }
 

@@ -80,6 +80,7 @@ Context:
 {failing_code_snippet}
 
 Rules:
+- CRITICAL: Respect the Framework field exactly. For selenium use Selenium APIs (driver.get, driver.find_element, By.ID, etc.). For playwright use Playwright APIs (page.goto, page.locator, etc.). NEVER suggest Playwright methods for Selenium tests or vice versa.
 - If the error is a LOCATOR_NOT_FOUND, focus heavily on the Failed Locator. Check if the element exists in the screenshot or if it might be dynamically rendered.
 - If the error is a TIMEOUT, consider if an explicit wait is needed or if a previous action (like a click) failed to trigger a page load.
 - If the error is an ASSERTION_FAILURE, review the Code Snippet to see what was expected versus what was received.

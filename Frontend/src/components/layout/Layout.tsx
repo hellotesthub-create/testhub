@@ -1,11 +1,12 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { 
-  LayoutDashboard, 
+  LayoutDashboard,
   LogOut,
   Menu,
   Zap,
   History,
+  Image,
   User
 } from "lucide-react";
 import { useState } from "react";
@@ -50,6 +51,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const navItems: NavItem[] = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { href: "/test-lab", icon: Zap, label: "Test Lab" },
+    { href: "/visual-regression", icon: Image, label: "Visual Regression" },
     { href: "/history", icon: History, label: "History" },
   ];
 

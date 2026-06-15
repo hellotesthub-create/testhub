@@ -48,6 +48,32 @@ func (r *TestResultRepository) GetByID(ctx context.Context, id primitive.ObjectI
 	return &result, nil
 }
 
+// GetResultIDsByRunIDs returns the result IDs belonging to the given run IDs.
+// Used by Visual Regression to scope comparison history to a user's runs.
+func (r *TestResultRepository) GetResultIDsByRunIDs(ctx context.Context, runIDs []primitive.ObjectID) ([]primitive.ObjectID, error) {
+	if len(runIDs) == 0 {
+		return []primitive.ObjectID{}, nil
+	}
+	filter := bson.M{"run_id": bson.M{"$in": runIDs}}
+	opts := options.Find().SetProjection(bson.M{"_id": 1})
+	cursor, err := r.collection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+	var results []struct {
+		ID primitive.ObjectID `bson:"_id"`
+	}
+	if err := cursor.All(ctx, &results); err != nil {
+		return nil, err
+	}
+	ids := make([]primitive.ObjectID, len(results))
+	for i, res := range results {
+		ids[i] = res.ID
+	}
+	return ids, nil
+}
+
 // GetByRunID retrieves all results for a specific run
 func (r *TestResultRepository) GetByRunID(ctx context.Context, runID primitive.ObjectID) ([]models.TestResult, error) {
 	filter := bson.M{"run_id": runID}

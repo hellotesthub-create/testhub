@@ -111,6 +111,7 @@ func main() {
 	testRunRepo := repository.NewTestRunRepository(database)
 	testResultRepo := repository.NewTestResultRepository(database)
 	diagnosisRepo := repository.NewDiagnosisRepository(database)
+	visualComparisonRepo := repository.NewVisualComparisonRepository(database)
 	diagnosisRepo.EnsureIndexes(context.Background())
 
 	// Service Layer
@@ -125,6 +126,14 @@ func main() {
 	googleAuthHandler := handlers.NewGoogleAuthHandler(userService, jwtService)
 	githubHandler := handlers.NewGitHubHandler()
 	artifactsHandler := handlers.NewArtifactsHandler(screenshotRepo, logRepo, videoRepo)
+	visualRegressionHandler := handlers.NewVisualRegressionHandler(
+		services.NewVisualRegressionService(),
+		visualComparisonRepo,
+		testResultRepo,
+		testRunRepo,
+		screenshotRepo,
+		testCaseRepo,
+	)
 	testSuiteHandler := handlers.NewTestSuiteHandler(testSuiteRepo, testCaseRepo)
 	diagnosisHandler := handlers.NewDiagnosisHandler(
 		testResultRepo, testRunRepo, testCaseRepo,
@@ -239,6 +248,18 @@ func main() {
 	api.HandleFunc("/results/{result_id}/diagnosis", authMiddleware.Authenticate(diagnosisHandler.GetDiagnosis)).Methods("GET", "OPTIONS")
 
 	// ===========================================
+	// VISUAL REGRESSION
+	// ===========================================
+	api.HandleFunc("/visual-regression/compare", authMiddleware.Authenticate(visualRegressionHandler.Compare)).Methods("POST", "OPTIONS")
+	api.HandleFunc("/visual-regression/comparison/{result_id}", authMiddleware.Authenticate(visualRegressionHandler.GetComparison)).Methods("GET", "OPTIONS")
+	// Public image route: <img> tags cannot send Authorization headers (same pattern as /screenshots/:id).
+	// Path whitelist in ServeImage prevents arbitrary file access.
+	api.HandleFunc("/visual-regression/image", visualRegressionHandler.ServeImage).Methods("GET", "HEAD", "OPTIONS")
+	api.HandleFunc("/visual-regression/health", authMiddleware.Authenticate(visualRegressionHandler.Health)).Methods("GET", "OPTIONS")
+	api.HandleFunc("/visual-regression/history", authMiddleware.Authenticate(visualRegressionHandler.GetHistory)).Methods("GET", "OPTIONS")
+	api.HandleFunc("/visual-regression/approve-baseline", authMiddleware.Authenticate(visualRegressionHandler.ApproveBaseline)).Methods("POST", "OPTIONS")
+
+	// ===========================================
 	// ARTIFACTS - Screenshots, Videos, Logs by run_id
 	// ===========================================
 	api.HandleFunc("/runs/{run_id}/screenshots", artifactsHandler.GetRunScreenshots).Methods("GET", "OPTIONS")
@@ -308,6 +329,14 @@ func main() {
 	log.Println("POST /api/artifacts/videos")
 	log.Println("GET /api/screenshots/:id")
 	log.Println("GET /api/videos/:id")
+	log.Println("")
+	log.Println(" === Visual Regression ===")
+	log.Println("POST /api/visual-regression/compare")
+	log.Println("GET /api/visual-regression/comparison/:result_id")
+	log.Println("GET /api/visual-regression/image")
+	log.Println("GET /api/visual-regression/health")
+	log.Println("GET /api/visual-regression/history")
+	log.Println("POST /api/visual-regression/approve-baseline")
 
 	if err := http.ListenAndServe(":"+port, handler); err != nil {
 		log.Fatal("Server failed to start:", err)

@@ -22,6 +22,7 @@ DIRS=(
   "runner/output/screenshots"
   "runner/output/reports"
   "runner/logs"
+  "baselines"
 )
 
 echo "Preparing TestHub output directories..."

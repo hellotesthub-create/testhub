@@ -17,6 +17,7 @@ services:
       RUNNER_DIR: /app
       SELENIUM_HUB_URL: http://selenium-hub:4444
       BACKEND_INTERNAL_URL: http://testops-backend-api:8080/api
+      VISUAL_REGRESSION_SERVICE_URL: ${VISUAL_REGRESSION_SERVICE_URL:-http://visual-regression-service:8002}
       RUNNER_IMAGE: thex_runner:latest
       DOCKER_NETWORK: testops-db-network
       MONGO_HOST: testops-mongo
