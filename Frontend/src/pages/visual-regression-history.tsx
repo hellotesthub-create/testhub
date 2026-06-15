@@ -18,6 +18,7 @@ import {
   Image,
   RefreshCw,
   ExternalLink,
+  Trash2,
 } from "lucide-react";
 import { apiConfig } from "@/lib/apiConfig";
 import { useLocation } from "wouter";
@@ -31,7 +32,7 @@ interface HistoryItem {
   step_name: string;
   framework: string;
   browser: string;
-  status: "PASSED" | "FAILED" | "BASELINE_CREATED" | "DIMENSION_MISMATCH" | "ERROR";
+  status: "PASSED" | "FAILED" | "BASELINE_CREATED" | "BASELINE_PROMOTED" | "DIMENSION_MISMATCH" | "ERROR" | "MISSING";
   difference_percentage: number;
   threshold: number;
   baseline_path: string;
@@ -55,6 +56,11 @@ const STATUS_CONFIG = {
   BASELINE_CREATED: {
     label: "Baseline Set",
     className: "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300",
+    icon: Image,
+  },
+  BASELINE_PROMOTED: {
+    label: "Baseline Promoted",
+    className: "bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300",
     icon: Image,
   },
   DIMENSION_MISMATCH: {
@@ -140,6 +146,41 @@ export default function VisualRegressionHistory() {
     fetchHistory();
   };
 
+  const authHeaders = () => {
+    const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+    return { Authorization: `Bearer ${token}` };
+  };
+
+  const deleteOne = async (id: string) => {
+    const prev = items;
+    setItems((cur) => cur.filter((i) => i.id !== id)); // optimistic
+    try {
+      const res = await fetch(`${apiConfig.baseUrl}/visual-regression/comparison/${id}`, {
+        method: "DELETE",
+        headers: authHeaders(),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      setItems(prev); // revert on failure
+      setError("Could not delete that comparison.");
+    }
+  };
+
+  const clearAll = async () => {
+    if (!window.confirm("Delete ALL visual regression history? Baselines are kept.")) return;
+    try {
+      const res = await fetch(`${apiConfig.baseUrl}/visual-regression/history`, {
+        method: "DELETE",
+        headers: authHeaders(),
+      });
+      if (!res.ok) throw new Error();
+      setItems([]);
+      setError(null);
+    } catch {
+      setError("Could not clear history.");
+    }
+  };
+
   const filtered = items.filter((item) => {
     const term = search.toLowerCase();
     const matchSearch =
@@ -172,17 +213,29 @@ export default function VisualRegressionHistory() {
               All visual comparisons across your test runs
             </p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={refreshing || loading}
-          >
-            <RefreshCw
-              className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
-            />
-            Refresh
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={refreshing || loading}
+            >
+              <RefreshCw
+                className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
+              />
+              Refresh
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearAll}
+              disabled={loading || items.length === 0}
+              className="text-red-500 border-red-500/30 hover:bg-red-500/10 hover:text-red-400"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Clear all
+            </Button>
+          </div>
         </div>
 
         {/* Error */}
@@ -328,6 +381,15 @@ export default function VisualRegressionHistory() {
                             >
                               <ExternalLink className="h-4 w-4 lg:h-3 lg:w-3 lg:mr-1" />
                               <span className="hidden lg:inline">View</span>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              title="Delete this comparison"
+                              className="h-8 w-8 p-0 shrink-0 text-slate-500 hover:text-red-500 hover:bg-red-500/10"
+                              onClick={(e) => { e.stopPropagation(); deleteOne(item.id); }}
+                            >
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
                         </div>

@@ -8,6 +8,7 @@ import (
 
 const (
 	VisualStatusBaselineCreated   = "BASELINE_CREATED"
+	VisualStatusBaselinePromoted  = "BASELINE_PROMOTED"
 	VisualStatusPassed            = "PASSED"
 	VisualStatusFailed            = "FAILED"
 	VisualStatusDimensionMismatch = "DIMENSION_MISMATCH"
@@ -36,6 +37,11 @@ type VisualComparison struct {
 	ID                   primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	ResultID             primitive.ObjectID `bson:"result_id" json:"result_id"`
 	RunID                string             `bson:"-" json:"run_id,omitempty"`
+	// JobID/RunRef link a comparison to its background VRT job + run (set by the
+	// automatic pipeline; empty for legacy manual single-result comparisons).
+	JobID      primitive.ObjectID `bson:"job_id,omitempty" json:"job_id,omitempty"`
+	RunRef     primitive.ObjectID `bson:"run_ref,omitempty" json:"-"`
+	TestName   string             `bson:"test_name,omitempty" json:"test_name,omitempty"`
 	TestCaseID           string             `bson:"test_case_id" json:"test_case_id"`
 	StepName             string             `bson:"step_name" json:"step_name"`
 	Framework            string             `bson:"framework" json:"framework"`
@@ -53,6 +59,16 @@ type VisualComparison struct {
 
 type ApproveBaselineRequest struct {
 	ComparisonID string `json:"comparison_id"`
+}
+
+type PromoteAllBaselinesRequest struct {
+	ComparisonIDs []string `json:"comparison_ids"`
+}
+
+type PromoteAllBaselinesResponse struct {
+	Promoted int      `json:"promoted"`
+	Failed   int      `json:"failed"`
+	Errors   []string `json:"errors,omitempty"`
 }
 
 type ApproveBaselineResponse struct {

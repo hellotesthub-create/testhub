@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Upload, Play, FileCode, X, CheckCircle2, Loader2, Eye, Mail,
   FlaskConical, Rocket, AlertCircle, Clock, XCircle, Code2, StopCircle, RefreshCw,
-  Github, Search, FolderGit2
+  Github, Search, FolderGit2, Layers
 } from "lucide-react";
 import { BrandIcon } from "@/lib/brandAssets";
 import { CardSpotlight } from "@/components/ui/card-spotlight";
@@ -62,6 +62,7 @@ export default function TestLab() {
   const [suiteName, setSuiteName] = useState("");
   const [selectedBrowsers, setSelectedBrowsers] = useState<string[]>([]);
   const [sendCompletionEmail, setSendCompletionEmail] = useState(true);
+  const [enableVRT, setEnableVRT] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [selectedLanguage, setSelectedLanguage] = useState<"python" | "java" | "both">("python");
   const [selectedFramework, setSelectedFramework] = useState<"selenium" | "playwright">("selenium");
@@ -289,6 +290,7 @@ export default function TestLab() {
       formData.append("email", user?.email || "");
       formData.append("user_id", user?.id || "");
       formData.append("send_email_on_completion", String(sendCompletionEmail));
+      formData.append("visual_regression", String(enableVRT));
 
       if (scriptSource === "upload") {
         uploadedFiles.forEach((fileObj) => {
@@ -965,7 +967,23 @@ export default function TestLab() {
                       </div>
                     </div>
                   </label>
-                  
+
+                  <label className="sheen flex cursor-pointer items-start gap-2.5 rounded-xl border border-border bg-card/50 p-3 w-full transition-all duration-300 hover:border-primary/40 hover:bg-primary/[0.04] sm:w-auto">
+                    <Checkbox
+                      checked={enableVRT}
+                      onCheckedChange={(checked) => setEnableVRT(checked === true)}
+                      disabled={isRunning}
+                      className="mt-0.5"
+                    />
+                    <div className="flex items-start gap-2">
+                      <Layers className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                      <div>
+                        <p className="text-xs sm:text-sm font-medium text-foreground">Enable Visual Regression</p>
+                        <p className="text-[11px] sm:text-xs text-muted-foreground">After the run, auto-compares every screenshot to its baseline.</p>
+                      </div>
+                    </div>
+                  </label>
+
                   {!isSuiteReady && (
                     <div className="flex items-center gap-1.5 sm:gap-2 text-amber-500 text-xs sm:text-sm">
                       <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />

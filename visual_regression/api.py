@@ -13,7 +13,7 @@ class CompareRequest(BaseModel):
     framework: str
     browser: str
     current_image_path: str
-    threshold: float = 2.0
+    threshold: float = 0.1
 
 
 @app.post("/compare")

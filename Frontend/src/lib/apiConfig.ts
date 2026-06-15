@@ -71,5 +71,13 @@ export const API_ENDPOINTS = {
   // Visual Regression
   VISUAL_REGRESSION_COMPARE: `${API_BASE_URL}/api/visual-regression/compare`,
   VISUAL_REGRESSION_COMPARISON: (resultId: string) => `${API_BASE_URL}/api/visual-regression/comparison/${resultId}`,
+  VISUAL_REGRESSION_PROMOTE: `${API_BASE_URL}/api/visual-regression/promote-baseline`,
+  VISUAL_REGRESSION_PROMOTE_ALL: `${API_BASE_URL}/api/visual-regression/promote-all-baselines`,
   VISUAL_REGRESSION_IMAGE: (path: string) => `${API_BASE_URL}/api/visual-regression/image?path=${encodeURIComponent(path)}`,
+
+  // Visual Regression — background run-level job (auto/parallel)
+  VRT_RUN_STATUS: (runId: string) => `${API_BASE_URL}/api/runs/${runId}/visual-regression`,
+  VRT_RUN_TRIGGER: (runId: string) => `${API_BASE_URL}/api/runs/${runId}/visual-regression`,
+  VRT_RUN_DELETE: (runId: string) => `${API_BASE_URL}/api/runs/${runId}/visual-regression`,
+  VRT_RUN_COMPARISONS: (runId: string) => `${API_BASE_URL}/api/runs/${runId}/visual-regression/comparisons`,
 };

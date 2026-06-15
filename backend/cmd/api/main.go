@@ -112,6 +112,7 @@ func main() {
 	testResultRepo := repository.NewTestResultRepository(database)
 	diagnosisRepo := repository.NewDiagnosisRepository(database)
 	visualComparisonRepo := repository.NewVisualComparisonRepository(database)
+	vrtJobRepo := repository.NewVRTJobRepository(database)
 	diagnosisRepo.EnsureIndexes(context.Background())
 
 	// Service Layer
@@ -134,6 +135,7 @@ func main() {
 		screenshotRepo,
 		testCaseRepo,
 	)
+	vrtHandler := handlers.NewVRTHandler(testRunRepo, vrtJobRepo, visualComparisonRepo)
 	testSuiteHandler := handlers.NewTestSuiteHandler(testSuiteRepo, testCaseRepo)
 	diagnosisHandler := handlers.NewDiagnosisHandler(
 		testResultRepo, testRunRepo, testCaseRepo,
@@ -173,6 +175,19 @@ func main() {
 			log.Printf("Email autosend worker started (interval=%s)", workerCfg.Interval)
 		}
 	}
+
+	// ==================================================
+	// BACKGROUND VISUAL REGRESSION WORKER (always on; only acts on VRT-enabled runs)
+	// ==================================================
+	vrtWorker := services.NewVRTWorker(
+		testRunRepo,
+		screenshotRepo,
+		testResultRepo,
+		vrtJobRepo,
+		visualComparisonRepo,
+		services.NewVisualRegressionService(),
+	)
+	vrtWorker.Start(context.Background())
 
 	// ==================================================
 	// ROUTER SETUP
@@ -257,7 +272,16 @@ func main() {
 	api.HandleFunc("/visual-regression/image", visualRegressionHandler.ServeImage).Methods("GET", "HEAD", "OPTIONS")
 	api.HandleFunc("/visual-regression/health", authMiddleware.Authenticate(visualRegressionHandler.Health)).Methods("GET", "OPTIONS")
 	api.HandleFunc("/visual-regression/history", authMiddleware.Authenticate(visualRegressionHandler.GetHistory)).Methods("GET", "OPTIONS")
+	api.HandleFunc("/visual-regression/history", authMiddleware.Authenticate(visualRegressionHandler.ClearHistory)).Methods("DELETE", "OPTIONS")
+	api.HandleFunc("/visual-regression/comparison/{id}", authMiddleware.Authenticate(visualRegressionHandler.DeleteComparison)).Methods("DELETE", "OPTIONS")
 	api.HandleFunc("/visual-regression/approve-baseline", authMiddleware.Authenticate(visualRegressionHandler.ApproveBaseline)).Methods("POST", "OPTIONS")
+	api.HandleFunc("/visual-regression/promote-baseline", authMiddleware.Authenticate(visualRegressionHandler.PromoteBaseline)).Methods("POST", "OPTIONS")
+	api.HandleFunc("/visual-regression/promote-all-baselines", authMiddleware.Authenticate(visualRegressionHandler.PromoteAllBaselines)).Methods("POST", "OPTIONS")
+	// Background VRT job: trigger/re-run, live progress, per-run comparison list.
+	api.HandleFunc("/runs/{run_id}/visual-regression", authMiddleware.Authenticate(vrtHandler.TriggerRun)).Methods("POST", "OPTIONS")
+	api.HandleFunc("/runs/{run_id}/visual-regression", authMiddleware.Authenticate(vrtHandler.GetStatus)).Methods("GET", "OPTIONS")
+	api.HandleFunc("/runs/{run_id}/visual-regression", authMiddleware.Authenticate(vrtHandler.DeleteHistory)).Methods("DELETE", "OPTIONS")
+	api.HandleFunc("/runs/{run_id}/visual-regression/comparisons", authMiddleware.Authenticate(vrtHandler.GetComparisons)).Methods("GET", "OPTIONS")
 
 	// ===========================================
 	// ARTIFACTS - Screenshots, Videos, Logs by run_id

@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { API_ENDPOINTS } from "@/lib/apiConfig";
-import { VisualRegressionTab } from "@/components/ui/visual-regression-tab";
+import { VRTRunPanel } from "@/components/ui/vrt-run-panel";
 
 
 interface Screenshot {
@@ -1093,17 +1093,10 @@ export default function TesterTestResults() {
 
       {/* Visual Regression Tab */}
       {activeTab === "visual" && (
-        filteredResults.length === 0 ? (
-          <GlassCard className="text-center py-8 sm:py-12">
-            <BarChart3 className="w-8 h-8 sm:w-12 sm:h-12 mx-auto text-slate-400 dark:text-slate-600 mb-3 sm:mb-4" />
-            <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-white mb-2">No Matching Results</h3>
-            <p className="text-slate-600 dark:text-slate-400">
-              Select a script and browser filter to run visual regression on a specific test result.
-            </p>
-          </GlassCard>
-        ) : (
-          <VisualRegressionTab resultId={filteredResults[0].id} />
-        )
+        <div className="space-y-6">
+          {/* Automatic, run-level visual regression (every script/screenshot, parallel) */}
+          {testId && <VRTRunPanel runId={testId} />}
+        </div>
       )}
 
       {/* Image Viewer Dialog */}

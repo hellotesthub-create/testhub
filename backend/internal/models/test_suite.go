@@ -16,6 +16,8 @@ type TestSuite struct {
 	Tags           []string           `json:"tags,omitempty" bson:"tags,omitempty"`
 	DefaultBrowser string             `json:"default_browser" bson:"default_browser"` // chrome, firefox
 	Framework      string             `json:"framework" bson:"framework"`             // selenium, playwright
+	// Suite-level default for Visual Regression Testing; a run inherits it unless overridden.
+	VisualRegressionEnabled bool      `json:"visual_regression_enabled" bson:"visual_regression_enabled"`
 	IsDeleted      bool               `json:"is_deleted" bson:"is_deleted"`
 	CreatedAt      time.Time          `json:"created_at" bson:"created_at"`
 	UpdatedAt      time.Time          `json:"updated_at" bson:"updated_at"`

@@ -16,7 +16,7 @@ STATUS_DIMENSION_MISMATCH = "DIMENSION_MISMATCH"
 def compare_images(
     baseline_path: str | Path,
     current_path: str | Path,
-    threshold: float = 2.0,
+    threshold: float = 0.1,
 ) -> dict[str, Any]:
     """Compare two images with pure pixel math and create a highlighted diff."""
     baseline = _read_image(baseline_path)
@@ -34,13 +34,19 @@ def compare_images(
     changed_pixels = cv2.countNonZero(diff_mask)
     difference_percentage = (changed_pixels / total_pixels) * 100 if total_pixels else 0.0
 
-    diff_image_path = _default_diff_path(current_path)
-    generate_diff_image(baseline_path, current_path, diff_image_path)
+    is_failed = difference_percentage > threshold
+    # Generate the diff image whenever ANY pixels changed (not only on failure),
+    # so the user can always SEE what differs between baseline and current — even
+    # for sub-threshold changes. Truly identical screenshots (0%) skip it.
+    diff_image_path = None
+    if difference_percentage > 0:
+        diff_image_path = _default_diff_path(current_path)
+        generate_diff_image(baseline_path, current_path, diff_image_path)
 
     return {
-        "status": STATUS_FAILED if difference_percentage > threshold else STATUS_PASSED,
+        "status": STATUS_FAILED if is_failed else STATUS_PASSED,
         "difference_percentage": round(difference_percentage, 4),
-        "diff_image_path": str(diff_image_path),
+        "diff_image_path": str(diff_image_path) if diff_image_path else None,
     }
 
 

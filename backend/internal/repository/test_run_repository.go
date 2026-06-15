@@ -231,6 +231,58 @@ func (r *TestRunRepository) Update(ctx context.Context, id primitive.ObjectID, u
 
 // GetRunsNeedingEmail finds completed/failed runs that have not been emailed yet.
 // This is used by the background email worker.
+// GetRunsNeedingVRT finds finished runs with VRT enabled that have not yet had a
+// background job created (vrt_status empty). Used by the VRT worker to auto-trigger.
+func (r *TestRunRepository) GetRunsNeedingVRT(ctx context.Context, limit int64) ([]models.TestRun, error) {
+	if limit <= 0 {
+		limit = 10
+	}
+	filter := bson.M{
+		"status":                    bson.M{"$in": []string{"completed", "failed"}},
+		"visual_regression_enabled": true,
+		"$or": []bson.M{
+			{"vrt_status": bson.M{"$exists": false}},
+			{"vrt_status": ""},
+		},
+	}
+	opts := options.Find().SetSort(bson.D{{Key: "updated_at", Value: 1}}).SetLimit(limit)
+	cursor, err := r.collection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+	runs := make([]models.TestRun, 0)
+	if err := cursor.All(ctx, &runs); err != nil {
+		return nil, err
+	}
+	return runs, nil
+}
+
+// TryClaimVRT atomically sets vrt_status to "queued" exactly once per run, so only
+// one worker creates the job even across replicas. Returns true if this call won.
+func (r *TestRunRepository) TryClaimVRT(ctx context.Context, id primitive.ObjectID) (bool, error) {
+	filter := bson.M{
+		"_id":                       id,
+		"visual_regression_enabled": true,
+		"$or": []bson.M{
+			{"vrt_status": bson.M{"$exists": false}},
+			{"vrt_status": ""},
+		},
+	}
+	update := bson.M{"$set": bson.M{"vrt_status": models.VRTStatusQueued, "updated_at": time.Now()}}
+	res, err := r.collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return false, err
+	}
+	return res.ModifiedCount > 0, nil
+}
+
+// SetVRTStatus mirrors the latest job status onto the run for quick display.
+func (r *TestRunRepository) SetVRTStatus(ctx context.Context, id primitive.ObjectID, status string) error {
+	_, err := r.collection.UpdateByID(ctx, id, bson.M{"$set": bson.M{"vrt_status": status, "updated_at": time.Now()}})
+	return err
+}
+
 func (r *TestRunRepository) GetRunsNeedingEmail(ctx context.Context, limit int64) ([]models.TestRun, error) {
 	if limit <= 0 {
 		limit = 10

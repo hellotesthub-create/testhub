@@ -515,6 +515,14 @@ func (h *TestRunHandler) CreateAndRunSuite(w http.ResponseWriter, r *http.Reques
 		}
 	}
 
+	// Visual Regression: per-run override; defaults to false when not provided.
+	visualRegressionEnabled := false
+	if v := strings.TrimSpace(r.FormValue("visual_regression")); v != "" {
+		if b, err := strconv.ParseBool(v); err == nil {
+			visualRegressionEnabled = b
+		}
+	}
+
 	// Use JWT claims for user identity (not form values)
 	username := claims.Username
 	email := claims.Email
@@ -716,6 +724,7 @@ func (h *TestRunHandler) CreateAndRunSuite(w http.ResponseWriter, r *http.Reques
 		Passed:            0,
 		Failed:            0,
 		SuccessRate:       0,
+		VisualRegressionEnabled: visualRegressionEnabled,
 		EmailOnCompletion: sendEmailOnCompletion,
 		EmailStatus: func() string {
 			if sendEmailOnCompletion {

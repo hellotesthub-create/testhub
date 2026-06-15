@@ -29,6 +29,11 @@ type TestRun struct {
 	EmailStatus       string             `json:"email_status,omitempty" bson:"email_status,omitempty"` // pending, sending, sent, failed
 	EmailSentAt       *time.Time         `json:"email_sent_at,omitempty" bson:"email_sent_at,omitempty"`
 	EmailError        string             `json:"email_error,omitempty" bson:"email_error,omitempty"`
+	// VisualRegressionEnabled controls whether a background VRT job runs after
+	// this run completes. Resolved at trigger time from the suite default or a
+	// per-run override. VRTStatus mirrors the latest VRTJob for quick display.
+	VisualRegressionEnabled bool       `json:"visual_regression_enabled" bson:"visual_regression_enabled"`
+	VRTStatus               string     `json:"vrt_status,omitempty" bson:"vrt_status,omitempty"` // queued|running|completed|failed
 	CreatedAt         time.Time          `json:"created_at" bson:"created_at"`
 	UpdatedAt         time.Time          `json:"updated_at" bson:"updated_at"`
 }

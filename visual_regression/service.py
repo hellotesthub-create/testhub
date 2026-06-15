@@ -35,7 +35,7 @@ def compare(
     framework,
     browser,
     current_image_path,
-    threshold=2.0,
+    threshold=0.1,
 ) -> dict[str, Any]:
     current_path = str(current_image_path)
     if not os.path.exists(current_path):

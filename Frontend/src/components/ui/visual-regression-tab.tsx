@@ -9,6 +9,7 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  ArrowUpCircle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,14 +17,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { API_ENDPOINTS, apiConfig } from "@/lib/apiConfig";
+import { API_ENDPOINTS } from "@/lib/apiConfig";
 
 type Comparison = {
+  id?: string;
+  _id?: string;
   status: string;
   difference_percentage: number;
   baseline_path: string;
   current_path: string;
   diff_path?: string | null;
+  approved_at?: string;
 };
 
 type ViewerImage = { label: string; path: string };
@@ -64,8 +68,19 @@ async function visualRegressionErrorMessage(res: Response): Promise<string> {
   return "Visual comparison failed.";
 }
 
-function imageUrl(path: string) {
-  return `${apiConfig.baseUrl}/visual-regression/image?path=${encodeURIComponent(path)}`;
+function comparisonId(c: Comparison | null): string {
+  if (!c) return "";
+  return c.id || c._id || "";
+}
+
+function canSetBaseline(c: Comparison): boolean {
+  if (c.approved_at || c.status === "BASELINE_PROMOTED") return false;
+  if (!c.current_path) return false;
+  return !["MISSING", "ERROR"].includes(c.status);
+}
+
+function imageUrl(path: string, cacheKey: number) {
+  return `${API_ENDPOINTS.VISUAL_REGRESSION_IMAGE(path)}&t=${cacheKey}`;
 }
 
 export function VisualRegressionTab({ resultId }: Props) {
@@ -77,26 +92,36 @@ export function VisualRegressionTab({ resultId }: Props) {
   const [approveSuccess, setApproveSuccess] = useState(false);
   const [approveError, setApproveError] = useState<string | null>(null);
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+  const [imageCacheKey, setImageCacheKey] = useState(Date.now());
 
   const load = async () => {
     setLoading(true);
     setError("");
     try {
       const res = await fetch(API_ENDPOINTS.VISUAL_REGRESSION_COMPARISON(resultId), { headers: tokenHeaders() });
-      if (res.status === 404) setComparison(null);
-      else if (res.ok) setComparison(await res.json());
-      else setError("Unable to load visual comparison.");
+      if (res.status === 404) {
+        setComparison(null);
+      } else if (res.ok) {
+        setComparison(await res.json());
+        setImageCacheKey(Date.now());
+      } else {
+        setError("Unable to load visual comparison.");
+      }
     } catch {
       setError("Unable to load visual comparison.");
     }
     setLoading(false);
   };
 
-  useEffect(() => { void load(); }, [resultId]);
+  useEffect(() => {
+    void load();
+  }, [resultId]);
 
   const run = async () => {
     setRunning(true);
     setError("");
+    setApproveSuccess(false);
+    setApproveError(null);
     try {
       const res = await fetch(API_ENDPOINTS.VISUAL_REGRESSION_COMPARE, {
         method: "POST",
@@ -107,7 +132,9 @@ export function VisualRegressionTab({ resultId }: Props) {
         setError(await visualRegressionErrorMessage(res));
         return;
       }
-      setComparison(await res.json());
+      const data: Comparison = await res.json();
+      setComparison(data);
+      setImageCacheKey(Date.now());
     } catch {
       setError("Visual comparison failed.");
     } finally {
@@ -116,20 +143,21 @@ export function VisualRegressionTab({ resultId }: Props) {
     }
   };
 
-  const handleApproveBaseline = async () => {
-    if (!comparison) return;
+  const handleSetBaseline = async () => {
+    const id = comparisonId(comparison);
+    if (!comparison || !id) return;
     setApproving(true);
     setApproveError(null);
     setApproveSuccess(false);
     try {
-      const res = await fetch(`${apiConfig.baseUrl}/visual-regression/approve-baseline`, {
+      const res = await fetch(API_ENDPOINTS.VISUAL_REGRESSION_PROMOTE, {
         method: "POST",
         headers: tokenHeaders(),
-        body: JSON.stringify({ comparison_id: (comparison as any).id || (comparison as any)._id }),
+        body: JSON.stringify({ comparison_id: id }),
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error ?? "Failed to approve baseline");
+        throw new Error(data.error ?? "Failed to set baseline");
       }
       setApproveSuccess(true);
       await load();
@@ -166,6 +194,8 @@ export function VisualRegressionTab({ resultId }: Props) {
       ]
     : [];
 
+  const showBaselineAction = comparison && canSetBaseline(comparison) && comparisonId(comparison);
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -183,12 +213,16 @@ export function VisualRegressionTab({ resultId }: Props) {
         </div>
         <div className="flex items-center gap-2">
           <Button size="sm" variant="outline" onClick={load} disabled={running || loading}>
-            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-4 w-4 mr-1 ${loading && !running ? "animate-spin" : ""}`} />
             Refresh
           </Button>
           <Button size="sm" variant="outline" onClick={run} disabled={running || loading}>
-            <PlusCircle className="h-4 w-4" />
-            {comparison ? "Re-run Comparison" : "Run Comparison"}
+            {running ? (
+              <RefreshCw className="h-4 w-4 mr-1 animate-spin" />
+            ) : (
+              <PlusCircle className="h-4 w-4 mr-1" />
+            )}
+            {running ? "Running…" : comparison ? "Re-run Comparison" : "Run Comparison"}
           </Button>
         </div>
       </div>
@@ -216,8 +250,8 @@ export function VisualRegressionTab({ resultId }: Props) {
             Compare this run&apos;s screenshot against the saved baseline to detect UI changes.
           </p>
           <Button onClick={run} disabled={running}>
-            <PlusCircle className="h-4 w-4" />
-            Run Visual Comparison
+            {running ? <RefreshCw className="h-4 w-4 mr-1 animate-spin" /> : <PlusCircle className="h-4 w-4 mr-1" />}
+            {running ? "Running…" : "Run Visual Comparison"}
           </Button>
         </GlassCard>
       ) : (
@@ -240,8 +274,9 @@ export function VisualRegressionTab({ resultId }: Props) {
                     >
                       <div className="aspect-video bg-slate-950 relative overflow-hidden">
                         <img
+                          key={`${label}-${imageCacheKey}`}
                           className="h-full w-full object-contain group-hover:scale-105 transition-transform duration-300"
-                          src={imageUrl(path)}
+                          src={imageUrl(path, imageCacheKey)}
                           alt={`${label} visual regression`}
                         />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/40">
@@ -285,36 +320,36 @@ export function VisualRegressionTab({ resultId }: Props) {
             </div>
           )}
 
-          {(comparison.status === "FAILED" || comparison.status === "DIMENSION_MISMATCH") && (
+          {showBaselineAction && (
             <div className="rounded-lg border border-slate-200 dark:border-white/10 p-4">
               {approveSuccess ? (
                 <Alert className="bg-green-50 border-green-200 dark:bg-green-500/10 dark:border-green-500/20">
                   <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
                   <AlertDescription className="text-green-700 dark:text-green-300 text-sm">
-                    Baseline approved. Future comparisons will use this screenshot as the new golden image.
+                    Baseline updated. Future comparisons will use this screenshot as the golden image.
                   </AlertDescription>
                 </Alert>
               ) : (
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <p className="text-sm font-medium text-slate-900 dark:text-white">Approve as new baseline?</p>
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">Set current as baseline?</p>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      Replaces the stored baseline with the current screenshot.
+                      Accept this screenshot as the new golden image for future comparisons.
                     </p>
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={handleApproveBaseline}
+                    onClick={handleSetBaseline}
                     disabled={approving}
-                    className="shrink-0 border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-500/30 dark:text-blue-400 dark:hover:bg-blue-500/10"
+                    className="shrink-0 border-indigo-200 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-500/30 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
                   >
                     {approving ? (
                       <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
                     ) : (
-                      <CheckCircle className="h-3 w-3 mr-1" />
+                      <ArrowUpCircle className="h-3 w-3 mr-1" />
                     )}
-                    {approving ? "Approving..." : "Approve Baseline"}
+                    {approving ? "Setting…" : "Set as baseline"}
                   </Button>
                 </div>
               )}
@@ -352,7 +387,7 @@ export function VisualRegressionTab({ resultId }: Props) {
 
               <div className="flex-1 flex items-center justify-center p-4 pt-16">
                 <img
-                  src={imageUrl(viewerImages[viewerIndex].path)}
+                  src={imageUrl(viewerImages[viewerIndex].path, imageCacheKey)}
                   alt={viewerImages[viewerIndex].label}
                   className="max-w-full max-h-full object-contain"
                 />

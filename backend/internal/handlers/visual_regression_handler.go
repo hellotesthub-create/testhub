@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"context"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -127,6 +128,10 @@ func (h *VisualRegressionHandler) Compare(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	// Manual compare is per result_id — drop the previous manual record so re-run
+	// and GET /comparison/{result_id} always reflect the latest pass.
+	_ = h.visualComparisonRepo.DeleteByResultID(r.Context(), resultID)
+
 	comparison := &models.VisualComparison{
 		ResultID:             resultID,
 		TestCaseID:           compareReq.TestCaseID,
@@ -226,7 +231,7 @@ func (h *VisualRegressionHandler) GetHistory(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	items, err := h.visualComparisonRepo.GetHistory(ctx, resultIDs)
+	items, err := h.visualComparisonRepo.GetHistory(ctx, resultIDs, runIDs)
 	if err != nil {
 		respondJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to fetch comparisons"})
 		return
@@ -235,11 +240,19 @@ func (h *VisualRegressionHandler) GetHistory(w http.ResponseWriter, r *http.Requ
 	if items == nil {
 		items = []models.VisualComparison{}
 	} else {
-		// Populate RunID by fetching the associated results
 		for i := range items {
-			res, err := h.testResultRepo.GetByID(ctx, items[i].ResultID)
-			if err == nil && res != nil {
-				items[i].RunID = res.RunID.Hex()
+			if !items[i].RunRef.IsZero() {
+				if run, err := h.testRunRepo.GetByID(ctx, items[i].RunRef); err == nil && run != nil {
+					items[i].RunID = run.RunID
+				}
+				continue
+			}
+			if !items[i].ResultID.IsZero() {
+				if res, err := h.testResultRepo.GetByID(ctx, items[i].ResultID); err == nil && res != nil {
+					if run, err := h.testRunRepo.GetByID(ctx, res.RunID); err == nil && run != nil {
+						items[i].RunID = run.RunID
+					}
+				}
 			}
 		}
 	}
@@ -247,8 +260,134 @@ func (h *VisualRegressionHandler) GetHistory(w http.ResponseWriter, r *http.Requ
 	respondJSON(w, http.StatusOK, items)
 }
 
+// userOwnsComparison resolves the run behind a comparison (via run_ref or its
+// result) and checks the caller owns it.
+func (h *VisualRegressionHandler) userOwnsComparison(ctx context.Context, cmp *models.VisualComparison, email string) bool {
+	var runID primitive.ObjectID
+	if !cmp.RunRef.IsZero() {
+		runID = cmp.RunRef
+	} else if !cmp.ResultID.IsZero() {
+		res, err := h.testResultRepo.GetByID(ctx, cmp.ResultID)
+		if err != nil {
+			return false
+		}
+		runID = res.RunID
+	} else {
+		return false
+	}
+	run, err := h.testRunRepo.GetByID(ctx, runID)
+	if err != nil {
+		return false
+	}
+	return run.TriggeredBy == email
+}
+
+// DeleteComparison removes one comparison. DELETE /api/visual-regression/comparison/{id}
+func (h *VisualRegressionHandler) DeleteComparison(w http.ResponseWriter, r *http.Request) {
+	claims, ok := middleware.GetUserFromContext(r.Context())
+	if !ok {
+		respondJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+		return
+	}
+	id, err := primitive.ObjectIDFromHex(mux.Vars(r)["id"])
+	if err != nil {
+		respondJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid_id"})
+		return
+	}
+	cmp, err := h.visualComparisonRepo.GetByID(r.Context(), id)
+	if err != nil {
+		respondJSON(w, http.StatusNotFound, map[string]string{"error": "not_found"})
+		return
+	}
+	if !h.userOwnsComparison(r.Context(), cmp, claims.Email) {
+		respondJSON(w, http.StatusForbidden, map[string]string{"error": "forbidden"})
+		return
+	}
+	if err := h.visualComparisonRepo.DeleteByID(r.Context(), id); err != nil {
+		respondJSON(w, http.StatusInternalServerError, map[string]string{"error": "delete_failed"})
+		return
+	}
+	respondJSON(w, http.StatusOK, map[string]string{"status": "deleted"})
+}
+
+// ClearHistory removes every comparison across the caller's runs.
+// DELETE /api/visual-regression/history
+func (h *VisualRegressionHandler) ClearHistory(w http.ResponseWriter, r *http.Request) {
+	claims, ok := middleware.GetUserFromContext(r.Context())
+	if !ok {
+		respondJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+		return
+	}
+	runs, err := h.testRunRepo.GetUserRuns(r.Context(), claims.Email)
+	if err != nil {
+		respondJSON(w, http.StatusInternalServerError, map[string]string{"error": "lookup_failed"})
+		return
+	}
+	var runIDs []primitive.ObjectID
+	for _, run := range runs {
+		runIDs = append(runIDs, run.ID)
+	}
+	resultIDs, _ := h.testResultRepo.GetResultIDsByRunIDs(r.Context(), runIDs)
+	deleted, err := h.visualComparisonRepo.DeleteByUserScope(r.Context(), resultIDs, runIDs)
+	if err != nil {
+		respondJSON(w, http.StatusInternalServerError, map[string]string{"error": "delete_failed"})
+		return
+	}
+	respondJSON(w, http.StatusOK, map[string]interface{}{"status": "cleared", "deleted": deleted})
+}
+
 // POST /api/visual-regression/approve-baseline
+// POST /api/visual-regression/promote-baseline
 func (h *VisualRegressionHandler) ApproveBaseline(w http.ResponseWriter, r *http.Request) {
+	h.promoteBaseline(w, r)
+}
+
+func (h *VisualRegressionHandler) PromoteBaseline(w http.ResponseWriter, r *http.Request) {
+	h.promoteBaseline(w, r)
+}
+
+// PromoteAllBaselines copies the current image to baseline for many comparisons at once.
+// POST /api/visual-regression/promote-all-baselines
+func (h *VisualRegressionHandler) PromoteAllBaselines(w http.ResponseWriter, r *http.Request) {
+	claims, ok := middleware.GetUserFromContext(r.Context())
+	if !ok {
+		respondJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+		return
+	}
+
+	var req models.PromoteAllBaselinesRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+		return
+	}
+	if len(req.ComparisonIDs) == 0 {
+		respondJSON(w, http.StatusBadRequest, map[string]string{"error": "comparison_ids_required"})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), 60*time.Second)
+	defer cancel()
+
+	resp := models.PromoteAllBaselinesResponse{}
+	for _, idStr := range req.ComparisonIDs {
+		comparisonObjID, err := primitive.ObjectIDFromHex(strings.TrimSpace(idStr))
+		if err != nil {
+			resp.Failed++
+			resp.Errors = append(resp.Errors, idStr+": invalid comparison_id")
+			continue
+		}
+		if err := h.promoteBaselineByID(ctx, comparisonObjID, claims.Email); err != nil {
+			resp.Failed++
+			resp.Errors = append(resp.Errors, idStr+": "+err.Error())
+			continue
+		}
+		resp.Promoted++
+	}
+
+	respondJSON(w, http.StatusOK, resp)
+}
+
+func (h *VisualRegressionHandler) promoteBaseline(w http.ResponseWriter, r *http.Request) {
 	claims, ok := middleware.GetUserFromContext(r.Context())
 	if !ok {
 		respondJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
@@ -275,66 +414,100 @@ func (h *VisualRegressionHandler) ApproveBaseline(w http.ResponseWriter, r *http
 		respondJSON(w, http.StatusNotFound, map[string]string{"error": "comparison not found"})
 		return
 	}
+	_ = comparison
 
-	// Security: verify the result_id belongs to the authenticated user
-	result, err := h.testResultRepo.GetByID(ctx, comparison.ResultID)
+	if err := h.promoteBaselineByID(ctx, comparisonObjID, claims.Email); err != nil {
+		switch err.Error() {
+		case "forbidden":
+			respondJSON(w, http.StatusForbidden, map[string]string{"error": "forbidden"})
+		case "comparison missing current image":
+			respondJSON(w, http.StatusBadRequest, map[string]string{"error": "comparison missing current image"})
+		default:
+			respondJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+		return
+	}
+
+	updated, _ := h.visualComparisonRepo.GetByID(ctx, comparisonObjID)
+	baselinePath := ""
+	if updated != nil {
+		baselinePath = updated.BaselinePath
+	}
+
+	respondJSON(w, http.StatusOK, models.ApproveBaselineResponse{
+		Success:      true,
+		Message:      "Baseline promoted successfully",
+		BaselinePath: baselinePath,
+	})
+}
+
+func (h *VisualRegressionHandler) promoteBaselineByID(ctx context.Context, comparisonObjID primitive.ObjectID, email string) error {
+	comparison, err := h.visualComparisonRepo.GetByID(ctx, comparisonObjID)
 	if err != nil {
-		respondJSON(w, http.StatusForbidden, map[string]string{"error": "forbidden"})
-		return
-	}
-	
-	run, err := h.testRunRepo.GetByID(ctx, result.RunID)
-	if err != nil || run.TriggeredBy != claims.Email {
-		respondJSON(w, http.StatusForbidden, map[string]string{"error": "forbidden"})
-		return
+		return err
 	}
 
-	if comparison.CurrentPath == "" || comparison.BaselinePath == "" {
-		respondJSON(w, http.StatusBadRequest, map[string]string{"error": "comparison missing paths"})
-		return
+	if !h.userOwnsComparison(ctx, comparison, email) {
+		return fmt.Errorf("forbidden")
 	}
 
-	// Create baseline directory if it does not exist
-	baselinePath := resolveVisualImagePath(comparison.BaselinePath)
+	if comparison.CurrentPath == "" {
+		return fmt.Errorf("comparison missing current image")
+	}
+
+	// Always target the LIVE baseline, reconstructed from the stable key. The
+	// comparison's BaselinePath is an immutable per-record snapshot (for history
+	// display) and must NOT be overwritten — only the live baseline that future
+	// runs compare against is updated here.
+	baselineRel := filepath.Join("baselines", comparison.Framework, comparison.Browser, comparison.TestCaseID, comparison.StepName+".png")
+	baselinePath := resolveVisualImagePath(baselineRel)
 	if err := os.MkdirAll(filepath.Dir(baselinePath), 0755); err != nil {
-		respondJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to create baseline directory"})
-		return
+		return fmt.Errorf("failed to create baseline directory")
 	}
 
 	currentPath := resolveVisualImagePath(comparison.CurrentPath)
 
-	// Copy current image to baseline path
 	src, err := os.Open(currentPath)
 	if err != nil {
-		respondJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to open current image"})
-		return
+		return fmt.Errorf("failed to open current image")
 	}
 	defer src.Close()
 
 	dst, err := os.Create(baselinePath)
 	if err != nil {
-		respondJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to create baseline file"})
-		return
+		return fmt.Errorf("failed to create baseline file")
 	}
-	defer dst.Close()
-
 	if _, err := io.Copy(dst, src); err != nil {
-		respondJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to copy file"})
-		return
+		dst.Close()
+		return fmt.Errorf("failed to copy file")
+	}
+	dst.Close()
+
+	// IMPORTANT: do NOT mutate the original comparison record. History is an
+	// immutable log of what happened; promoting only changes the live baseline
+	// used by FUTURE runs. The promotion is recorded as its own event below.
+	now := time.Now()
+	promotion := &models.VisualComparison{
+		RunRef:       comparison.RunRef,
+		JobID:        comparison.JobID,
+		ResultID:     comparison.ResultID,
+		TestName:     comparison.TestName,
+		TestCaseID:   comparison.TestCaseID,
+		StepName:     comparison.StepName,
+		Framework:    comparison.Framework,
+		Browser:      comparison.Browser,
+		Status:       models.VisualStatusBaselinePromoted,
+		// Snapshot of the screenshot that became the baseline (immutable).
+		BaselinePath: comparison.CurrentPath,
+		CurrentPath:  comparison.CurrentPath,
+		ApprovedAt:   &now,
+		ApprovedBy:   email,
+	}
+	if err := h.visualComparisonRepo.Insert(ctx, promotion); err != nil {
+		log.Printf("Failed to record baseline promotion event: %v", err)
 	}
 
-	// Update MongoDB with approved_at and approved_by
-	updated, err := h.visualComparisonRepo.ApproveBaseline(ctx, comparisonObjID, claims.Email)
-	if err != nil {
-		respondJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to update comparison"})
-		return
-	}
-
-	respondJSON(w, http.StatusOK, models.ApproveBaselineResponse{
-		Success:      true,
-		Message:      "Baseline updated successfully",
-		BaselinePath: updated.BaselinePath,
-	})
+	return nil
 }
 
 // resolveScreenshotsForVisualRegression finds screenshots for a test result.

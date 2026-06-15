@@ -866,6 +866,156 @@ func (h *DiagnosisHandler) GetDiagnosis(w http.ResponseWriter, r *http.Request) 
 	json.NewEncoder(w).Encode(buildDiagnosisResponse(diagnosis))
 }
 
+// DiagnosisHistoryItem is one row in the AI Diagnosis history list.
+type DiagnosisHistoryItem struct {
+	ID            string    `json:"id"`
+	ExecutionID   string    `json:"execution_id"`
+	RunID         string    `json:"run_id"`
+	TestName      string    `json:"test_name"`
+	Browser       string    `json:"browser"`
+	ErrorCategory string    `json:"error_category"`
+	Confidence    string    `json:"confidence"`
+	ModelUsed     string    `json:"model_used"`
+	RootCause     string    `json:"root_cause"`
+	GeneratedAt   time.Time `json:"generated_at"`
+}
+
+// userExecutionIDs returns the caller's test-result IDs (hex) — the execution_id
+// values that scope which diagnoses belong to the user.
+func (h *DiagnosisHandler) userExecutionIDs(ctx context.Context, email string) ([]string, error) {
+	runs, err := h.testRunRepo.GetUserRuns(ctx, email)
+	if err != nil {
+		return nil, err
+	}
+	var runIDs []primitive.ObjectID
+	for _, run := range runs {
+		runIDs = append(runIDs, run.ID)
+	}
+	resultIDs, err := h.testResultRepo.GetResultIDsByRunIDs(ctx, runIDs)
+	if err != nil {
+		return nil, err
+	}
+	execIDs := make([]string, len(resultIDs))
+	for i, id := range resultIDs {
+		execIDs[i] = id.Hex()
+	}
+	return execIDs, nil
+}
+
+// GetDiagnosisHistory lists every AI diagnosis across the user's runs.
+// GET /api/diagnosis/history
+func (h *DiagnosisHandler) GetDiagnosisHistory(w http.ResponseWriter, r *http.Request) {
+	claims, ok := middleware.GetUserFromContext(r.Context())
+	if !ok || claims.Email == "" {
+		writeJSONError(w, http.StatusUnauthorized, "unauthorized", "Unauthorized")
+		return
+	}
+	execIDs, err := h.userExecutionIDs(r.Context(), claims.Email)
+	if err != nil {
+		writeJSONError(w, http.StatusInternalServerError, "lookup_failed", "Failed to load results")
+		return
+	}
+	diags, err := h.diagnosisRepo.GetByExecutionIDs(r.Context(), execIDs)
+	if err != nil {
+		writeJSONError(w, http.StatusInternalServerError, "fetch_failed", "Failed to load diagnoses")
+		return
+	}
+
+	resultCache := map[string]*models.TestResult{}
+	items := make([]DiagnosisHistoryItem, 0, len(diags))
+	for i := range diags {
+		d := diags[i]
+		res, cached := resultCache[d.ExecutionID]
+		if !cached {
+			if oid, e := primitive.ObjectIDFromHex(d.ExecutionID); e == nil {
+				if rr, e2 := h.testResultRepo.GetByID(r.Context(), oid); e2 == nil {
+					res = rr
+				}
+			}
+			resultCache[d.ExecutionID] = res
+		}
+		runID, testName, browser := "", "", ""
+		if res != nil {
+			runID, testName, browser = res.RunID.Hex(), res.TestName, res.Browser
+		}
+		items = append(items, DiagnosisHistoryItem{
+			ID: d.ID.Hex(), ExecutionID: d.ExecutionID, RunID: runID, TestName: testName, Browser: browser,
+			ErrorCategory: d.ErrorCategory, Confidence: d.Confidence, ModelUsed: d.ModelUsed,
+			RootCause: d.RootCause, GeneratedAt: d.GeneratedAt,
+		})
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(items)
+}
+
+// DeleteDiagnosis removes one diagnosis. DELETE /api/diagnosis/{id}
+func (h *DiagnosisHandler) DeleteDiagnosis(w http.ResponseWriter, r *http.Request) {
+	claims, ok := middleware.GetUserFromContext(r.Context())
+	if !ok || claims.Email == "" {
+		writeJSONError(w, http.StatusUnauthorized, "unauthorized", "Unauthorized")
+		return
+	}
+	id, err := primitive.ObjectIDFromHex(mux.Vars(r)["id"])
+	if err != nil {
+		writeJSONError(w, http.StatusBadRequest, "invalid_id", "Invalid diagnosis id")
+		return
+	}
+	d, err := h.diagnosisRepo.GetByID(r.Context(), id)
+	if err != nil {
+		writeJSONError(w, http.StatusNotFound, "not_found", "Diagnosis not found")
+		return
+	}
+	if !h.userOwnsExecution(r.Context(), d.ExecutionID, claims.Email) {
+		writeJSONError(w, http.StatusForbidden, "forbidden", "Not your diagnosis")
+		return
+	}
+	if err := h.diagnosisRepo.DeleteByID(r.Context(), id); err != nil {
+		writeJSONError(w, http.StatusInternalServerError, "delete_failed", "Failed to delete")
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "deleted"})
+}
+
+// ClearDiagnosisHistory removes every diagnosis across the user's runs.
+// DELETE /api/diagnosis/history
+func (h *DiagnosisHandler) ClearDiagnosisHistory(w http.ResponseWriter, r *http.Request) {
+	claims, ok := middleware.GetUserFromContext(r.Context())
+	if !ok || claims.Email == "" {
+		writeJSONError(w, http.StatusUnauthorized, "unauthorized", "Unauthorized")
+		return
+	}
+	execIDs, err := h.userExecutionIDs(r.Context(), claims.Email)
+	if err != nil {
+		writeJSONError(w, http.StatusInternalServerError, "lookup_failed", "Failed to load results")
+		return
+	}
+	deleted, err := h.diagnosisRepo.DeleteByExecutionIDs(r.Context(), execIDs)
+	if err != nil {
+		writeJSONError(w, http.StatusInternalServerError, "delete_failed", "Failed to clear")
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{"status": "cleared", "deleted": deleted})
+}
+
+// userOwnsExecution checks the result behind an execution_id belongs to the user.
+func (h *DiagnosisHandler) userOwnsExecution(ctx context.Context, executionID, email string) bool {
+	oid, err := primitive.ObjectIDFromHex(executionID)
+	if err != nil {
+		return false
+	}
+	res, err := h.testResultRepo.GetByID(ctx, oid)
+	if err != nil {
+		return false
+	}
+	run, err := h.testRunRepo.GetByID(ctx, res.RunID)
+	if err != nil {
+		return false
+	}
+	return run.TriggeredBy == email
+}
+
 // buildDiagnosisResponse maps a stored Diagnosis to the API response shape.
 // Used by both DiagnoseResult (POST) and GetDiagnosis (GET) so the panel renders
 // identical data whether freshly generated or read from cache.
