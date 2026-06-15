@@ -261,6 +261,10 @@ func main() {
 	// ===========================================
 	api.HandleFunc("/results/{result_id}/diagnose", authMiddleware.Authenticate(diagnosisHandler.DiagnoseResult)).Methods("POST", "OPTIONS")
 	api.HandleFunc("/results/{result_id}/diagnosis", authMiddleware.Authenticate(diagnosisHandler.GetDiagnosis)).Methods("GET", "OPTIONS")
+	// AI Diagnosis history (all diagnoses across the user's runs) + delete one / clear all
+	api.HandleFunc("/diagnosis/history", authMiddleware.Authenticate(diagnosisHandler.GetDiagnosisHistory)).Methods("GET", "OPTIONS")
+	api.HandleFunc("/diagnosis/history", authMiddleware.Authenticate(diagnosisHandler.ClearDiagnosisHistory)).Methods("DELETE", "OPTIONS")
+	api.HandleFunc("/diagnosis/{id}", authMiddleware.Authenticate(diagnosisHandler.DeleteDiagnosis)).Methods("DELETE", "OPTIONS")
 
 	// ===========================================
 	// VISUAL REGRESSION
