@@ -22,6 +22,7 @@ import Profile from "@/pages/profile";
 import TesterTestResults from "@/pages/tester-test-results";
 import TesterDiagnosis from "@/pages/tester-diagnosis";
 import VisualRegressionHistory from "@/pages/visual-regression-history";
+import AIDiagnosisHistory from "@/pages/ai-diagnosis-history";
 
 function Router() {
   return (
@@ -61,6 +62,11 @@ function Router() {
       <Route path="/visual-regression">
         <ProtectedRoute>
           <VisualRegressionHistory />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/diagnosis-history">
+        <ProtectedRoute>
+          <AIDiagnosisHistory />
         </ProtectedRoute>
       </Route>
       <Route path="/history">

@@ -67,6 +67,8 @@ export const API_ENDPOINTS = {
   // AI Diagnosis
   RESULT_DIAGNOSE: (resultId: string) => `${API_BASE_URL}/api/results/${resultId}/diagnose`,
   RESULT_DIAGNOSIS: (resultId: string) => `${API_BASE_URL}/api/results/${resultId}/diagnosis`,
+  DIAGNOSIS_HISTORY: `${API_BASE_URL}/api/diagnosis/history`,
+  DIAGNOSIS_DELETE: (id: string) => `${API_BASE_URL}/api/diagnosis/${id}`,
 
   // Visual Regression
   VISUAL_REGRESSION_COMPARE: `${API_BASE_URL}/api/visual-regression/compare`,

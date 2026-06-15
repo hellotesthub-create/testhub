@@ -7,6 +7,7 @@ import {
   Zap,
   History,
   Image,
+  Bot,
   User
 } from "lucide-react";
 import { useState } from "react";
@@ -52,6 +53,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { href: "/test-lab", icon: Zap, label: "Test Lab" },
     { href: "/visual-regression", icon: Image, label: "Visual Regression" },
+    { href: "/diagnosis-history", icon: Bot, label: "AI Diagnosis" },
     { href: "/history", icon: History, label: "History" },
   ];
 
