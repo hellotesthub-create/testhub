@@ -221,7 +221,7 @@ jobs:
           dk="${{ needs.docker.result }}"
           cp="${{ needs.compose.result }}"
 
-          icon() { [ "$1" = "success" ] && echo "✅ PASS" || echo "❌ FAIL"; }
+          icon() { [ "$1" = "success" ] && echo " PASS" || echo "❌ FAIL"; }
 
           {
             echo "## TestHub CI — Validation Report"
@@ -241,10 +241,10 @@ jobs:
              && [ "$ai" = "success" ] && [ "$db" = "success" ] && [ "$dk" = "success" ] \
              && [ "$cp" = "success" ]; then
             echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "### ✅ Overall: PASS" >> "$GITHUB_STEP_SUMMARY"
+            echo "###  Overall: PASS" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "### ❌ Overall: FAIL" >> "$GITHUB_STEP_SUMMARY"
+            echo "###  Overall: FAIL" >> "$GITHUB_STEP_SUMMARY"
             echo "::error::TestHub CI failed — see the validation report in the job summary."
             exit 1
           fi

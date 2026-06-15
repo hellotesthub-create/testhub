@@ -73,9 +73,14 @@ func GenerateRunReportPDF(
 		pdf.CellFormat(0, 8, fmt.Sprintf("Page %d", pdf.PageNo()), "", 0, "R", false, 0, "")
 	})
 
+	// Cover page: branding + pass-rate donut + stat tiles.
 	pdf.AddPage()
-	writeHeader(pdf)
-	writeSummary(pdf, run)
+	writeCover(pdf, run)
+
+	// Details page: run metadata + per-browser chart, then tests + logs.
+	pdf.AddPage()
+	writeRunDetails(pdf, run)
+	writeBrowserChart(pdf, results)
 
 	// Index screenshots by test name for quick lookup.
 	shotsByTest := map[string][]models.Screenshot{}
@@ -116,36 +121,148 @@ func GenerateRunReportPDF(
 	return buf.Bytes(), nil
 }
 
-func writeHeader(pdf *fpdf.Fpdf) {
-	// Logo (best-effort).
+func setFill(pdf *fpdf.Fpdf, c [3]int) { pdf.SetFillColor(c[0], c[1], c[2]) }
+func setDraw(pdf *fpdf.Fpdf, c [3]int) { pdf.SetDrawColor(c[0], c[1], c[2]) }
+func max0(n int) int {
+	if n < 0 {
+		return 0
+	}
+	return n
+}
+
+// ── Cover page: branding + pass-rate donut + stat tiles ────────────────
+func writeCover(pdf *fpdf.Fpdf, run *models.TestRun) {
+	// Soft brand band across the top.
+	setFill(pdf, colBgSoft)
+	pdf.Rect(0, 0, 210, 58, "F")
+
+	// Logo centered near the top.
 	if len(reportLogoPNG) > 0 {
-		if info, _, err := image.DecodeConfig(bytes.NewReader(reportLogoPNG)); err == nil && info.Height > 0 {
+		if info, _, derr := image.DecodeConfig(bytes.NewReader(reportLogoPNG)); derr == nil && info.Height > 0 {
 			pdf.RegisterImageOptionsReader("logo", fpdf.ImageOptions{ImageType: "PNG"}, bytes.NewReader(reportLogoPNG))
 			if pdf.Ok() {
-				pdf.ImageOptions("logo", 10, 10, 16, 16, false, fpdf.ImageOptions{ImageType: "PNG"}, 0, "")
+				pdf.ImageOptions("logo", 94, 14, 22, 22, false, fpdf.ImageOptions{ImageType: "PNG"}, 0, "")
 			} else {
 				pdf.ClearError()
 			}
 		}
 	}
-	pdf.SetXY(28, 11)
-	pdf.SetFont("Arial", "B", 20)
+	pdf.SetY(38)
+	pdf.SetFont("Arial", "B", 22)
 	setText(pdf, colText)
-	pdf.CellFormat(0, 8, "TESTHUB", "", 2, "L", false, 0, "")
-	pdf.SetX(28)
-	pdf.SetFont("Arial", "", 11)
+	pdf.CellFormat(0, 9, "TESTHUB", "", 1, "C", false, 0, "")
+	pdf.SetFont("Arial", "", 12)
 	setText(pdf, colMuted)
-	pdf.CellFormat(0, 6, "Test Execution Report", "", 1, "L", false, 0, "")
-	pdf.Ln(4)
-	drawRule(pdf)
-	pdf.Ln(4)
+	pdf.CellFormat(0, 7, "Test Execution Report", "", 1, "C", false, 0, "")
+
+	pdf.Ln(8)
+	pdf.SetFont("Arial", "B", 16)
+	setText(pdf, colText)
+	pdf.CellFormat(0, 9, san(safe(run.SuiteName, "Test Run")), "", 1, "C", false, 0, "")
+
+	dateStr := run.CreatedAt.Format("Jan 2, 2006 15:04 MST")
+	if run.StartTime != nil {
+		dateStr = run.StartTime.Format("Jan 2, 2006 15:04 MST")
+	}
+	pdf.SetFont("Arial", "", 10)
+	setText(pdf, colMuted)
+	pdf.CellFormat(0, 6, san(fmt.Sprintf("Run %s   -   %s", safe(run.RunID, "-"), dateStr)), "", 1, "C", false, 0, "")
+
+	// Pass-rate donut.
+	pdf.Ln(6)
+	cx := 105.0
+	cy := pdf.GetY() + 32
+	other := max0(run.TotalTests - run.Passed - run.Failed - run.Skipped)
+	drawDonut(pdf, cx, cy, 28, 9, run.Passed, run.Failed, run.Skipped, other)
+	pdf.SetXY(cx-26, cy-9)
+	pdf.SetFont("Arial", "B", 22)
+	setText(pdf, colText)
+	pdf.CellFormat(52, 10, fmt.Sprintf("%.0f%%", run.SuccessRate), "", 0, "C", false, 0, "")
+	pdf.SetXY(cx-26, cy+3)
+	pdf.SetFont("Arial", "", 9)
+	setText(pdf, colMuted)
+	pdf.CellFormat(52, 5, "pass rate", "", 0, "C", false, 0, "")
+
+	// Stat tiles row.
+	pdf.SetY(cy + 32)
+	statTilesRow(pdf, run)
+
+	// Status pill, centered.
+	pdf.Ln(8)
+	pill := strings.ToUpper(safe(run.Status, "-"))
+	pcol := statusColor(run.Status)
+	pdf.SetFont("Arial", "B", 10)
+	pw := pdf.GetStringWidth(pill) + 14
+	pdf.SetX((210 - pw) / 2)
+	setFill(pdf, pcol)
+	pdf.SetTextColor(255, 255, 255)
+	pdf.CellFormat(pw, 8, pill, "", 1, "C", true, 0, "")
 }
 
-func writeSummary(pdf *fpdf.Fpdf, run *models.TestRun) {
-	pdf.SetFont("Arial", "B", 13)
-	setText(pdf, colText)
-	pdf.CellFormat(0, 8, san(safe(run.SuiteName, "Test Run")), "", 1, "L", false, 0, "")
+// drawDonut renders a pass/fail/skipped donut using thick stroked arcs.
+func drawDonut(pdf *fpdf.Fpdf, cx, cy, radius, thickness float64, passed, failed, skipped, other int) {
+	total := passed + failed + skipped + other
+	pdf.SetLineCapStyle("butt")
+	pdf.SetLineWidth(thickness)
+	// Track (full ring).
+	setDraw(pdf, colLine)
+	pdf.Arc(cx, cy, radius, radius, 0, 0, 360, "")
+	if total > 0 {
+		segs := []struct {
+			n int
+			c [3]int
+		}{
+			{passed, colEmerald}, {failed, colRed}, {skipped, colAmber}, {other, colMuted},
+		}
+		start := 90.0
+		for _, s := range segs {
+			if s.n <= 0 {
+				continue
+			}
+			sweep := 360.0 * float64(s.n) / float64(total)
+			setDraw(pdf, s.c)
+			pdf.Arc(cx, cy, radius, radius, 0, start, start+sweep, "")
+			start += sweep
+		}
+	}
+	pdf.SetLineWidth(0.2)
+}
 
+// statTilesRow renders four centered Total/Passed/Failed/Skipped tiles.
+func statTilesRow(pdf *fpdf.Fpdf, run *models.TestRun) {
+	tiles := []struct {
+		label, val string
+		c          [3]int
+	}{
+		{"TOTAL", fmt.Sprintf("%d", run.TotalTests), colPrimary},
+		{"PASSED", fmt.Sprintf("%d", run.Passed), colEmerald},
+		{"FAILED", fmt.Sprintf("%d", run.Failed), colRed},
+		{"SKIPPED", fmt.Sprintf("%d", run.Skipped), colAmber},
+	}
+	w, gap := 40.0, 4.0
+	n := float64(len(tiles))
+	x := (210 - (n*w + (n-1)*gap)) / 2
+	y := pdf.GetY()
+	for _, t := range tiles {
+		setFill(pdf, colBgSoft)
+		setDraw(pdf, colLine)
+		pdf.RoundedRect(x, y, w, 18, 2.5, "1234", "FD")
+		pdf.SetXY(x, y+3)
+		pdf.SetFont("Arial", "B", 16)
+		setText(pdf, t.c)
+		pdf.CellFormat(w, 7, t.val, "", 2, "C", false, 0, "")
+		pdf.SetX(x)
+		pdf.SetFont("Arial", "", 7)
+		setText(pdf, colMuted)
+		pdf.CellFormat(w, 5, t.label, "", 0, "C", false, 0, "")
+		x += w + gap
+	}
+	pdf.SetY(y + 18)
+}
+
+// writeRunDetails prints the run metadata as a key/value table.
+func writeRunDetails(pdf *fpdf.Fpdf, run *models.TestRun) {
+	writeSectionTitle(pdf, "Run Details", colPrimary)
 	started := "-"
 	if run.StartTime != nil {
 		started = run.StartTime.Format("2006-01-02 15:04 MST")
@@ -154,8 +271,8 @@ func writeSummary(pdf *fpdf.Fpdf, run *models.TestRun) {
 	if run.DurationSeconds >= 60 {
 		dur = fmt.Sprintf("%dm %ds", int(run.DurationSeconds)/60, int(run.DurationSeconds)%60)
 	}
-
 	rows := [][2]string{
+		{"Suite", safe(run.SuiteName, "-")},
 		{"Run ID", safe(run.RunID, "-")},
 		{"Status", strings.ToUpper(safe(run.Status, "-"))},
 		{"Framework", strings.Title(safe(run.Framework, "-"))},
@@ -172,75 +289,101 @@ func writeSummary(pdf *fpdf.Fpdf, run *models.TestRun) {
 		pdf.CellFormat(0, 6, san(kv[1]), "", 1, "L", false, 0, "")
 	}
 	pdf.Ln(2)
-
-	// Stat chips.
-	writeStatChips(pdf, run)
-	// Pass/fail bar.
-	writePassBar(pdf, run)
-	pdf.Ln(4)
 	drawRule(pdf)
-	pdf.Ln(4)
+	pdf.Ln(2)
 }
 
-func writeStatChips(pdf *fpdf.Fpdf, run *models.TestRun) {
-	chips := []struct {
-		label string
-		val   string
-		col   [3]int
-	}{
-		{"TOTAL", fmt.Sprintf("%d", run.TotalTests), colPrimary},
-		{"PASSED", fmt.Sprintf("%d", run.Passed), colEmerald},
-		{"FAILED", fmt.Sprintf("%d", run.Failed), colRed},
-		{"SKIPPED", fmt.Sprintf("%d", run.Skipped), colAmber},
-		{"PASS RATE", fmt.Sprintf("%.0f%%", run.SuccessRate), colPrimary},
+// writeBrowserChart draws a horizontal stacked bar of passed/failed per browser.
+func writeBrowserChart(pdf *fpdf.Fpdf, results []models.TestResult) {
+	type bc struct{ passed, failed, other int }
+	m := map[string]*bc{}
+	order := []string{}
+	for _, r := range results {
+		b := strings.ToLower(safe(r.Browser, "unknown"))
+		if m[b] == nil {
+			m[b] = &bc{}
+			order = append(order, b)
+		}
+		switch strings.ToLower(r.Status) {
+		case "passed":
+			m[b].passed++
+		case "failed", "error":
+			m[b].failed++
+		default:
+			m[b].other++
+		}
 	}
-	w := 37.0
-	x := 10.0
-	y := pdf.GetY()
-	for _, c := range chips {
-		pdf.SetXY(x, y)
-		pdf.SetFillColor(colBgSoft[0], colBgSoft[1], colBgSoft[2])
-		pdf.SetDrawColor(colLine[0], colLine[1], colLine[2])
-		pdf.RoundedRect(x, y, w-3, 16, 2, "1234", "FD")
-		pdf.SetXY(x, y+2)
-		pdf.SetFont("Arial", "B", 15)
-		setText(pdf, c.col)
-		pdf.CellFormat(w-3, 7, c.val, "", 2, "C", false, 0, "")
-		pdf.SetX(x)
-		pdf.SetFont("Arial", "", 7)
-		setText(pdf, colMuted)
-		pdf.CellFormat(w-3, 5, c.label, "", 0, "C", false, 0, "")
-		x += w
-	}
-	pdf.SetY(y + 16)
-	pdf.Ln(3)
-}
-
-func writePassBar(pdf *fpdf.Fpdf, run *models.TestRun) {
-	total := run.TotalTests
-	if total <= 0 {
+	if len(order) == 0 {
 		return
 	}
-	barW := reportContentWidth
-	x := 10.0
-	y := pdf.GetY()
-	h := 4.0
-	pw := barW * float64(run.Passed) / float64(total)
-	fw := barW * float64(run.Failed) / float64(total)
-	// background
-	pdf.SetFillColor(colLine[0], colLine[1], colLine[2])
-	pdf.RoundedRect(x, y, barW, h, 1, "1234", "F")
-	// passed
-	if pw > 0 {
-		pdf.SetFillColor(colEmerald[0], colEmerald[1], colEmerald[2])
-		pdf.Rect(x, y, pw, h, "F")
+
+	writeSectionTitle(pdf, "Results by Browser", colPrimary)
+	maxTotal := 1
+	for _, b := range order {
+		if t := m[b].passed + m[b].failed + m[b].other; t > maxTotal {
+			maxTotal = t
+		}
 	}
-	// failed
-	if fw > 0 {
-		pdf.SetFillColor(colRed[0], colRed[1], colRed[2])
-		pdf.Rect(x+pw, y, fw, h, "F")
+	labelW := 26.0
+	countW := 20.0
+	barMaxW := reportContentWidth - labelW - countW - 4
+
+	for _, b := range order {
+		c := m[b]
+		total := c.passed + c.failed + c.other
+		ensureSpace(pdf, 9)
+		y := pdf.GetY()
+		x := 10.0
+		pdf.SetFont("Arial", "", 9)
+		setText(pdf, colText)
+		pdf.SetXY(x, y)
+		pdf.CellFormat(labelW, 6, san(strings.Title(b)), "", 0, "L", false, 0, "")
+
+		bx := x + labelW
+		w := barMaxW * float64(total) / float64(maxTotal)
+		setFill(pdf, colBgSoft)
+		pdf.RoundedRect(bx, y+0.5, barMaxW, 5, 1, "1234", "F")
+		seg := bx
+		for _, s := range []struct {
+			n int
+			c [3]int
+		}{{c.passed, colEmerald}, {c.failed, colRed}, {c.other, colAmber}} {
+			if s.n == 0 || total == 0 {
+				continue
+			}
+			sw := w * float64(s.n) / float64(total)
+			setFill(pdf, s.c)
+			pdf.Rect(seg, y+0.5, sw, 5, "F")
+			seg += sw
+		}
+		pdf.SetXY(bx+barMaxW+2, y)
+		pdf.SetFont("Arial", "", 8)
+		setText(pdf, colMuted)
+		pdf.CellFormat(countW, 6, fmt.Sprintf("%d/%d", c.passed, total), "", 0, "L", false, 0, "")
+		pdf.SetY(y + 7)
 	}
-	pdf.SetY(y + h)
+
+	// Legend.
+	pdf.Ln(1)
+	legend := []struct {
+		label string
+		c     [3]int
+	}{{"Passed", colEmerald}, {"Failed", colRed}, {"Other", colAmber}}
+	lx := 10.0
+	ly := pdf.GetY()
+	for _, l := range legend {
+		setFill(pdf, l.c)
+		pdf.Rect(lx, ly+1, 3, 3, "F")
+		pdf.SetXY(lx+4, ly)
+		pdf.SetFont("Arial", "", 8)
+		setText(pdf, colMuted)
+		pdf.CellFormat(18, 5, l.label, "", 0, "L", false, 0, "")
+		lx += 24
+	}
+	pdf.SetY(ly + 6)
+	pdf.Ln(1)
+	drawRule(pdf)
+	pdf.Ln(2)
 }
 
 func writeSectionTitle(pdf *fpdf.Fpdf, title string, col [3]int) {
