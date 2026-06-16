@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"archive/zip"
 	"backend/internal/middleware"
 	"backend/internal/models"
 	"backend/internal/repository"
@@ -339,6 +340,97 @@ func (h *TestRunHandler) GetRunDetails(w http.ResponseWriter, r *http.Request) {
 }
 
 // DownloadRunReport generates and serves an Allure-style PDF report for a run.
+// DownloadAllArtifacts bundles the run's report PDF, screenshots, videos and logs
+// into a single ZIP. GET /api/runs/{run_id}/artifacts
+func (h *TestRunHandler) DownloadAllArtifacts(w http.ResponseWriter, r *http.Request) {
+	claims, ok := middleware.GetUserFromContext(r.Context())
+	if !ok || claims.Email == "" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	runIDStr := mux.Vars(r)["run_id"]
+	var run *models.TestRun
+	var err error
+	if runOID, oidErr := primitive.ObjectIDFromHex(runIDStr); oidErr == nil {
+		run, err = h.testRunRepo.GetByID(r.Context(), runOID)
+	}
+	if run == nil {
+		run, err = h.testRunRepo.GetByRunID(r.Context(), runIDStr)
+	}
+	if err != nil || run == nil {
+		http.Error(w, "Test run not found", http.StatusNotFound)
+		return
+	}
+	if run.TriggeredBy != claims.Email {
+		http.Error(w, "Unauthorized access to this run", http.StatusForbidden)
+		return
+	}
+
+	results, _ := h.testResultRepo.GetByRunID(r.Context(), run.ID)
+	for i := range results {
+		results[i].ErrorCategory = ClassifyError(results[i].ErrorMessage, results[i].ErrorStack)
+	}
+	screenshots, _ := h.screenshotRepo.GetByRunID(r.Context(), run.ID)
+	videos, _ := h.videoRepo.GetByRunID(r.Context(), run.ID)
+	logs, _ := h.logRepo.GetByRunID(r.Context(), run.ID)
+
+	filename := fmt.Sprintf("THEX_Artifacts_%s.zip", run.RunID)
+	w.Header().Set("Content-Type", "application/zip")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%q", filename))
+
+	zw := zip.NewWriter(w)
+	defer zw.Close()
+
+	addFile := func(name string, data []byte) {
+		if len(data) == 0 {
+			return
+		}
+		if fw, e := zw.Create(name); e == nil {
+			_, _ = fw.Write(data)
+		}
+	}
+
+	// 1. PDF report
+	if pdf, perr := services.GenerateRunReportPDF(run, results, screenshots, logs); perr == nil {
+		addFile("report.pdf", pdf)
+	} else {
+		log.Printf("ZIP: report generation failed for run %s: %v", run.RunID, perr)
+	}
+
+	// 2. Screenshots (indexed to avoid name collisions)
+	for i, s := range screenshots {
+		nm := strings.TrimSpace(s.Name)
+		if nm == "" {
+			nm = fmt.Sprintf("shot_%d.png", i)
+		}
+		if !strings.HasSuffix(strings.ToLower(nm), ".png") {
+			nm += ".png"
+		}
+		addFile(fmt.Sprintf("screenshots/%03d_%s", i+1, filepath.Base(nm)), s.FileData)
+	}
+
+	// 3. Videos
+	for i, v := range videos {
+		ext := ".mp4"
+		if strings.Contains(strings.ToLower(v.ContentType), "webm") {
+			ext = ".webm"
+		}
+		nm := strings.TrimSpace(v.Name)
+		if nm == "" {
+			nm = fmt.Sprintf("video_%d%s", i, ext)
+		}
+		addFile(fmt.Sprintf("videos/%03d_%s", i+1, filepath.Base(nm)), v.FileData)
+	}
+
+	// 4. Combined logs
+	var sb strings.Builder
+	for _, l := range logs {
+		sb.WriteString("[" + l.TestName + "] " + l.Message + "\n")
+	}
+	addFile("logs.txt", []byte(sb.String()))
+}
+
 func (h *TestRunHandler) DownloadRunReport(w http.ResponseWriter, r *http.Request) {
 	claims, ok := middleware.GetUserFromContext(r.Context())
 	if !ok || claims.Email == "" {

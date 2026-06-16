@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/mail"
 	"os"
 	"strings"
 	"time"
@@ -289,19 +290,42 @@ func (h *UserHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, _, exists, err := h.userService.CreatePasswordResetToken(r.Context(), req.Email)
-	if err != nil {
-		log.Printf("[forgot-password] token creation error: %v", err)
-	} else if exists && token != "" {
-		// Send asynchronously so the response time doesn't leak whether the
-		// account exists (and isn't blocked on SMTP latency).
-		go h.sendResetEmail(strings.TrimSpace(req.Email), token)
+	w.Header().Set("Content-Type", "application/json")
+	email := strings.TrimSpace(req.Email)
+
+	// Reject malformed email addresses up front.
+	if addr, perr := mail.ParseAddress(email); perr != nil || addr.Address != email {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(Response{
+			Success: false,
+			Message: "That doesn't look like a valid email address. Please correct it and try again.",
+		})
+		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	token, _, exists, err := h.userService.CreatePasswordResetToken(r.Context(), email)
+	if err != nil {
+		log.Printf("[forgot-password] token creation error: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(Response{Success: false, Message: "Something went wrong. Please try again."})
+		return
+	}
+
+	// No account for this email → tell the user instead of silently doing nothing.
+	if !exists || token == "" {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(Response{
+			Success: false,
+			Message: "No account is registered with this email. Please check the address and try again.",
+		})
+		return
+	}
+
+	// Valid, registered email → send the reset link.
+	go h.sendResetEmail(email, token)
 	json.NewEncoder(w).Encode(Response{
 		Success: true,
-		Message: "If an account exists for this email, a password reset link has been sent.",
+		Message: "A password reset link has been sent to your email.",
 	})
 }
 

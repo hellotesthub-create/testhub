@@ -202,18 +202,22 @@ export default function AuthPage() {
     }
     setIsResetLoading(true);
     try {
-      // Fire-and-forget: the backend always responds generically, so we show the
-      // same message regardless (never reveal whether the account exists).
-      await fetch(API_ENDPOINTS.FORGOT_PASSWORD, {
+      const res = await fetch(API_ENDPOINTS.FORGOT_PASSWORD, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: resetEmail.trim() }),
       });
-      toast.success("If an account exists for this email, a password reset link has been sent.", {
-        description: "Check your inbox — the link is valid for 5 minutes.",
-      });
-      setResetEmail("");
-      setIsForgotPassword(false);
+      const data = await res.json().catch(() => ({} as any));
+      if (res.ok && data.success) {
+        toast.success(data.message || "A password reset link has been sent to your email.", {
+          description: "Check your inbox — the link is valid for 5 minutes.",
+        });
+        setResetEmail("");
+        setIsForgotPassword(false);
+      } else {
+        // Invalid format or no account registered — tell the user to correct it.
+        toast.error(data.message || "Could not send a reset link. Please check the email and try again.");
+      }
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
