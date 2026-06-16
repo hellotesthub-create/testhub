@@ -34,6 +34,7 @@ export const API_ENDPOINTS = {
   RUNS: `${API_BASE_URL}/api/runs`,
   RUN_DETAILS: (runId: string) => `${API_BASE_URL}/api/runs/${runId}`,
   RUN_REPORT: (runId: string) => `${API_BASE_URL}/api/runs/${runId}/report`,
+  RUN_ARTIFACTS_ZIP: (runId: string) => `${API_BASE_URL}/api/runs/${runId}/artifacts`,
   RUN_RESULTS: (runId: string) => `${API_BASE_URL}/api/runs/${runId}/results`,
   CANCEL_RUN: (runId: string) => `${API_BASE_URL}/api/runs/${runId}/cancel`,
   

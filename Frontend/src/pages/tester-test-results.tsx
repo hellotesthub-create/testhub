@@ -515,7 +515,11 @@ export default function TesterTestResults() {
                 {cancelling ? "Cancelling..." : "Cancel Run"}
               </Button>
             )}
-            <NeonButton onClick={() => alert("Downloading all your test artifacts...")} neonColor="blue" className="w-full lg:w-auto text-sm">
+            <NeonButton
+              onClick={() => testId && downloadArtifact(API_ENDPOINTS.RUN_ARTIFACTS_ZIP(testId), `THEX_Artifacts_${testId}.zip`)}
+              neonColor="blue"
+              className="w-full lg:w-auto text-sm"
+            >
               <Download className="w-4 h-4 mr-2" /> Download All Artifacts
             </NeonButton>
           </div>
